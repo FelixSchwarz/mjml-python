@@ -1,7 +1,7 @@
 mjml-stub
 =============
 
-This is an unofficial Python port of [mjml](https://github.com/mjmlio/mjml) markup language created by [Mailjet](https://www.mailjet.com/) and designed to reduce the pain of coding a responsive email.
+This is an unofficial Python port of [mjml](https://github.com/mjmlio/mjml) - a markup language created by [Mailjet](https://www.mailjet.com/) and designed to reduce the pain of coding a responsive email.
 
 WARNING: stub implementation only!
 ------------------------------------
