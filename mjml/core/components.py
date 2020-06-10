@@ -3,8 +3,10 @@
 __all__ = ['initComponent']
 
 def _components():
-    from ..elements import MjText, MjSection, MjColumn, MjBody, MjImage, MjDivider
+    from ..elements import (MjButton, MjText, MjSection, MjColumn, MjBody,
+        MjImage, MjDivider)
     components = {
+        'mj-button': MjButton,
         'mj-text': MjText,
         'mj-divider': MjDivider,
         'mj-image': MjImage,
