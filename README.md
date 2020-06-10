@@ -16,7 +16,7 @@ This library should track the [JS version of mjml](https://github.com/mjmlio/mjm
 
 While I like the idea behind mjml and all the knowledge about the quirks to get acceptable HTML rendering by various email clients we did not want to deploy a Node.js-based stack on our production servers. We did not feel comfortable auditing all 220 JS packages which are installed by `npm install mjml` (and re-doing this whenever new versions are available). Therefore I decided to spent a few days in a spike to check if we could do a minimal Python port. I'm not sure yet if this code will ever be used in production but let's publish what we have.
 
-Another benefit of using Python is that we can integrate that in our web apps more closely. Also the startup overhead of CPython is much lower than Node.js so we can also generate a few mails via CLI applications without massive performance problems (CPython uses ~70ms to translate trivial mjml template to HTML while Node.JS needs ~650ms).
+Another benefit of using Python is that we can integrate that in our web apps more closely. Also the startup overhead of CPython is much lower than Node.js so we can also generate a few mails via CLI applications without massive performance problems (CPython uses ~70ms to translate a trivial mjml template to HTML while Node.JS needs ~650ms).
 
 
 
