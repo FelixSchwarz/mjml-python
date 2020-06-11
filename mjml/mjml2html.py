@@ -43,6 +43,7 @@ def mjml_to_html(xml_fp, skeleton=None):
         'componentsHeadStyle': [],
         'headRaw'            : [],
         'mediaQueries'       : {},
+        'style'              : [],
         'title'              : '',
     })
 
@@ -150,10 +151,12 @@ def mjml_to_html(xml_fp, skeleton=None):
 
         current_attr_value = globalDatas[attr]
         if isinstance(current_attr_value, (list, tuple)):
-            raise NotImplementedError(f'{attr} in globalDatas - extend list?')
-        if len(params) > 1:
+            current_attr_value.extend(params)
+        elif len(params) > 1:
             raise NotImplementedError('adding more than one parameter at once')
-        globalDatas[attr] = params[0]
+        else:
+            assert len(params) == 1
+            globalDatas[attr] = params[0]
 
     headHelpers = AttrDict(
         add = _head_data_add,

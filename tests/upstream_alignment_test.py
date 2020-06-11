@@ -19,6 +19,7 @@ class UpstreamAlignmentTest(TestCase):
         'button',
         'text_with_html',
         'mj-title',
+        'mj-style',
     )
     def test_ensure_same_html(self, test_id):
         mjml_filename = f'{test_id}.mjml'
