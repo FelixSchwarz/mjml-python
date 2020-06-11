@@ -60,5 +60,30 @@ class MjText(BodyComponent):
         return f'''{start_conditional}{self._render_content()}{end_conditional}'''
 
     def _render_content(self):
-        return '<div ' + self.html_attrs(style='text') + '>' + self.getContent() + '</div>'
+        # upstream has a different parser which puts everything in .content
+        # html5lib's TreeWalker does not do that by default so we do add the
+        # children HTML manually here.
+        children_html = ''
+        for child in self.children:
+            children_html += stringify_element(child)
+        content_html = self.getContent() + children_html
+        return '<div ' + self.html_attrs(style='text') + '>' + content_html + '</div>'
+
+
+
+def stringify_element(elem):
+    tag = elem['tagName']
+    content = elem['content']
+
+    is_comment = (not isinstance(tag, str)) and (tag.func_name == 'Comment')
+    if is_comment:
+        return '<!-- {content} -->'
+
+    assert isinstance(tag, str), f'unexpected child: {elem}'
+    attrs = []
+    for attr_key, attr_value in elem['attributes'].items():
+        ns, key = attr_key
+        attrs.append('%s="%s"' % (key, attr_value))
+    attr_str = (' ' if attrs else '') + ' '.join(attrs)
+    return f'<{tag}{attr_str}>{content}</{tag}>'
 
