@@ -82,7 +82,7 @@ def mjml_to_html(xml_fp, skeleton=None):
             classes = ignore_empty(attributes.get('mj-class', '').split(' '))
 
             # upstream parses text contents (+ comments) in mjml-parser-xml/index.js
-            content = _mjml.text.strip() if _mjml.text else ''
+            content = _mjml.text
 
             def concatenate_css_classes(acc, value):
                 mjClassValues = globalDatas.classes[value]
