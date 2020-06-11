@@ -1,7 +1,7 @@
 
 
-from ..lib import merge_dicts, AttrDict
-from ..core import initComponent
+from ..lib import merge_dicts
+from ..core import initComponent, Component
 from ..core.registry import _components
 from ..helpers import *
 
@@ -9,55 +9,6 @@ from ..helpers import *
 __all__ = [
     'BodyComponent',
 ]
-
-class Component:
-    def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None):
-        self.attrs = merge_dicts(self.default_attrs(), attributes or {})
-        self.children = list(children)
-        self.content = content
-        self.context = context
-
-        self.props = AttrDict(merge_dicts(props, {'children': children, 'content': content}))
-
-        # upstream also checks "self.allowed_attrs"
-        self.attributes = merge_dicts(
-            self.default_attrs(),
-            globalAttributes or {},
-            attributes or {},
-        )
-
-        # optional attributes (methods) for some components
-        if headStyle:
-            self.headStyle = headStyle
-
-    @classmethod
-    def getTagName(cls):
-        cls_name = cls.__name__
-        return cls_name
-
-    @classmethod
-    def isRawElement(cls):
-        cls_value = getattr(cls, 'rawElement', None)
-        return bool(cls_value)
-
-    # js: static defaultAttributes
-    @classmethod
-    def default_attrs(cls):
-        return {}
-
-    def getChildContext(self):
-        return self.context
-
-    # js: getAttribute(name)
-    def get_attr(self, name):
-        # assert name in allowed_attrs
-        return self.attrs[name]
-    getAttribute = get_attr
-
-    def render(self):
-        return ''
-
-
 
 class BodyComponent(Component):
     def render(self):
