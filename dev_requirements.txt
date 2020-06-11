@@ -1,2 +1,3 @@
+ddt
 HTMLCompare >= 0.2
 PythonicTestcase

@@ -5,4 +5,5 @@ include requirements.txt
 include README.md
 include LICENSE.txt
 include VERSION.txt
+include tests/testdata/*.html
 
