@@ -42,9 +42,6 @@ class BodyComponent(Component):
             'box'       : parsedWidth - paddings - borders,
         }
 
-    def getContent(self):
-        return self.content.strip()
-
     # js: htmlAttributes(attributes)
     def html_attrs(self, **attrs):
         def _to_str(kv):
@@ -121,7 +118,7 @@ class BodyComponent(Component):
 
             component = initComponent(
                 name = children['tagName'],
-                initialDatas = initialDatas,
+                **initialDatas,
             )
             if component:
                 output += renderer(component)

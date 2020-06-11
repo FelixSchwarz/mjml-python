@@ -6,7 +6,7 @@ from .registry import _components
 
 __all__ = ['initComponent', 'Component']
 
-def initComponent(initialDatas, name):
+def initComponent(name, **initialDatas):
     components = _components()
     component_cls = components[name]
     if not component_cls:
@@ -22,11 +22,13 @@ def initComponent(initialDatas, name):
 
 
 class Component:
-    def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None):
+    # LATER: not sure upstream also passes tagName, makes code easier for us
+    def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None, tagName=None):
         self.attrs = merge_dicts(self.default_attrs(), attributes or {})
         self.children = list(children)
         self.content = content
         self.context = context
+        self.tagName = tagName
 
         self.props = AttrDict(merge_dicts(props, {'children': children, 'content': content}))
 
@@ -55,6 +57,9 @@ class Component:
     @classmethod
     def default_attrs(cls):
         return {}
+
+    def getContent(self):
+        return self.content.strip()
 
     def getChildContext(self):
         return self.context

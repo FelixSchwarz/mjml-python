@@ -41,7 +41,9 @@ def mjml_to_html(xml_fp, skeleton=None):
         'inlineStyle'        : [],
         'headStyle'          : {},
         'componentsHeadStyle': [],
+        'headRaw'            : [],
         'mediaQueries'       : {},
+        'title'              : '',
     })
 
     validationLevel = 'skip'
@@ -55,11 +57,14 @@ def mjml_to_html(xml_fp, skeleton=None):
         mjHead = mjHead[0]
 
     def processing(node, context, parseMJML=None):
-        if node is None:
+        if (node is None) or (len(node) == 0):
             return None
-        initialDatas = merge_dicts(parseMJML(node), {'context': context})
-        initialDatas.pop('tagName')
-        component = initComponent(name=node.tag, initialDatas=initialDatas)
+        # LATER: upstream passes "parseMJML=identity" for head components
+        # but we can not process lxml nodes here. applyAttributes() seems to do
+        # the right thing though...
+        _mjml_data = parseMJML(node) if parseMJML else applyAttributes(node)
+        initialDatas = merge_dicts(_mjml_data, {'context': context})
+        component = initComponent(name=node.tag, **initialDatas)
         if not component:
             return None
         if hasattr(component, 'handler'):
@@ -137,6 +142,23 @@ def mjml_to_html(xml_fp, skeleton=None):
         backgroundColor = lambda node, context: processing(node, context, applyAttributes),
     )
 
+    def _head_data_add(attr, *params):
+        if attr not in globalDatas:
+            param_str = ''.join(params) if isinstance(params, list) else params
+            exc_msg = f'An mj-head element add an unkown head attribute : {attr} with params {param_str}'
+            raise ValueError(exc_msg)
+
+        current_attr_value = globalDatas[attr]
+        if isinstance(current_attr_value, (list, tuple)):
+            raise NotImplementedError(f'{attr} in globalDatas - extend list?')
+        if len(params) > 1:
+            raise NotImplementedError('adding more than one parameter at once')
+        globalDatas[attr] = params[0]
+
+    headHelpers = AttrDict(
+        add = _head_data_add,
+    )
+    globalDatas.headRaw = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
 
     content = skeleton(

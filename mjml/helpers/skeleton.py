@@ -51,7 +51,7 @@ def skeleton_str(*,
         'components_head_style_str': '\n'.join(components_head_style_strs),
         'head_style_strs': '\n'.join(head_style_strs),
         'extra_style': extra_style,
-        'headRaw_str': '\n'.join(filter(is_not_nil, headRaw)),
+        'headRaw_str': '\n'.join(filter(is_not_nil, headRaw or ())),
         'preview_str'    : buildPreview(preview),
     }
 
