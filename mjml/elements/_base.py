@@ -2,7 +2,7 @@
 
 from ..lib import merge_dicts, AttrDict
 from ..core import initComponent
-from ..core.components import _components
+from ..core.registry import _components
 from ..helpers import *
 
 
