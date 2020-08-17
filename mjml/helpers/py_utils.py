@@ -7,10 +7,20 @@ __all__ = [
     'is_empty',
     'is_not_empty',
     'is_not_nil',
+    'omit',
     'parse_float',
     'parse_int',
     'strip_unit',
 ]
+
+def omit(attributes, keys):
+    if isinstance(keys, str):
+        keys = (keys, )
+    _attrs = dict(attributes)
+    for key in keys:
+        if key in _attrs:
+            _attrs.pop(key)
+    return _attrs
 
 def parse_float(value_str):
     match = re.search('^([-+]?\d+(.\d+)?)*', value_str)

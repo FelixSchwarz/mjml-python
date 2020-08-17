@@ -2,7 +2,7 @@
 from lxml import etree as lxml_etree
 
 from .core import initComponent
-from .helpers import mergeOutlookConditionnals, skeleton_str as default_skeleton
+from .helpers import mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
 from .lib import merge_dicts, AttrDict
 
 
@@ -84,15 +84,10 @@ def mjml_to_html(xml_fp, skeleton=None):
             # upstream parses text contents (+ comments) in mjml-parser-xml/index.js
             content = _mjml.text
 
-            def concatenate_css_classes(acc, value):
-                mjClassValues = globalDatas.classes[value]
-                multipleClasses = {}
-                if acc['css-class'] and ('css-class' in mjClassValues):
-                    multipleClasses = {
-                      'css-class': f'{acc["css-class"]} {mjClassValues["css-class"]}',
-                    }
-                return merge_dicts(acc, mjClassValues, multipleClasses)
-            attributesClasses = tuple(map(concatenate_css_classes, classes))
+            attributesClasses = {}
+            for css_class in classes:
+                mjClassValues = globalDatas.classes[css_class]
+                attributesClasses.update(mjClassValues)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
             def default_attr_classes(acc, value):
@@ -101,10 +96,7 @@ def mjml_to_html(xml_fp, skeleton=None):
             defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))
             nextParentMjClass = attributes.get('mj-class', parentMjClass)
 
-            # omit(attributes, ['mj-class']),
-            _attrs_omit = dict(attributes)
-            _attrs_omit.pop('mj-class', None)
-
+            _attrs_omit = omit(attributes, 'mj-class')
             _returned_attributes = merge_dicts(
                 globalDatas.defaultAttributes.get(tagName, {}),
                 attributesClasses,
@@ -152,11 +144,14 @@ def mjml_to_html(xml_fp, skeleton=None):
         current_attr_value = globalDatas[attr]
         if isinstance(current_attr_value, (list, tuple)):
             current_attr_value.extend(params)
-        elif len(params) > 1:
-            raise NotImplementedError('adding more than one parameter at once')
-        else:
+        elif len(params) == 1:
             assert len(params) == 1
             globalDatas[attr] = params[0]
+        else:
+            param_key, *param_values = params
+            assert param_key not in current_attr_value, 'Not yet implemented'
+            assert len(param_values) == 1, 'shortcut in implementation'
+            current_attr_value[param_key] = param_values[0]
 
     headHelpers = AttrDict(
         add = _head_data_add,

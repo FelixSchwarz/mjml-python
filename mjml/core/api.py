@@ -24,7 +24,6 @@ def initComponent(name, **initialDatas):
 class Component:
     # LATER: not sure upstream also passes tagName, makes code easier for us
     def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None, tagName=None):
-        self.attrs = merge_dicts(self.default_attrs(), attributes or {})
         self.children = list(children)
         self.content = content
         self.context = context
@@ -33,7 +32,7 @@ class Component:
         self.props = AttrDict(merge_dicts(props, {'children': children, 'content': content}))
 
         # upstream also checks "self.allowed_attrs"
-        self.attributes = merge_dicts(
+        self.attrs = merge_dicts(
             self.default_attrs(),
             globalAttributes or {},
             attributes or {},
