@@ -72,6 +72,9 @@ class MjText(BodyComponent):
 
 
 def stringify_element(elem):
+    if elem is None:
+        # "comment" node
+        return ''
     tag = elem['tagName']
     content = elem['content']
 

@@ -77,6 +77,11 @@ def mjml_to_html(xml_fp, skeleton=None):
     def applyAttributes(mjml_element):
         def parse(_mjml, parentMjClass=''):
             tagName = _mjml.tag
+            is_comment = not isinstance(tagName, str)
+            if is_comment:
+                # XML comment: <cyfunction Comment at 0x…>
+                # (this needs to be extended when "keepComments" should be implemented)
+                return None
             attributes = _mjml.attrib
             children = [child for child in _mjml]
             classes = ignore_empty(attributes.get('mj-class', '').split(' '))

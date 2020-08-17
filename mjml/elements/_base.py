@@ -102,6 +102,9 @@ class BodyComponent(Component):
         output = ''
         index = 0
         for children in childrens:
+            if children is None:
+                # "comment" node
+                continue
             child_props = merge_dicts(props, {
                 'first': (index == 0),
                 'index': index,
