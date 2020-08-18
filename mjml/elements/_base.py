@@ -92,11 +92,28 @@ class BodyComponent(Component):
             # return childrens.map(child => jsonToXML(child)).join('\n')
             raise NotImplementedError
         sibling = len(childrens)
-        rawComponents = tuple(filter(lambda c: c.isRawElement(), _components().values()))
-        def has_non_raw_children(child):
-            has_same_tag = lambda c: (c.getTagName() == child.tagName)
-            return any(filter(has_same_tag, rawComponents))
-        _nonRawSiblings = tuple(filter(has_non_raw_children, childrens))
+
+        # code to calculate "nonRawSiblings" seemed too compressed/complicated
+        # to me (traded readability for fewer lines of code) so the Python code
+        # looks quite a bit different. However the final HTML looks the same
+        # so I guess I got it right somehow :-)
+        #
+        # upstream:
+        # const rawComponents = filter(components, c => c.isRawElement())
+        # const nonRawSiblings = childrens.filter(
+        #  child => !find(rawComponents, c => c.getTagName() === child.tagName),
+        #).length
+        raw_tag_names = set()
+        for tag_name, component in _components().items():
+            if component.isRawElement():
+                raw_tag_names.add(tag_name)
+        is_raw_element = lambda c: (c['tagName'] in raw_tag_names)
+
+        _nonRawSiblings = []
+        for child in childrens:
+            if (child is None) or is_raw_element(child):
+                continue
+            _nonRawSiblings.append(child)
         nonRawSiblings = len(_nonRawSiblings)
 
         output = ''

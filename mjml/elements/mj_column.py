@@ -38,6 +38,8 @@ class MjColumn(BodyComponent):
             'css-class'        : '',
             # not defined upstream but used?
             'mobileWidth'      : '',
+            # not declared but used by MjGroup
+            'align'            : '',
         }
 
     def get_styles(self):
@@ -91,8 +93,9 @@ class MjColumn(BodyComponent):
         mobileWidth = self.getAttribute('mobileWidth')
         if mobileWidth != 'mobileWidth':
             return '100%'
-        elif width is None:
-            return f'{parse_int(100 / nonRawSiblings)}%'
+        # upstream uses "width === undefined" but we also need to handle width=''
+        elif not width:
+            return f'{int(100 / nonRawSiblings)}%'
 
         parsedWidth, unit = widthParser(width, parseFloatToInt=False)
         if unit == '%':
@@ -137,8 +140,7 @@ class MjColumn(BodyComponent):
 
     def getParsedWidth(self, toString=False):
         this = self
-        # FIXME: "or 1" not upstream
-        nonRawSiblings = this.props['nonRawSiblings'] or 1
+        nonRawSiblings = this.props['nonRawSiblings']
         width = this.getAttribute('width') or f'{100 / nonRawSiblings}%'
 
         width_unit = widthParser(width, parseFloatToInt=False)
@@ -148,8 +150,7 @@ class MjColumn(BodyComponent):
 
     def getChildContext(self):
         parentWidth = float(strip_unit(self.context['containerWidth']))
-        # FIXME: "or 1" not upstream
-        nonRawSiblings = self.props['nonRawSiblings'] or 1
+        nonRawSiblings = self.props['nonRawSiblings']
         box_widths = self.getBoxWidths()
         borders = box_widths['borders']
         paddings = box_widths['paddings']

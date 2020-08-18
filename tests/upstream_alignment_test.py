@@ -21,6 +21,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-title',
         'mj-style',
         'mj-attributes',
+        'mj-group',
     )
     def test_ensure_same_html(self, test_id):
         mjml_filename = f'{test_id}.mjml'
