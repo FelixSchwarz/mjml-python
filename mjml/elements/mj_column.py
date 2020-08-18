@@ -122,9 +122,6 @@ class MjColumn(BodyComponent):
             </div>'''
 
     def getColumnClass(self):
-        addMediaQuery = self.context['addMediaQuery']
-        className = ''
-
         parsedWidth, unit = self.getParsedWidth()
         formattedClassNb = str(parsedWidth).replace('.', '-')
         if unit == '%':
@@ -132,7 +129,9 @@ class MjColumn(BodyComponent):
         else:
             # upstream: unit 'px' (+ default)
             className = f'mj-column-px-{formattedClassNb}'
+
         # Add className to media queries
+        addMediaQuery = self.context['addMediaQuery']
         addMediaQuery(className, parsedWidth=parsedWidth, unit=unit)
         return className
 
