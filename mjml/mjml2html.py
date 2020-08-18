@@ -111,6 +111,9 @@ def mjml_to_html(xml_fp, skeleton=None):
             result = {
                 'tagName': tagName,
                 'content': content,
+                # see also https://stackoverflow.com/a/30986529/138526 for the
+                # ".text"/".tail" difference
+                'tail'   : _mjml.tail,
 
                 'attributes': _returned_attributes,
                 'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),

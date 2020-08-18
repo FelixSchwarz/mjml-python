@@ -76,17 +76,21 @@ def stringify_element(elem):
         # "comment" node
         return ''
     tag = elem['tagName']
-    content = elem['content']
-
     is_comment = (not isinstance(tag, str)) and (tag.func_name == 'Comment')
     if is_comment:
         return '<!-- {content} -->'
-
     assert isinstance(tag, str), f'unexpected child: {elem}'
+
     attrs = []
     for attr_key, attr_value in elem['attributes'].items():
         ns, key = attr_key
         attrs.append('%s="%s"' % (key, attr_value))
     attr_str = (' ' if attrs else '') + ' '.join(attrs)
-    return f'<{tag}{attr_str}>{content}</{tag}>'
+
+    content = elem['content']
+    tail_content = elem['tail'] or ''
+
+    if content == None:
+        return f'<{tag}{attr_str} />{tail_content}'
+    return f'<{tag}{attr_str}>{content}</{tag}>{tail_content}'
 
