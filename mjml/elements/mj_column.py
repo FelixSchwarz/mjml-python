@@ -1,7 +1,7 @@
 
 from ._base import BodyComponent
 from ..helpers import parse_float, parse_int, strip_unit, widthParser
-from ..lib import merge_dicts, AttrDict
+from ..lib import merge_dicts
 
 
 __all__ = ['MjColumn']
@@ -94,18 +94,14 @@ class MjColumn(BodyComponent):
         elif width is None:
             return f'{parse_int(100 / nonRawSiblings)}%'
 
-        _width = widthParser(width, parseFloatToInt=False)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        parsedWidth, unit = widthParser(width, parseFloatToInt=False)
         if unit == '%':
             return width
         return '%s%%' % (parsedWidth / parse_int(containerWidth))
 
     def getWidthAsPixel(self):
         containerWidth = self.context['containerWidth']
-        _width = widthParser(self.getParsedWidth(True), parseFloatToInt=False)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        parsedWidth, unit = widthParser(self.getParsedWidth(True), parseFloatToInt=False)
         if unit == '%':
             px_width = (parse_float(containerWidth) * parsedWidth) / 100
             return f'{px_width}px'
@@ -129,9 +125,7 @@ class MjColumn(BodyComponent):
         addMediaQuery = self.context['addMediaQuery']
         className = ''
 
-        _parsed = self.getParsedWidth()
-        parsedWidth = _parsed.parsedWidth
-        unit = _parsed.unit
+        parsedWidth, unit = self.getParsedWidth()
         formattedClassNb = str(parsedWidth).replace('.', '-')
         if unit == '%':
             className = f'mj-column-per-{formattedClassNb}'
@@ -148,12 +142,10 @@ class MjColumn(BodyComponent):
         nonRawSiblings = this.props['nonRawSiblings'] or 1
         width = this.getAttribute('width') or f'{100 / nonRawSiblings}%'
 
-        _width = widthParser(width, parseFloatToInt=False)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        width_unit = widthParser(width, parseFloatToInt=False)
         if toString:
-            return f'{parsedWidth}{unit}'
-        return AttrDict(unit=unit, parsedWidth=parsedWidth)
+            return str(width_unit)
+        return width_unit
 
     def getChildContext(self):
         parentWidth = float(strip_unit(self.context['containerWidth']))
@@ -168,9 +160,7 @@ class MjColumn(BodyComponent):
         allPaddings = paddings + borders + innerBorders
 
         containerWidth = self.getAttribute('width') or f'{parentWidth / nonRawSiblings}px'
-        _width = widthParser(containerWidth, parseFloatToInt=False)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        parsedWidth, unit = widthParser(containerWidth, parseFloatToInt=False)
         if (unit == '%'):
             containerWidth = f'{(parentWidth * parsedWidth) / 100 - allPaddings}px'
         else:

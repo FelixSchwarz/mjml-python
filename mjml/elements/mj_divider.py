@@ -49,9 +49,7 @@ class MjDivider(BodyComponent):
         containerWidth = this.context['containerWidth']
         paddingSize = this.getShorthandAttrValue('padding', 'left') + this.getShorthandAttrValue('padding', 'right')
         width = this.getAttribute('width')
-        _width = widthParser(width)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        parsedWidth, unit = widthParser(width)
 
         if unit == '%':
             px = (parse_int(containerWidth) * parse_int(parsedWidth)) / 100 - paddingSize

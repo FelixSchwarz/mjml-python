@@ -89,9 +89,7 @@ class MjImage(BodyComponent):
     def get_styles(self):
         width = self.getContentWidth()
         fullWidth = (self.getAttribute('full-width') == 'full-width')
-        _width = widthParser(width)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        width_unit = widthParser(width)
 
         this = self
         return {
@@ -113,12 +111,12 @@ class MjImage(BodyComponent):
                 'font-size': this.getAttribute('font-size'),
             },
             'td': {
-                'width': None if fullWidth else f'{parsedWidth}{unit}',
+                'width': None if fullWidth else str(width_unit),
             },
             'table': {
                 'min-width': '100%' if fullWidth else None,
                 'max-width': '100%' if fullWidth else None,
-                'width': f'{parsedWidth}{unit}' if fullWidth else None,
+                'width': str(width_unit) if fullWidth else None,
                 'border-collapse': 'collapse',
                 'border-spacing': '0px',
             },

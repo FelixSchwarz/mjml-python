@@ -1,11 +1,27 @@
 
+from collections import namedtuple
 import re
 
 from .py_utils import strip_unit
-from ..lib import AttrDict
 
 
 __all__ = ['widthParser']
+
+_WidthUnit = namedtuple('_WidthUnit', ('width', 'unit'))
+
+class WidthUnit(_WidthUnit):
+    def __new__(cls, width, *, unit='px'):
+        if not unit:
+            unit = 'px'
+        return super().__new__(cls, width=width, unit=unit)
+
+    @property
+    def parsedWidth(self):
+        return self.width
+
+    def __str__(self):
+        return f'{self.width}{self.unit}'
+
 
 unitRegex = re.compile('[\d.,]*(\D*)$')
 
@@ -25,8 +41,6 @@ def widthParser(width, parseFloatToInt=True):
     width_int = int(width)
     if parsed_width == width_int:
         parsed_width = width_int
-    return AttrDict(
-        parsedWidth = parsed_width,
-        unit = widthUnit or 'px',
-    )
+
+    return WidthUnit(width=parsed_width, unit=widthUnit)
 

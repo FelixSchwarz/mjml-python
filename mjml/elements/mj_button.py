@@ -96,9 +96,7 @@ class MjButton(BodyComponent):
         if not width:
             return None
 
-        _width = widthParser(width)
-        unit = _width.unit
-        parsedWidth = _width.parsedWidth
+        parsedWidth, unit = widthParser(width)
         # impossible to handle percents because it depends on padding and text width
         if unit != 'px':
             return None
