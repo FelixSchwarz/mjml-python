@@ -35,5 +35,5 @@ class UpstreamAlignmentTest(TestCase):
 
         assert not result.errors
         actual_html = result.html
-        assert_same_html(expected_html, actual_html)
+        assert_same_html(expected_html, actual_html, verbose=True)
 
