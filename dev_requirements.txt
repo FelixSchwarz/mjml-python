@@ -1,4 +1,4 @@
 ddt
-# >= 0.2.1: ability to ignore comments in HTML
-HTMLCompare >= 0.2.1
+# >= 0.3.0: ability to ignore attribute ordering in HTML
+HTMLCompare >= 0.3.0
 PythonicTestcase

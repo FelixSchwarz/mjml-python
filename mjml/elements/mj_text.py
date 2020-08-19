@@ -83,14 +83,26 @@ def stringify_element(elem):
 
     attrs = []
     for attr_key, attr_value in elem['attributes'].items():
-        ns, key = attr_key
+        if isinstance(attr_key, (tuple, list)) and (len(attr_key) == 2):
+            ns, key = attr_key
+        else:
+            key = attr_key
         attrs.append('%s="%s"' % (key, attr_value))
     attr_str = (' ' if attrs else '') + ' '.join(attrs)
 
     content = elem['content']
     tail_content = elem['tail'] or ''
 
-    if content == None:
-        return f'<{tag}{attr_str} />{tail_content}'
-    return f'<{tag}{attr_str}>{content}</{tag}>{tail_content}'
+    html = f'<{tag}{attr_str}'
+    children = elem['children']
+    if children or content:
+        html += '>'
+        if content:
+            html += content
+        for child in children:
+            html += stringify_element(child)
+        html += f'</{tag}>'
+    else:
+        html += ' />'
+    return f'{html}{tail_content}'
 

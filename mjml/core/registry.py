@@ -4,7 +4,7 @@ __all__ = []
 
 def _components():
     from ..elements import (MjButton, MjText, MjSection, MjColumn, MjBody,
-        MjGroup, MjImage, MjDivider)
+        MjGroup, MjImage, MjDivider, MjTable)
     from ..elements.head import (MjAttributes, MjHead, MjStyle, MjTitle)
     components = {
         'mj-button': MjButton,
@@ -15,6 +15,7 @@ def _components():
         'mj-column': MjColumn,
         'mj-body': MjBody,
         'mj-group'  : MjGroup,
+        'mj-table'  : MjTable,
         # --- head components ---
         'mj-attributes': MjAttributes,
         'mj-head': MjHead,
