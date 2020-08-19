@@ -14,8 +14,7 @@ class MjGroup(BodyComponent):
             'direction'        : 'ltr',
             'vertical-align'   : '',
             'width'            : '',
-             # hidden / used by MjColumn
-            #'align'            : '',
+            # hidden / used by MjColumn
             'css-class'        : '',
             # NOT declared but used by MjGroup in ".getChildContext()"
             'padding'          : '',
