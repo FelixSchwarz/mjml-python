@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+from pathlib import Path
+import sys
+
+from htmlcompare import assert_same_html
+
+from mjml import mjml_to_html
+
+
+mjml_filename = Path(sys.argv[1])
+html_filename = Path(sys.argv[2])
+
+with mjml_filename.open('rb') as mjml_fp:
+    result = mjml_to_html(mjml_fp)
+
+with html_filename.open('rb') as html_fp:
+    expected_html = html_fp.read()
+
+assert not result.errors
+actual_html = result.html
+assert_same_html(expected_html, actual_html, verbose=True)
+
