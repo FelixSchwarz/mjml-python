@@ -35,7 +35,11 @@ def main():
         with Path(output_filename).open('w') as html_fp:
             html_fp.write(html_str)
     else:
-        print(html_str)
+        # always return "binary" data (HTML encoded as UTF-8 to avoid encoding
+        # problems in Windows:
+        #   UnicodeEncodeError: 'charmap' codec can't encode character '\ufb02' in position …: character maps to <undefined>
+        html_bytes = html_str.encode('utf8')
+        sys.stdout.buffer.write(html_bytes)
 
 
 if __name__ == '__main__':
