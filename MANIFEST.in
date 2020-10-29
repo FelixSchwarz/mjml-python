@@ -1,8 +1,4 @@
 
-include setup.py
-include setup.cfg
-include README.md
-include LICENSE.txt
-include VERSION.txt
+include .travis.yml
 include tests/testdata/*.html
 
