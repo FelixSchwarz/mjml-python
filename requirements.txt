@@ -1,3 +1,0 @@
-docopt
-jinja2
-lxml

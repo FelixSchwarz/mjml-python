@@ -1,7 +1,6 @@
 
 include setup.py
 include setup.cfg
-include requirements.txt
 include README.md
 include LICENSE.txt
 include VERSION.txt
