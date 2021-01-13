@@ -36,9 +36,11 @@ def shorthandParser(cssValue, direction):
 def borderParser(border):
     border_regex = re.compile('(?:(?:^| )(\d+))')
     match = border_regex.search(border)
-    try:
-        border_value = match.group(1)
-    except:
-        border_value = 0
+    # Upstream does not have to deal with this case as "parseInt(undefined, 10)"
+    # does not trigger an exception in JavaScript but just returns NaN.
+    # The JS function returns 0 in these cases due to "NaN || 0".
+    if match is None:
+        return 0
+    border_value = match.group(1)
     return parse_int(border_value)
 
