@@ -8,27 +8,44 @@ __all__ = ['MjTable']
 
 class MjTable(BodyComponent):
     @classmethod
-    def default_attrs(cls):
+    def allowed_attrs(cls):
         return {
-            'align'         : 'left',
-            'border'        : 'none',
-            'cellpadding'   : '0',
-            'cellspacing'   : '0',
-            'color'         : '#000000',
-            'container-background-color': '',
-            'font-family'   : 'Ubuntu, Helvetica, Arial, sans-serif',
-            'font-size'     : '13px',
-            'line-height'   : '22px',
-            'padding'       : '10px 25px',
-            'padding-bottom': '',
-            'padding-left'  : '',
-            'padding-right' : '',
-            'padding-top'   : '',
-            'table-layout'  : 'auto',
-            'width'         : '100%',
-            'vertical-align': '',
+            'align'            : 'enum(left,right,center)',
+            'border'           : 'string',
+            'cellpadding'      : 'integer',
+            'cellspacing'      : 'integer',
+            'container-background-color': 'color',
+            'color'            : 'color',
+            'font-family'      : 'string',
+            'font-size'        : 'unit(px)',
+            'font-weight'      : 'string',
+            'line-height'      : 'unit(px,%,)',
+            'padding-bottom'   : 'unit(px,%)',
+            'padding-left'     : 'unit(px,%)',
+            'padding-right'    : 'unit(px,%)',
+            'padding-top'      : 'unit(px,%)',
+            'padding'          : 'unit(px,%){1,4}',
+            'table-layout'     : 'enum(auto,fixed,initial,inherit)',
+            'vertical-align'   : 'enum(top,bottom,middle)',
+            'width'            : 'unit(px,%)',
             # hidden / used by MjColumn
             'css-class'        : '',
+        }
+
+    @classmethod
+    def default_attrs(cls):
+        return {
+            'align'            : 'left',
+            'border'           : 'none',
+            'cellpadding'      : '0',
+            'cellspacing'      : '0',
+            'color'            : '#000000',
+            'font-family'      : 'Ubuntu, Helvetica, Arial, sans-serif',
+            'font-size'        : '13px',
+            'line-height'      : '22px',
+            'padding'          : '10px 25px',
+            'table-layout'     : 'auto',
+            'width'            : '100%',
         }
 
     # js: getStyles()

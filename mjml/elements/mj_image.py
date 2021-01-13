@@ -8,6 +8,40 @@ from ..helpers import parse_int, strip_unit, widthParser
 __all__ = ['MjImage']
 
 class MjImage(BodyComponent):
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            'alt'             : 'string',
+            'href'            : 'string',
+            'name'            : 'string',
+            'src'             : 'string',
+            'srcset'          : 'string',
+            'title'           : 'string',
+            'rel'             : 'string',
+            'align'           : 'enum(left,center,right)',
+            'border'          : 'string',
+            'border-bottom'   : 'string',
+            'border-left'     : 'string',
+            'border-right'    : 'string',
+            'border-top'      : 'string',
+            'border-radius'   : 'unit(px,%){1,4}',
+            'container-background-color': 'color',
+            'fluid-on-mobile' : 'boolean',
+            'padding'         : 'unit(px,%){1,4}',
+            'padding-bottom'  : 'unit(px,%)',
+            'padding-left'    : 'unit(px,%)',
+            'padding-right'   : 'unit(px,%)',
+            'padding-top'     : 'unit(px,%)',
+            'target'          : 'string',
+            'width'           : 'unit(px)',
+            'height'          : 'unit(px,auto)',
+            'max-height'      : 'unit(px,%)',
+            'font-size'       : 'unit(px)',
+            'usemap'          : 'string',
+            # not present upstream but used by mj-column
+            'vertical-align'   : '',
+            'css-class'        : '',
+        }
 
     @classmethod
     def default_attrs(cls):
@@ -20,32 +54,14 @@ class MjImage(BodyComponent):
             'font-size'        : '13px',
 
             # other attrs
-            'alt'              : '',
-            'border-left'      : '',
-            'border-radius'    : '',
-            'border-right'     : '',
             # upstream does not declare these (but uses them in getStyles)
             # CHECK LATER: should these be "border-*"?
             'bottom'           : '',
             'left'             : '',
             'right'            : '',
             'top'              : '',
-            'container-background-color': '',
-            'href'             : '',
-            'fluid-on-mobile'  : False,
-            'max-height'       : '',
-            'padding-bottom'   : '',
-            'padding-left'     : '',
-            'padding-right'    : '',
-            'padding-top'      : '',
-            'srcset'           : '',
-            'title'            : '',
-            'usemap'           : '',
             # not declared upstream but used here
             'full-width'       : '', # enum? ("full-width")
-            # not present upstream but used by mj-column
-            'vertical-align'   : '',
-            'css-class'        : '',
         }
 
     # js: getStyles()

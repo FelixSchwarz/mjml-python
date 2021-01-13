@@ -7,39 +7,46 @@ from ..lib import merge_dicts
 __all__ = ['MjColumn']
 
 class MjColumn(BodyComponent):
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            'background-color': 'color',
+            'border'          : 'string',
+            'border-bottom'   : 'string',
+            'border-left'     : 'string',
+            'border-radius'   : 'unit(px,%){1,4}',
+            'border-right'    : 'string',
+            'border-top'      : 'string',
+            'direction'       : 'enum(ltr,rtl)',
+            'inner-background-color': 'color',
+            'padding-bottom'  : 'unit(px,%)',
+            'padding-left'    : 'unit(px,%)',
+            'padding-right'   : 'unit(px,%)',
+            'padding-top'     : 'unit(px,%)',
+            'inner-border'    : 'string',
+            'inner-border-bottom': 'string',
+            'inner-border-left'  : 'string',
+            'inner-border-radius': 'unit(px,%){1,4}',
+            'inner-border-right' : 'string',
+            'inner-border-top': 'string',
+            'padding'         : 'unit(px,%){1,4}',
+            'vertical-align'  : 'enum(top,bottom,middle)',
+            'width'           : 'unit(px,%)',
+            # "hidden" attributes
+            'css-class'       : 'string',
+        }
 
     @classmethod
     def default_attrs(cls):
         return {
-            'direction'        : 'ltr',
-            'vertical-align'   : 'top',
+            'direction'       : 'ltr',
+            'vertical-align'  : 'top',
 
             # other attrs
-            'background-color' : '',
-            'border'           : '',
-            'border-bottom'    : '',
-            'border-left'      : '',
-            'border-radius'    : '',
-            'border-right'     : '',
-            'border-top'       : '',
-            'inner-background-color': '',
-            'inner-border'     : '',
-            'inner-border-bottom': '',
-            'inner-border-left': '',
-            'inner-border-radius': '',
-            'inner-border-right': '',
-            'inner-border-top' : '',
-            'padding'          : '',
-            'padding-bottom'   : '',
-            'padding-left'     : '',
-            'padding-right'    : '',
-            'padding-top'      : '',
-            'width'            : '',
-            'css-class'        : '',
             # not defined upstream but used?
-            'mobileWidth'      : '',
+            'mobileWidth'     : '',
             # not declared but used by MjGroup
-            'align'            : '',
+            'align'           : '',
         }
 
     def get_styles(self):

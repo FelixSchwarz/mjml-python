@@ -5,31 +5,41 @@ from ._base import BodyComponent
 __all__ = ['MjText']
 
 class MjText(BodyComponent):
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            'align'            : 'enum(left,right,center,justify)',
+            'background-color' : 'color',
+            'color'            : 'color',
+            'container-background-color': 'color',
+            'font-family'      : 'string',
+            'font-size'        : 'unit(px)',
+            'font-style'       : 'string',
+            'font-weight'      : 'string',
+            'height'           : 'unit(px,%)',
+            'letter-spacing'   : 'unitWithNegative(px,%)',
+            'line-height'      : 'unit(px,%,)',
+            'padding-bottom'   : 'unit(px,%)',
+            'padding-left'     : 'unit(px,%)',
+            'padding-right'    : 'unit(px,%)',
+            'padding-top'      : 'unit(px,%)',
+            'padding'          : 'unit(px,%){1,4}',
+            'text-decoration'  : 'string',
+            'text-transform'   : 'string',
+            'vertical-align'   : 'enum(top,bottom,middle)',
+            # other attrs
+            'css-class'        : '',
+  }
 
     @classmethod
     def default_attrs(cls):
         return {
-            'align'      : 'left',
-            'color'      : '#000000',
-            'font-family': 'Ubuntu, Helvetica, Arial, sans-serif',
-            'font-size'  : '13px',
-            'line-height': '1',
-            'padding'    : '10px 25px',
-
-            # other attrs
-            'container-background-color': '',
-            'font-style'       : '',
-            'font-weight'      : '',
-            'height'           : '',
-            'letter-spacing'   : '',
-            'padding-bottom'   : '',
-            'padding-left'     : '',
-            'padding-right'    : '',
-            'padding-top'      : '',
-            'text-decoration'  : '',
-            'text-transform'   : '',
-            'vertical-align'   : '',
-            'css-class'        : '',
+            'align'            : 'left',
+            'color'            : '#000000',
+            'font-family'      : 'Ubuntu, Helvetica, Arial, sans-serif',
+            'font-size'        : '13px',
+            'line-height'      : '1',
+            'padding'          : '10px 25px',
         }
 
     def get_styles(self):

@@ -58,6 +58,11 @@ class Component:
     def default_attrs(cls):
         return {}
 
+    # js: static allowedAttributes
+    @classmethod
+    def allowed_attrs(cls):
+        return ()
+
     def getContent(self):
         return self.content.strip()
 
@@ -66,8 +71,9 @@ class Component:
 
     # js: getAttribute(name)
     def get_attr(self, name):
-        # assert name in allowed_attrs
-        return self.attrs[name]
+        if (name not in self.allowed_attrs()) and (name not in self.default_attrs()):
+            raise AssertionError(f'{self.__class__.__name__} has no declared attr {name}')
+        return self.attrs.get(name)
     getAttribute = get_attr
 
     def render(self):

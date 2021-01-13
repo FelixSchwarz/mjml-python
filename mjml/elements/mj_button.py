@@ -6,6 +6,45 @@ from ..helpers import widthParser
 __all__ = ['MjButton']
 
 class MjButton(BodyComponent):
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            'align'            : 'enum(left,center,right)',
+            'background-color' : 'color',
+            'border-bottom'    : 'string',
+            'border-left'      : 'string',
+            'border-radius'    : 'string',
+            'border-right'     : 'string',
+            'border-top'       : 'string',
+            'border'           : 'string',
+            'color'            : 'color',
+            'container-background-color': 'color',
+            'font-family'      : 'string',
+            'font-size'        : 'unit(px)',
+            'font-style'       : 'string',
+            'font-weight'      : 'string',
+            'height'           : 'unit(px,%)',
+            'href'             : 'string',
+            'name'             : 'string',
+            'inner-padding'    : 'unit(px,%){1,4}',
+            'letter-spacing'   : 'unitWithNegative(px,%)',
+            'line-height'      : 'unit(px,%,)',
+            'padding-bottom'   : 'unit(px,%)',
+            'padding-left'     : 'unit(px,%)',
+            'padding-right'    : 'unit(px,%)',
+            'padding-top'      : 'unit(px,%)',
+            'padding'          : 'unit(px,%){1,4}',
+            'rel'              : 'string',
+            'target'           : 'string',
+            'text-decoration'  : 'string',
+            'text-transform'   : 'string',
+            'vertical-align'   : 'enum(top,bottom,middle)',
+            'text-align'       : 'enum(left,right,center)',
+            'width'            : 'unit(px,%)',
+            # hidden
+            'css-class'        : '',
+        }
+
 
     @classmethod
     def default_attrs(cls):
@@ -25,27 +64,6 @@ class MjButton(BodyComponent):
             'text-decoration'  : 'none',
             'text-transform'   : 'none',
             'vertical-align'   : 'middle',
-
-            # other attrs
-            'border-bottom'    : '',
-            'border-left'      : '',
-            'border-right'     : '',
-            'border-top'       : '',
-            'container-background-color': '',
-            'font-style'       : '',
-            'height'           : '',
-            'href'             : '',
-            'letter-spacing'   : '',
-            'name'             : '',
-            'padding-bottom'   : '',
-            'padding-left'     : '',
-            'padding-right'    : '',
-            'padding-top'      : '',
-            'rel'              : '',
-            'text-align'       : '',
-            'width'            : '',
-            # hidden
-            'css-class'        : '',
         }
 
 

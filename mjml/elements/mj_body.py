@@ -7,13 +7,16 @@ __all__ = ['MjBody']
 
 class MjBody(BodyComponent):
     @classmethod
+    def allowed_attrs(cls):
+        return {
+            'background-color': '',
+            'css-class'       : None,
+        }
+
+    @classmethod
     def default_attrs(cls):
         return {
-            'width'      : '600px',
-
-            # other attrs
-            'background-color': '',
-            'css-class': None,
+            'width'           : '600px',
         }
 
     def get_styles(self):

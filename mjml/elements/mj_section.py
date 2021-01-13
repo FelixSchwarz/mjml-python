@@ -7,6 +7,30 @@ from ..lib import merge_dicts
 
 class MjSection(BodyComponent):
     @classmethod
+    def allowed_attrs(cls):
+        return {
+            'background-color' : 'color',
+            'background-url'   : 'string',
+            'background-repeat': 'enum(repeat,no-repeat)',
+            'background-size'  : 'string',
+            'border'           : 'string',
+            'border-bottom'    : 'string',
+            'border-left'      : 'string',
+            'border-radius'    : 'string',
+            'border-right'     : 'string',
+            'border-top'       : 'string',
+            'direction'        : 'enum(ltr,rtl)',
+            'full-width'       : 'enum(full-width)',
+            'padding'          : 'unit(px,%){1,4}',
+            'padding-top'      : 'unit(px,%)',
+            'padding-bottom'   : 'unit(px,%)',
+            'padding-left'     : 'unit(px,%)',
+            'padding-right'    : 'unit(px,%)',
+            'text-align'       : 'enum(left,center,right)',
+            'text-padding'     : 'unit(px,%){1,4}',
+        }
+
+    @classmethod
     def default_attrs(cls):
         return {
             'background-repeat': 'repeat',
@@ -17,19 +41,6 @@ class MjSection(BodyComponent):
             'text-padding'     : '4px 4px 4px 0',
 
             # other attrs
-            'background-color' : '',
-            'background-url'   : '',
-            'full-width'       : '',
-            'border'           : '',
-            'border-bottom'    : '',
-            'border-left'      : '',
-            'border-radius'    : '',
-            'border-right'     : '',
-            'border-top'       : '',
-            'padding-top'      : '',
-            'padding-bottom'   : '',
-            'padding-left'     : '',
-            'padding-right'    : '',
             'css-class'        : '',
         }
 

@@ -7,26 +7,33 @@ from ..lib import merge_dicts
 __all__ = ['MjDivider']
 
 class MjDivider(BodyComponent):
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            'border-color'    : 'color',
+            'border-style'    : 'string',
+            'border-width'    : 'unit(px)',
+            'container-background-color': 'color',
+            'padding'         : 'unit(px,%){1,4}',
+            'padding-bottom'  : 'unit(px,%)',
+            'padding-left'    : 'unit(px,%)',
+            'padding-right'   : 'unit(px,%)',
+            'padding-top'     : 'unit(px,%)',
+            'width'           : 'unit(px,%)',
+            # hidden / used by MjColumn
+            'align'           : '',
+            'vertical-align'  : '',
+            'css-class'       : '',
+        }
 
     @classmethod
     def default_attrs(cls):
         return {
-            'border-color'     : '#000000',
-            'border-style'     : 'solid',
-            'border-width'     : '4px',
-            'padding'          : '10px 25px',
-            'width'            : '100%',
-
-            # other attrs
-            'container-background-color': '',
-            'padding-bottom'   : '',
-            'padding-left'     : '',
-            'padding-right'    : '',
-            'padding-top'      : '',
-            # hidden / used by MjColumn
-            'align'            : '',
-            'vertical-align'   : '',
-            'css-class'        : '',
+            'border-color'    : '#000000',
+            'border-style'    : 'solid',
+            'border-width'    : '4px',
+            'padding'         : '10px 25px',
+            'width'           : '100%',
         }
 
     def get_styles(self):
