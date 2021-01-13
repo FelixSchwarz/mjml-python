@@ -64,6 +64,12 @@ class Component:
         return ()
 
     def getContent(self):
+        # Actually "self.content" should not be None but sometimes it is
+        # (probably due to bugs in this Python port). This special guard
+        # clause is the final fix to render the "welcome-email.mjml" from
+        # mjml's "email-templates" repo.
+        if self.content is None:
+            return ''
         return self.content.strip()
 
     def getChildContext(self):
