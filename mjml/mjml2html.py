@@ -58,14 +58,15 @@ def mjml_to_html(xml_fp, skeleton=None):
         mjHead = mjHead[0]
 
     def processing(node, context, parseMJML=None):
-        if (node is None) or (len(node) == 0):
+        if node is None:
             return None
         # LATER: upstream passes "parseMJML=identity" for head components
         # but we can not process lxml nodes here. applyAttributes() seems to do
         # the right thing though...
         _mjml_data = parseMJML(node) if parseMJML else applyAttributes(node)
         initialDatas = merge_dicts(_mjml_data, {'context': context})
-        component = initComponent(name=node.tag, **initialDatas)
+        node_tag = getattr(node, 'tag', None)
+        component = initComponent(name=node_tag, **initialDatas)
         if not component:
             return None
         if hasattr(component, 'handler'):
@@ -75,6 +76,8 @@ def mjml_to_html(xml_fp, skeleton=None):
         raise AssertionError('should not reach this')
 
     def applyAttributes(mjml_element):
+        if len(mjml_element) == 0:
+            return {}
         def parse(_mjml, parentMjClass=''):
             tagName = _mjml.tag
             is_comment = not isinstance(tagName, str)
@@ -108,6 +111,8 @@ def mjml_to_html(xml_fp, skeleton=None):
                 defaultAttributesForClasses,
                 _attrs_omit,
             )
+
+            _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass)
             result = {
                 'tagName': tagName,
                 'content': content,
@@ -117,7 +122,7 @@ def mjml_to_html(xml_fp, skeleton=None):
 
                 'attributes': _returned_attributes,
                 'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),
-                'children': tuple(map(lambda mjml: parse(mjml, nextParentMjClass), children)),
+                'children': _map_to_tuple(children, _parse_mjml, filter_none=True),
             }
             return result
         return parse(mjml_element)
@@ -180,4 +185,14 @@ def mjml_to_html(xml_fp, skeleton=None):
         'html': content,
         'errors': errors,
     })
+
+
+def _map_to_tuple(items, map_fn, filter_none=None):
+    results = []
+    for item in items:
+        result = map_fn(item)
+        if filter_none and (result is None):
+            continue
+        results.append(result)
+    return tuple(results)
 

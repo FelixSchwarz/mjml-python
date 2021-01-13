@@ -8,7 +8,7 @@ __all__ = ['initComponent', 'Component']
 
 def initComponent(name, **initialDatas):
     components = _components()
-    component_cls = components[name]
+    component_cls = components.get(name)
     if not component_cls:
         return None
 
