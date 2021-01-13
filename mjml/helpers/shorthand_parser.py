@@ -36,6 +36,9 @@ def shorthandParser(cssValue, direction):
 def borderParser(border):
     border_regex = re.compile('(?:(?:^| )(\d+))')
     match = border_regex.search(border)
-    border_value = match.group(1)
-    return parse_int(border_value or '0')
+    try:
+        border_value = match.group(1)
+    except:
+        border_value = 0
+    return parse_int(border_value)
 
