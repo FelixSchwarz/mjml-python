@@ -48,9 +48,13 @@ class BodyComponent(Component):
             key, value = kv
             if key == 'style':
                 value = self.styles(value)
-            if key == 'class_':
+            elif key == 'class_':
                 key = 'class'
-            return f'{key}="{value}"' if is_not_empty(value) else None
+                if not value:
+                    return None
+            if value is None:
+                return None
+            return f'{key}="{value}"'
         serialized_attrs = map(_to_str, attrs.items())
         return ' '.join(filter(None, serialized_attrs))
 
