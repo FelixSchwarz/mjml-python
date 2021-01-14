@@ -36,6 +36,7 @@ def mjml_to_html(xml_fp, skeleton=None):
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
         'classes'            : {},
+        'classesDefault'     : {},
         'defaultAttributes'  : {},
         'fonts'              : fonts,
         'inlineStyle'        : [],
@@ -98,9 +99,8 @@ def mjml_to_html(xml_fp, skeleton=None):
                 attributesClasses.update(mjClassValues)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
-            def default_attr_classes(acc, value):
-                _v = globalDatas.classesDefault.get(value, {}).get(tagName, {})
-                return merge_dicts(acc, _v)
+            def default_attr_classes(value):
+                return globalDatas.classesDefault.get(value, {}).get(tagName, {})
             defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))
             nextParentMjClass = attributes.get('mj-class', parentMjClass)
 
@@ -174,7 +174,9 @@ def mjml_to_html(xml_fp, skeleton=None):
 
     content = skeleton(
         content=content,
-        **globalDatas,
+        # upstream just passes this extra key to skeleton() as JavaScript
+        # won't complain about additional parameters.
+        **omit(globalDatas, ('classesDefault',)),
     )
     # LATER: upstream has also beautify
     # LATER: upstream has also minify

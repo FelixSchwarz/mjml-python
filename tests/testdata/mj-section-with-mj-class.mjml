@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="green-bg" background-color="green" />
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body>
+    <mj-section mj-class="green-bg">
+      <mj-column>
+        <mj-text>some text</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
