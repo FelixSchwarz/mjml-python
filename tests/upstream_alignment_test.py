@@ -27,6 +27,14 @@ class UpstreamAlignmentTest(TestCase):
         'mj-head-with-comment',
         'mj-image-with-empty-alt-attribute',
         'mj-section-with-mj-class',
+        'mj-font',
+        'mj-font-multiple',
+        'mj-font-unused',
+        'mj-preview',
+        'mj-raw',
+        'mj-raw-with-tags',
+        'mj-raw-head',
+        'mj-raw-head-with-tags',
     )
     def test_ensure_same_html(self, test_id):
         mjml_filename = f'{test_id}.mjml'

@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body>
+    <mj-raw>
+      <!-- Your content goes here -->
+      <h1 style="color:red;">Hello World!</h1>
+      <hr />
+    </mj-raw>
+  </mj-body>
+</mjml>
