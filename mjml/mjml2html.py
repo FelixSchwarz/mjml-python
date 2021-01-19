@@ -44,6 +44,7 @@ def mjml_to_html(xml_fp, skeleton=None):
         'componentsHeadStyle': [],
         'headRaw'            : [],
         'mediaQueries'       : {},
+        'preview'            : '',
         'style'              : [],
         'title'              : '',
     })
@@ -113,6 +114,11 @@ def mjml_to_html(xml_fp, skeleton=None):
             )
 
             _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass)
+            # XXX: ugly - but need raw XML content for mj-raw tag
+            if tagName == 'mj-raw':
+                from lxml.etree import tostring
+                content = tostring(_mjml).strip().decode('utf-8')
+                content = content.replace('<mj-raw>', '').replace('</mj-raw>', '')
             result = {
                 'tagName': tagName,
                 'content': content,
@@ -151,7 +157,7 @@ def mjml_to_html(xml_fp, skeleton=None):
     def _head_data_add(attr, *params):
         if attr not in globalDatas:
             param_str = ''.join(params) if isinstance(params, list) else params
-            exc_msg = f'An mj-head element add an unkown head attribute : {attr} with params {param_str}'
+            exc_msg = f'A mj-head element add an unknown head attribute : {attr} with params {param_str}'
             raise ValueError(exc_msg)
 
         current_attr_value = globalDatas[attr]
