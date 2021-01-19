@@ -7,15 +7,16 @@ __all__ = ['HeadComponent']
 class HeadComponent(Component):
     def handlerChildren(self):
         def handle_children(children):
+            tagName = children['tagName']
             component = initComponent(
-                name = children['tagName'],
+                name = tagName,
                 context = self.getChildContext(),
                 **children
             )
             if not component:
                 # LATER: hook up with error reporting structure
                 # (e.g. via "context"? - upstream uses console.error() here)
-                print(f'No matching component for tag : {children.tagName}')
+                print(f'No matching component for tag : {tagName}')
                 return None
 
             if hasattr(component, 'handler'):
