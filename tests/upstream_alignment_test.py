@@ -15,6 +15,7 @@ TESTDATA_DIR = Path(__file__).parent / 'testdata'
 class UpstreamAlignmentTest(TestCase):
     @ddt_data(
         'minimal',
+        'entities',
         'hello-world',
         'button',
         'text_with_html',

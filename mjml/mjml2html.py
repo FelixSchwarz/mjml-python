@@ -1,4 +1,6 @@
 
+import html
+
 from lxml import etree as lxml_etree
 
 from .core import initComponent
@@ -15,7 +17,18 @@ def ignore_empty(values):
 
 
 def mjml_to_html(xml_fp, skeleton=None):
-    mjml_doc = lxml_etree.parse(xml_fp)
+    try:
+        mjml_doc = lxml_etree.parse(xml_fp)
+    except lxml_etree.XMLSyntaxError as e:
+        # exception "Entity '..' not found" is raised for undefined HTML5 entities
+        if 'Entity' not in str(e):
+            raise
+        # Solved by converting all named and numeric character references (e.g. &gt;,
+        # &#62;, &#x3e;) into the corresponding Unicode character which can be parsed
+        # by lxml.etree.XMLParser - unfortunately we need to convert our file-like
+        # object into a plain string before calling html.unescape
+        xml_fp.seek(0)
+        mjml_doc = lxml_etree.fromstring(html.unescape(xml_fp.read().decode('utf-8')))
     mjml_root = mjml_doc.xpath('/mjml')[0]
 
     skeleton_path = skeleton
