@@ -23,7 +23,7 @@ class WidthUnit(_WidthUnit):
         return f'{self.width}{self.unit}'
 
 
-unitRegex = re.compile('[\d.,]*(\D*)$')
+unitRegex = re.compile(r'[\d.,]*(\D*)$')
 
 def widthParser(width, parseFloatToInt=True):
     width_str = str(width)
