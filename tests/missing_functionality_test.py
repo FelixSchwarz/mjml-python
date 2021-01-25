@@ -11,7 +11,7 @@ from mjml import mjml_to_html
 TESTDATA_DIR = Path(__file__).parent / 'missing_functionality'
 
 @DataDrivenTestCase
-class UpstreamAlignmentTest(TestCase):
+class MissingFeaturesTest(TestCase):
     @ddt_data(
         'html-entities',
     )
