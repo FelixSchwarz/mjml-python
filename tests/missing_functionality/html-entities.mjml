@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          <a href="https://site.example/index.php?page=1&js=0">site.example</a>
+          &nbsp; &copy; 2021 Some Company Ltd.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
