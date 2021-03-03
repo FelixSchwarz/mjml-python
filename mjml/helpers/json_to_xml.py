@@ -4,25 +4,25 @@ from typing import Any, Mapping
 
 
 def json_to_xml(root: Mapping[str, Any], indent: str = '') -> str:
-    attributes = ' '.join(
-        f'{key}="{value}"'
-        for key, value in dict(root.get('attributes', {}), id=root.get('id')).items()
-        if isinstance(value, str)
-    )
-    if attributes:
-        attributes = ' ' + attributes
+    attr_dict = dict(root.get('attributes', {}), id=root.get('id'))
+    attributes = []
+    for key, value in attr_dict.items():
+        if isinstance(value, str):
+            attributes.append(f'{key}="{value}"')
+    attributes_str = (' ' if attributes else '') + ' '.join(attributes)
 
     if root.get('content'):
         content = f'{indent}  {root.get("content")}'
     elif 'children' in root:
         child_indent = f'{indent}  '
-        children = '\n'.join(
-            json_to_xml(child, indent=child_indent)
-            for child in root.get('children', [])
-            if not child.get('attributes', {}).get('passport', {}).get('hidden')
-        )
-        content = children
+        children = []
+        for child in root.get('children', []):
+            if child.get('attributes', {}).get('passport', {}).get('hidden'):
+                continue
+            child_xml = json_to_xml(child, indent=child_indent)
+            children.append(child_xml)
+        content = '\n'.join(children)
     else:
         content = ''
 
-    return f'{indent}<{root["tagName"]}{attributes}>\n{content}\n{indent}</{root["tagName"]}>'
+    return f'{indent}<{root["tagName"]}{attributes_str}>\n{content}\n{indent}</{root["tagName"]}>'
