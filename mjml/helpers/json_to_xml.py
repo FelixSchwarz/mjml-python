@@ -24,6 +24,5 @@ def json_to_xml(root: Mapping[str, Any], indent: str = '') -> str:
         content = children
     else:
         content = ''
-        # return f'{indent}<{root["tagName"]}{attributes} />'
 
     return f'{indent}<{root["tagName"]}{attributes}>\n{content}\n{indent}</{root["tagName"]}>'
