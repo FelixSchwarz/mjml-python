@@ -1,8 +1,10 @@
 
+from io import StringIO
+
 from lxml import etree as lxml_etree
 
 from .core import initComponent
-from .helpers import mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
+from .helpers import mergeOutlookConditionnals, json_to_xml, omit, skeleton_str as default_skeleton
 from .lib import merge_dicts, AttrDict
 
 
@@ -14,7 +16,12 @@ def ignore_empty(values):
     return tuple(result)
 
 
-def mjml_to_html(xml_fp, skeleton=None):
+def mjml_to_html(xml_fp_or_json, skeleton=None):
+    if isinstance(xml_fp_or_json, dict):
+        xml_fp = StringIO(json_to_xml(xml_fp_or_json))
+    else:
+        xml_fp = xml_fp_or_json
+
     mjml_doc = lxml_etree.parse(xml_fp)
     mjml_root = mjml_doc.xpath('/mjml')[0]
 

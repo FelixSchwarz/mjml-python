@@ -1,0 +1,42 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+               "children": [
+                  {
+                     "attributes": {
+                        "src": "/assets/img/logo-small.png",
+                        "width": "100px"
+                     },
+                     "tagName": "mj-image"
+                  },
+                  {
+                     "attributes": {
+                        "border-color": "#F45E43"
+                     },
+                     "tagName": "mj-divider"
+                  },
+                  {
+                     "attributes": {
+                        "color": "#F45E43",
+                        "font-size": "20px",
+                        "font-family": "helvetica"
+                     },
+                     "content": "Hello World",
+                     "tagName": "mj-text"
+                  }
+               ],
+              "tagName": "mj-column"
+            }
+          ],
+          "tagName": "mj-section"
+        }
+      ],
+      "tagName": "mj-body"
+    }
+  ],
+  "tagName": "mjml"
+}

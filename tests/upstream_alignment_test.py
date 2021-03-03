@@ -1,4 +1,5 @@
 
+from json import load as json_load
 from pathlib import Path
 from unittest import TestCase
 
@@ -49,3 +50,16 @@ class UpstreamAlignmentTest(TestCase):
         actual_html = result.html
         assert_same_html(expected_html, actual_html, verbose=True)
 
+    @ddt_data('hello-world')
+    def test_ensure_same_html_from_json(self, test_id):
+        mjml_json_filename = f'{test_id}.mjml.json'
+        html_filename = f'{test_id}-expected.html'
+        with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
+            expected_html = html_fp.read()
+
+        with (TESTDATA_DIR / mjml_json_filename).open('rb') as mjml_json_fp:
+            result = mjml_to_html(json_load(mjml_json_fp))
+
+        assert not result.errors
+        actual_html = result.html
+        assert_same_html(expected_html, actual_html, verbose=True)
