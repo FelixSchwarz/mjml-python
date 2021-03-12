@@ -1,4 +1,5 @@
 
+from contextlib import contextmanager
 from json import load as json_load
 from pathlib import Path
 from unittest import TestCase
@@ -38,12 +39,8 @@ class UpstreamAlignmentTest(TestCase):
         'mj-raw-head-with-tags',
     )
     def test_ensure_same_html(self, test_id):
-        mjml_filename = f'{test_id}.mjml'
-        html_filename = f'{test_id}-expected.html'
-        with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
-            expected_html = html_fp.read()
-
-        with (TESTDATA_DIR / mjml_filename).open('rb') as mjml_fp:
+        expected_html = load_expected_html(test_id)
+        with get_mjml_fp(test_id) as mjml_fp:
             result = mjml_to_html(mjml_fp)
 
         assert not result.errors
@@ -52,14 +49,27 @@ class UpstreamAlignmentTest(TestCase):
 
     @ddt_data('hello-world')
     def test_ensure_same_html_from_json(self, test_id):
-        mjml_json_filename = f'{test_id}.mjml.json'
-        html_filename = f'{test_id}-expected.html'
-        with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
-            expected_html = html_fp.read()
-
-        with (TESTDATA_DIR / mjml_json_filename).open('rb') as mjml_json_fp:
+        expected_html = load_expected_html(test_id)
+        with get_mjml_fp(test_id, json=True) as mjml_json_fp:
             result = mjml_to_html(json_load(mjml_json_fp))
 
         assert not result.errors
         actual_html = result.html
         assert_same_html(expected_html, actual_html, verbose=True)
+
+
+
+def load_expected_html(test_id):
+    html_filename = f'{test_id}-expected.html'
+    with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
+        expected_html = html_fp.read()
+    return expected_html
+
+@contextmanager
+def get_mjml_fp(test_id, json=False):
+    mjml_filename = f'{test_id}.mjml'
+    if json:
+        mjml_filename += '.json'
+    with (TESTDATA_DIR / mjml_filename).open('rb') as mjml_fp:
+        yield mjml_fp
+
