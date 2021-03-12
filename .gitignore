@@ -4,3 +4,4 @@
 /venv*
 /.project
 *.pyc
+/verify-commits.py
