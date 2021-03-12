@@ -19,12 +19,11 @@ def ignore_empty(values):
 def mjml_to_html(xml_fp_or_json, skeleton=None):
     if isinstance(xml_fp_or_json, dict):
         xml_fp = StringIO(json_to_xml(xml_fp_or_json))
+    elif isinstance(xml_fp_or_json, str):
+        xml_fp = StringIO(xml_fp_or_json)
     else:
         xml_fp = xml_fp_or_json
-    if isinstance(xml_fp, str) :
-        mjml_doc = lxml_etree.fromstring(xml_fp)
-    else:
-        mjml_doc = lxml_etree.parse(xml_fp)
+    mjml_doc = lxml_etree.parse(xml_fp)
     mjml_root = mjml_doc.xpath('/mjml')[0]
 
     skeleton_path = skeleton
