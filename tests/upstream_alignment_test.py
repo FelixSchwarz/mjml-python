@@ -57,6 +57,17 @@ class UpstreamAlignmentTest(TestCase):
         actual_html = result.html
         assert_same_html(expected_html, actual_html, verbose=True)
 
+    def test_accepts_also_plain_strings_as_input(self):
+        test_id = 'hello-world'
+        expected_html = load_expected_html(test_id)
+        with get_mjml_fp(test_id) as mjml_fp:
+            mjml_str = mjml_fp.read().decode('utf8')
+            result = mjml_to_html(mjml_str)
+
+        assert not result.errors
+        actual_html = result.html
+        assert_same_html(expected_html, actual_html, verbose=True)
+
 
 
 def load_expected_html(test_id):
