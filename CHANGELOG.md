@@ -1,5 +1,5 @@
 
-0.6.0 (2021-??-??)
+0.6.0 (2021-03-23)
 ------------------
 
 - support <mj-include> for body components
