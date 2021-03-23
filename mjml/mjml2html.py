@@ -1,5 +1,6 @@
 
 from io import StringIO
+from pathlib import Path, PurePath
 
 from lxml import etree as lxml_etree
 
@@ -16,13 +17,16 @@ def ignore_empty(values):
     return tuple(result)
 
 
-def mjml_to_html(xml_fp_or_json, skeleton=None):
+def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
     if isinstance(xml_fp_or_json, dict):
         xml_fp = StringIO(json_to_xml(xml_fp_or_json))
     elif isinstance(xml_fp_or_json, str):
         xml_fp = StringIO(xml_fp_or_json)
     else:
         xml_fp = xml_fp_or_json
+
+    if template_dir is None and hasattr(xml_fp, 'name'):
+        template_dir = Path(xml_fp.name).parent
 
     mjml_doc = lxml_etree.parse(xml_fp)
     mjml_root = mjml_doc.xpath('/mjml')[0]
@@ -89,7 +93,9 @@ def mjml_to_html(xml_fp_or_json, skeleton=None):
     def applyAttributes(mjml_element):
         if len(mjml_element) == 0:
             return {}
-        def parse(_mjml, parentMjClass=''):
+        parent_result = None
+        def parse(_mjml, parentMjClass='', *, template_dir):
+            nonlocal parent_result
             tagName = _mjml.tag
             is_comment = not isinstance(tagName, str)
             if is_comment:
@@ -122,12 +128,15 @@ def mjml_to_html(xml_fp_or_json, skeleton=None):
                 _attrs_omit,
             )
 
-            _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass)
             # XXX: ugly - but need raw XML content for mj-raw tag
             if tagName == 'mj-raw':
                 from lxml.etree import tostring
                 content = tostring(_mjml).strip().decode('utf-8')
                 content = content.replace('<mj-raw>', '').replace('</mj-raw>', '')
+            elif tagName == 'mj-include':
+                assert (parent_result is not None)
+                handle_include(attributes['path'], parent_result['children'], parse_mjml=parse, template_dir=template_dir)
+                return None
             result = {
                 'tagName': tagName,
                 'content': content,
@@ -137,10 +146,15 @@ def mjml_to_html(xml_fp_or_json, skeleton=None):
 
                 'attributes': _returned_attributes,
                 'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),
-                'children': _map_to_tuple(children, _parse_mjml, filter_none=True),
+                'children': [], # will be set afterwards
             }
+            parent_result = result
+            _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass, template_dir=template_dir)
+            for child_result in _map_to_tuple(children, _parse_mjml, filter_none=True):
+                result['children'].append(child_result)
             return result
-        return parse(mjml_element)
+
+        return parse(mjml_element, template_dir=template_dir)
 
     def addHeadStyle(identifier, headStyle):
         globalDatas.headStyle[identifier] = headStyle
@@ -213,3 +227,32 @@ def _map_to_tuple(items, map_fn, filter_none=None):
         results.append(result)
     return tuple(results)
 
+
+def handle_include(path_value, parent_children, parse_mjml, *, template_dir):
+    path = PurePath(path_value)
+    if path.is_absolute():
+        included_path = path
+    elif template_dir:
+        included_path = template_dir / path
+    else:
+        included_path = path
+    # Upstream mjml does not raise an error if the included file was not found.
+    # Instead they generate a HTML comment with a failure notice.
+    # using plain "open()" call because "PurePath" does not support ".open()"
+    with open(included_path, 'r') as fp:
+        included_content = fp.read()
+
+    if '<mjml>' not in included_content:
+        included_content = f'<mjml><mj-body>${included_content}</mj-body></mjml>'
+
+    fp_included = StringIO(included_content)
+    mjml_doc = lxml_etree.parse(fp_included)
+    _body = mjml_doc.xpath('/mjml/mj-body')
+    _head = mjml_doc.xpath('/mjml/mj-head')
+    assert (not _head), '<mj-head> within <mj-include> not yet implemented '
+
+    if _body:
+        body_result = parse_mjml(_body[0], template_dir=included_path.parent)
+        assert body_result['tagName'] == 'mj-body'
+        included_items = body_result['children']
+        parent_children.extend(included_items)

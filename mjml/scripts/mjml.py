@@ -3,8 +3,11 @@
 mjml.
 
 Usage:
-  mjml <MJML-FILE>
-  mjml <MJML-FILE> -o <OUTPUT-FILE>
+  mjml [options] <MJML-FILE>
+  mjml [options] <MJML-FILE> -o <OUTPUT-FILE>
+
+Options:
+  --template-dir=<path>    base dir for mj-include (default: path of mjml file)
 """
 
 from io import BytesIO
@@ -20,14 +23,15 @@ def main():
     arguments = docopt(__doc__)
     mjml_filename = arguments['<MJML-FILE>']
     output_filename = arguments['<OUTPUT-FILE>']
+    template_dir = arguments['--template-dir']
 
     if mjml_filename == '-':
         stdin = sys.stdin.buffer
         mjml_fp = BytesIO(stdin.read())
-        result = mjml_to_html(mjml_fp)
+        result = mjml_to_html(mjml_fp, template_dir=template_dir)
     else:
         with Path(mjml_filename).open('rb') as mjml_fp:
-            result = mjml_to_html(mjml_fp)
+            result = mjml_to_html(mjml_fp, template_dir=template_dir)
     assert not result.errors, result.errors
 
     html_str = result.html

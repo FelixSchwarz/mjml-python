@@ -32,6 +32,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-font',
         'mj-font-multiple',
         'mj-font-unused',
+        'mj-include-body',
         'mj-preview',
         'mj-raw',
         'mj-raw-with-tags',
