@@ -7,8 +7,10 @@ from .registry import _components
 __all__ = ['initComponent', 'Component']
 
 def initComponent(name, **initialDatas):
+    if name is None:
+        return None
     components = _components()
-    component_cls = components.get(name)
+    component_cls = components[name]
     if not component_cls:
         return None
 
