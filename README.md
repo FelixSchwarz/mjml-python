@@ -3,6 +3,9 @@ mjml-stub
 
 This is an unofficial Python port of [mjml v4](https://github.com/mjmlio/mjml). It is implemented in pure Python and does not require JavaScript/NodeJS. mjml is a markup language created by [Mailjet](https://www.mailjet.com/) and designed to reduce the pain of coding a responsive email.
 
+    pip install mjml
+
+
 WARNING: stub implementation only!
 ------------------------------------
 This library only implements a subset of the original MJML project. It lacks several features found in the JavaScript mjml implementation (e.g. minification, beautification and validation). Also the code likely contains many additional bugs.
