@@ -1,4 +1,5 @@
 
 include .travis.yml
+include CHANGELOG.md
 include tests/testdata/*.html
 
