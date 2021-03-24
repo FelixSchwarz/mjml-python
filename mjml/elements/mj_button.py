@@ -127,13 +127,22 @@ class MjButton(BodyComponent):
         return f'{width_int}px'
 
     def render(self):
-        tag = 'a' if self.getAttribute('href') else 'p'
+        href_str = self.getAttribute('href')
+        is_anchor = bool(href_str)
+        target = self.getAttribute('target') if is_anchor else None
+        if is_anchor and href_str.startswith('mailto:') and (target == '_blank'):
+            # Thunderbird opens a blank page instead of the new message window
+            # if the <a> contains 'target="_blank"'.
+            #   https://bugzilla.mozilla.org/show_bug.cgi?id=1677248
+            #   https://bugzilla.mozilla.org/show_bug.cgi?id=1589968
+            #   https://bugzilla.mozilla.org/show_bug.cgi?id=421310
+            target = None
         tag_attrs = self.html_attrs(
-            href   = self.getAttribute('href'),
+            href   = href_str,
             rel    = self.getAttribute('rel'),
             name   = self.getAttribute('name'),
             style  = 'content',
-            target = self.getAttribute('target') if (tag == 'a') else None,
+            target = target,
         )
 
         table_attrs = self.html_attrs(
@@ -152,6 +161,7 @@ class MjButton(BodyComponent):
             style   = 'td',
             valign  = self.getAttribute('vertical-align'),
         )
+        tag = 'a' if is_anchor else 'p'
         return f'''
             <table {table_attrs} >
               <tr>
