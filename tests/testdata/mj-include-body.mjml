@@ -1,5 +1,13 @@
 <mjml>
   <mj-body>
-    <mj-include path="./header.mjml" />
+    <mj-include path="./_header.mjml" />
+
+    <mj-section>
+      <mj-column>
+        <mj-text>foo</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="./_footer.mjml" />
   </mj-body>
 </mjml>

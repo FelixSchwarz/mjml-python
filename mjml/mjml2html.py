@@ -93,9 +93,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
     def applyAttributes(mjml_element):
         if len(mjml_element) == 0:
             return {}
-        parent_result = None
         def parse(_mjml, parentMjClass='', *, template_dir):
-            nonlocal parent_result
             tagName = _mjml.tag
             is_comment = not isinstance(tagName, str)
             if is_comment:
@@ -134,9 +132,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
                 content = tostring(_mjml).strip().decode('utf-8')
                 content = content.replace('<mj-raw>', '').replace('</mj-raw>', '')
             elif tagName == 'mj-include':
-                assert (parent_result is not None)
-                handle_include(attributes['path'], parent_result['children'], parse_mjml=parse, template_dir=template_dir)
-                return None
+                mj_include_subtree = handle_include(attributes['path'], parse_mjml=parse, template_dir=template_dir)
+                return mj_include_subtree
             result = {
                 'tagName': tagName,
                 'content': content,
@@ -148,10 +145,12 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
                 'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),
                 'children': [], # will be set afterwards
             }
-            parent_result = result
             _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass, template_dir=template_dir)
             for child_result in _map_to_tuple(children, _parse_mjml, filter_none=True):
-                result['children'].append(child_result)
+                if isinstance(child_result, (tuple, list)):
+                    result['children'].extend(child_result)
+                else:
+                    result['children'].append(child_result)
             return result
 
         return parse(mjml_element, template_dir=template_dir)
@@ -228,7 +227,7 @@ def _map_to_tuple(items, map_fn, filter_none=None):
     return tuple(results)
 
 
-def handle_include(path_value, parent_children, parse_mjml, *, template_dir):
+def handle_include(path_value, parse_mjml, *, template_dir):
     path = PurePath(path_value)
     if path.is_absolute():
         included_path = path
@@ -250,9 +249,10 @@ def handle_include(path_value, parent_children, parse_mjml, *, template_dir):
     _body = mjml_doc.xpath('/mjml/mj-body')
     _head = mjml_doc.xpath('/mjml/mj-head')
     assert (not _head), '<mj-head> within <mj-include> not yet implemented '
+    assert _body
 
     if _body:
         body_result = parse_mjml(_body[0], template_dir=included_path.parent)
         assert body_result['tagName'] == 'mj-body'
         included_items = body_result['children']
-        parent_children.extend(included_items)
+        return included_items

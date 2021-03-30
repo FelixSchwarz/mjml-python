@@ -3,6 +3,7 @@
 ------------------
 
 - mj-button: prevent target="_blank" for mailto links (Thunderbird)
+- fix `<mj-include>`
 
 0.6.0 (2021-03-23)
 ------------------
