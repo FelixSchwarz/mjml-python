@@ -1,4 +1,9 @@
 
+0.6.x (2021-??-??)
+------------------
+
+- mj-button: prevent target="_blank" for mailto links (Thunderbird)
+
 0.6.0 (2021-03-23)
 ------------------
 
