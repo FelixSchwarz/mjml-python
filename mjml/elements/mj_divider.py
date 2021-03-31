@@ -20,8 +20,8 @@ class MjDivider(BodyComponent):
             'padding-right'   : 'unit(px,%)',
             'padding-top'     : 'unit(px,%)',
             'width'           : 'unit(px,%)',
+            'align'           : 'enum(left,center,right)',
             # hidden / used by MjColumn
-            'align'           : '',
             'vertical-align'  : '',
             'css-class'       : '',
         }
@@ -34,6 +34,7 @@ class MjDivider(BodyComponent):
             'border-width'    : '4px',
             'padding'         : '10px 25px',
             'width'           : '100%',
+            'align'           : 'center',
         }
 
     def get_styles(self):
