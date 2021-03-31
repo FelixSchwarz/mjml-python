@@ -2,7 +2,7 @@
 0.6.0 (2021-03-23)
 ------------------
 
-- support <mj-include> for body components
+- support `<mj-include>` for body components
 - mjml_to_html(): also accept plain strings as input
 - add support for json-like dict as input
 - avoid deprecation warnings about invalid escape sequences in regex patterns
@@ -13,7 +13,7 @@
 0.5.4 (2021-01-15)
 ------------------
 
-- handle <mj-head> section containing HTML comments
+- handle `<mj-head>` section containing HTML comments
 - also render attributes with empty values if set explicitely
 - implement (basic) support for mj-class
 - port "Component.allowedAttributes" from JS mjml
