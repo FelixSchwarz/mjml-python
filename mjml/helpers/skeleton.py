@@ -66,7 +66,7 @@ skeleton_tmpl_str_raw = '''\
         <title>
           {{ title }}
         </title>
-        <!--[if !mso]><!-- -->
+        <!--[if !mso]><!-->
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <!--<![endif]-->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
