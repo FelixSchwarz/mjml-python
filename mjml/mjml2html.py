@@ -242,7 +242,7 @@ def handle_include(path_value, parse_mjml, *, template_dir):
         included_content = fp.read()
 
     if '<mjml>' not in included_content:
-        included_content = f'<mjml><mj-body>${included_content}</mj-body></mjml>'
+        included_content = f'<mjml><mj-body>{included_content}</mj-body></mjml>'
 
     fp_included = StringIO(included_content)
     mjml_doc = lxml_etree.parse(fp_included)
