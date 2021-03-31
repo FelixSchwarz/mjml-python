@@ -29,3 +29,12 @@ Documentation
 ------------------------------------
 The idea is to implement the mjml XML dialect exactly like the JS implementation so eventually you should be able to use the [official docs](https://mjml.io/documentation/) and other online resources found on [mjml.io](https://mjml.io/). However we are nowhere near that right now! The current code can render the "Hello World" example as well as images, tables and groups but many components remain to be reimplemented. I'd love to see your pull requests to improve the current state though.
 
+
+Alternatives / Additional Resources
+------------------------------------
+
+- **django-mjml**: If deploying NodeJS is not an issue and you are using Django you could use the well established [django-mjml](https://github.com/liminspace/django-mjml) library. That library integrates the mjml JavaScript implementation with Django templates so you can access all mjml features.
+- **MJML.NET**: This is an unofficial port of mjml to C# ([github repo](https://github.com/LiamRiddell/MJML.NET/) which supports more components than this Python implementation.
+- [email-bugs](https://github.com/hteumeuleu/email-bugs) is a github project which contains a lot of knowledge about rendering quirks in various email clients.
+- [htmlemailcheck](https://www.htmlemailcheck.com/knowledge-base/) is a commercial offering to help you checking email rendering in various environments. I don't have any experience with their services but they provide a free knowledgebase.
+
