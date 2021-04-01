@@ -44,7 +44,7 @@ def skeleton_str(*,
         'title'          : title,
         'content'        : content,
         'langAttribute'  : f'lang="{lang}" ' if lang else '',
-        'backgroundColor': f'background-color:{backgroundColor};"' if backgroundColor else '',
+        'backgroundColor': f'background-color:{backgroundColor};' if backgroundColor else '',
 
         'font_tags_str'  : buildFontsTags(content, inlineStyle, fonts=fonts),
         'media_queries_str'  : buildMediaQueriesTags(breakpoint, mediaQueries),

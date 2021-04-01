@@ -20,6 +20,7 @@ class UpstreamAlignmentTest(TestCase):
         'hello-world',
         'button',
         'text_with_html',
+        'mj-body-with-background-color',
         'mj-title',
         'mj-style',
         'mj-attributes',
