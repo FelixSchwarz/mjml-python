@@ -128,7 +128,7 @@ class MjImage(BodyComponent):
         img = f'<img {img_attrs} />'
         href = this.getAttribute('href')
         if href:
-            a_attrs = this.htmlAttributes(
+            a_attrs = this.html_attrs(
                 href   = this.getAttribute('href'),
                 target = this.getAttribute('target'),
                 rel    = this.getAttribute('rel'),
