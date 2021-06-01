@@ -1,5 +1,5 @@
 
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path, PurePath
 
 from lxml import etree as lxml_etree
@@ -238,13 +238,17 @@ def handle_include(path_value, parse_mjml, *, template_dir):
     # Upstream mjml does not raise an error if the included file was not found.
     # Instead they generate a HTML comment with a failure notice.
     # using plain "open()" call because "PurePath" does not support ".open()"
-    with open(included_path, 'r') as fp:
-        included_content = fp.read()
-
-    if '<mjml>' not in included_content:
-        included_content = f'<mjml><mj-body>{included_content}</mj-body></mjml>'
-
-    fp_included = StringIO(included_content)
+    with open(included_path, 'rb') as fp:
+        included_bytes = fp.read()
+    # Need to load the included file as binary - otherwise non-ascii characters
+    # in utf8-encoded include files were messed up on Windows.
+    # Not sure what happens if lxml needs to handle non-utf8 contents but it
+    # works for me at least for utf8 now.
+    if b'<mjml>' not in included_bytes:
+        included_bytes = b'<mjml><mj-body>' + included_bytes + b'</mj-body></mjml>'
+    # lxml does not like non-ascii StringIO input but utf8-encoded BytesIO works
+    # seen with pypy3 7.3.1, lxml 4.6.3 (Fedora 34)
+    fp_included = BytesIO(included_bytes)
     mjml_doc = lxml_etree.parse(fp_included)
     _body = mjml_doc.xpath('/mjml/mj-body')
     _head = mjml_doc.xpath('/mjml/mj-head')
