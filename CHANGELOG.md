@@ -1,5 +1,5 @@
 
-0.6.2 (2021-??-??)
+0.6.2 (2021-06-01)
 ------------------
 
 - fix non-ascii content in included files on Windows
