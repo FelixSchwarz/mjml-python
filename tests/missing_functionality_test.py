@@ -14,6 +14,7 @@ TESTDATA_DIR = Path(__file__).parent / 'missing_functionality'
 class MissingFeaturesTest(TestCase):
     @ddt_data(
         'html-entities',
+        'html-without-closing-tag',
     )
     @expectedFailure
     def test_ensure_same_html(self, test_id):
