@@ -38,4 +38,6 @@ def _patch_nose1_result(test):
     result = test._outcome.result
     if not hasattr(result, 'addExpectedFailure'):
         result.addExpectedFailure = result.addSkip
+    if not hasattr(result, 'addUnexpectedSuccess'):
+        result.addUnexpectedSuccess = lambda test: result.addFailure(test, (AssertionError, AssertionError('unexpected success'), None))
 
