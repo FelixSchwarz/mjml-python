@@ -15,6 +15,9 @@ class MissingFeaturesTest(TestCase):
     @ddt_data(
         'html-entities',
         'html-without-closing-tag',
+        # htmlcompare is currently unable to detect these kind of
+        # whitespace differences.
+        # 'missing-whitespace-before-tag',
     )
     @expectedFailure
     def test_ensure_same_html(self, test_id):
