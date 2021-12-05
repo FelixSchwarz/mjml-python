@@ -26,7 +26,7 @@ class MjButtonMailtoLinkTest(TestCase):
         match_str = html[start:end]
 
         a_el = lxml.html.fragment_fromstring(match_str)
-        self.assertEquals('mailto:foo@site.example', a_el.attrib['href'])
+        self.assertEqual('mailto:foo@site.example', a_el.attrib['href'])
         target = a_el.attrib.get('target')
         # Thunderbird opens a blank page instead of the new message window if
         # the <a> contains 'target="_blank"'.
