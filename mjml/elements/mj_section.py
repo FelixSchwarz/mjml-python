@@ -48,7 +48,7 @@ class MjSection(BodyComponent):
         containerWidth = self.context['containerWidth']
         fullWidth = self.isFullWidth()
         if self.getAttribute('background-url'):
-            background = {'background': self.getBackground() }
+            background = {'background': self.getAttribute('background-url') }
         else:
             background = {
                 'background': self.getAttribute('background-color'),
