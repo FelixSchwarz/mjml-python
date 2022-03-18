@@ -301,8 +301,10 @@ class MjSection(BodyComponent):
             bgPosY = '0%'
 
         # this logic is different when using repeat or no-repeat
-        vOriginX, vPosX = self._calc_origin_and_pos('x', bgPosX, bgPosY)
-        vOriginY, vPosY = self._calc_origin_and_pos('y', bgPosX, bgPosY)
+        vX = self._calc_origin_pos_value(is_x=True, bg_pos=bgPosX)
+        vY = self._calc_origin_pos_value(is_y=False, bg_pos=bgPosY)
+        vOriginX, vPosX = (vX, vX)
+        vOriginY, vPosY = (vY, vY)
 
         vSizeAttributes = {}
         # If background size is either cover or contain, we tell VML to keep
@@ -363,38 +365,23 @@ class MjSection(BodyComponent):
         <![endif]-->
         '''
 
-    def _calc_origin_and_pos(self, coordinate, bgPosX, bgPosY):
-        isX = (coordinate == 'x')
+    def _calc_origin_pos_value(self, is_x, bg_pos):
         bgRepeat = (self.getAttribute('background-repeat') == 'repeat')
-        if isX:
-            pos = bgPosX
-            origin = bgPosX
-        else:
-            pos = bgPosY
-            origin = bgPosY
-
-        if is_percentage(pos):
+        value = bg_pos
+        if is_percentage(value):
             # Should be percentage at this point
-            percentage_value = parse_percentage(pos)
+            percentage_value = parse_percentage(value)
             decimal = int(percentage_value) / Decimal(100)
             if bgRepeat:
-                pos = decimal
-                origin = decimal
+                value = decimal
             else:
-                pos = (-50 + decimal * 100) / 100
-                origin = (-50 + decimal * 100) / 100
+                value = (-50 + decimal * 100) / 100
         elif bgRepeat:
             # top (y) or center (x)
-            if isX:
-                origin, pos = ('0.5', '0.5')
-            else:
-                origin, pos = ('0', '0')
+            value = '0.5' if is_x else '0'
         else:
-            if isX:
-                origin, pos = ('0', '0')
-            else:
-                origin, pos = ('-0.5', '-0.5')
-        return (origin, pos)
+            value = '0' if is_x else '-0.5'
+        return value
 
     def renderBefore(self):
         containerWidth = self.context['containerWidth']
