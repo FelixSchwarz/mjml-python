@@ -276,29 +276,8 @@ class MjSection(BodyComponent):
         containerWidth = self.context['containerWidth']
 
         bgPos = self.getBackgroundPosition()
-        x_attr_to_percentage = {
-            'left'  : '0%',
-            'center': '50%',
-            'right' : '100%',
-        }
-        if bgPos.posX in x_attr_to_percentage:
-            bgPosX = x_attr_to_percentage[bgPos.posX]
-        elif is_percentage(bgPos.posX):
-            bgPosX = bgPos.posX
-        else:
-            bgPosX = '50%'
-
-        y_attr_to_percentage = {
-            'top'    : '0%',
-            'center' : '50%',
-            'bottom' : '100%',
-        }
-        if bgPos.posY in y_attr_to_percentage:
-            bgPosY = y_attr_to_percentage[bgPos.posY]
-        elif is_percentage(bgPos.posY):
-            bgPosY = bgPos.posY
-        else:
-            bgPosY = '0%'
+        bgPosX = self._get_bg_percentage(bgPos.posX, ('left', 'center', 'right'), default='50%')
+        bgPosY = self._get_bg_percentage(bgPos.posY, ('top', 'center', 'bottom'), default='0%')
 
         # this logic is different when using repeat or no-repeat
         vX = self._calc_origin_pos_value(is_x=True, bg_pos=bgPosX)
@@ -364,6 +343,15 @@ class MjSection(BodyComponent):
           </v:rect>
         <![endif]-->
         '''
+
+    def _get_bg_percentage(self, pos_value, fixed_keys, *, default):
+        assert len(fixed_keys) == 3
+        attr_map = dict(zip(fixed_keys, ('0%', '50%', '100%')))
+        if pos_value in attr_map:
+            return attr_map[pos_value]
+        elif is_percentage(pos_value):
+            return pos_value
+        return default
 
     def _calc_origin_pos_value(self, is_x, bg_pos):
         bgRepeat = (self.getAttribute('background-repeat') == 'repeat')
