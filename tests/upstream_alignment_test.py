@@ -31,6 +31,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-image-with-empty-alt-attribute',
         'mj-image-with-href',
         'mj-section-with-mj-class',
+        'mj-section-with-background-url',
         'mj-font',
         'mj-font-multiple',
         'mj-font-unused',

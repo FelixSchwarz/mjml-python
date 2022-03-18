@@ -1,4 +1,10 @@
 
+0.x.x (not yet released)
+------------------
+
+- fix incomplete implementation of `background` attributes for `<mj-section>`
+
+
 0.6.2 (2021-06-01)
 ------------------
 

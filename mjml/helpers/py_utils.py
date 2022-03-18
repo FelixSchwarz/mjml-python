@@ -1,4 +1,5 @@
 
+from decimal import Decimal
 import re
 
 
@@ -10,6 +11,7 @@ __all__ = [
     'omit',
     'parse_float',
     'parse_int',
+    'parse_percentage',
     'strip_unit',
 ]
 
@@ -31,6 +33,10 @@ def parse_int(value_str):
         return value_str
     match = re.search(r'^([-+]?\d+)*', value_str)
     return int(match.group(1))
+
+def parse_percentage(value_str):
+    match = re.search(r'^(\d+(\.\d+)?)%$', value_str)
+    return Decimal(match.group(1))
 
 def strip_unit(value_str):
     match = re.search(r'^(\d+).*', value_str)
