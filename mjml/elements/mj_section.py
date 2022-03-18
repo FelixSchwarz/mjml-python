@@ -275,16 +275,6 @@ class MjSection(BodyComponent):
         fullWidth = self.isFullWidth()
         containerWidth = self.context['containerWidth']
 
-        bgPos = self.getBackgroundPosition()
-        bgPosX = self._get_bg_percentage(bgPos.posX, ('left', 'center', 'right'), default='50%')
-        bgPosY = self._get_bg_percentage(bgPos.posY, ('top', 'center', 'bottom'), default='0%')
-
-        # this logic is different when using repeat or no-repeat
-        vX = self._calc_origin_pos_value(is_x=True, bg_pos=bgPosX)
-        vY = self._calc_origin_pos_value(is_y=False, bg_pos=bgPosY)
-        vOriginX, vPosX = (vX, vX)
-        vOriginY, vPosY = (vY, vY)
-
         vSizeAttributes = {}
         # If background size is either cover or contain, we tell VML to keep
         # the aspect and fill the entire element.
@@ -313,8 +303,15 @@ class MjSection(BodyComponent):
             # original image size with "frame"
             vmlType = 'tile'
             # also ensure that images are still cropped the same way
-            vOriginX, vPosX = (0.5, 0.5)
-            vOriginY, vPosY = (0, 0)
+            vX = 0.5
+            vY = 0
+        else:
+            bgPos = self.getBackgroundPosition()
+            bgPosX = self._get_bg_percentage(bgPos.posX, ('left', 'center', 'right'), default='50%')
+            bgPosY = self._get_bg_percentage(bgPos.posY, ('top', 'center', 'bottom'), default='0%')
+            # this logic is different when using repeat or no-repeat
+            vX = self._calc_origin_pos_value(is_x=True, bg_pos=bgPosX)
+            vY = self._calc_origin_pos_value(is_y=False, bg_pos=bgPosY)
 
         vrect_style = {'mso-width-percent': '1000'} if fullWidth else {'width': str(containerWidth)}
         vrect_attrs = self.html_attrs(**{
@@ -324,8 +321,8 @@ class MjSection(BodyComponent):
             'stroke' : 'false',
         })
         vfill_attrs = self.html_attrs(**{
-            'origin': f'{vOriginX}, {vOriginY}',
-            'position': f'{vPosX}, {vPosY}',
+            'origin': f'{vX}, {vY}',
+            'position': f'{vX}, {vY}',
             'src': self.getAttribute('background-url'),
             'color': self.getAttribute('background-color'),
             'type': vmlType,
