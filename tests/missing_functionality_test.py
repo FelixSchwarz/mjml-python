@@ -15,6 +15,7 @@ class MissingFeaturesTest(TestCase):
     @ddt_data(
         'html-entities',
         'html-without-closing-tag',
+        'mj-section-with-background-url',
         # htmlcompare is currently unable to detect these kind of
         # whitespace differences.
         # 'missing-whitespace-before-tag',
