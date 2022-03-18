@@ -10,6 +10,13 @@ from mjml import mjml_to_html
 
 TESTDATA_DIR = Path(__file__).parent / 'missing_functionality'
 
+def patch_nose1(func):
+    def _wrapper(test, *args, **kwargs):
+        _patch_nose1_result(test)
+        return func(test, *args, **kwargs)
+    return _wrapper
+
+
 @DataDrivenTestCase
 class MissingFeaturesTest(TestCase):
     @ddt_data(
@@ -21,13 +28,13 @@ class MissingFeaturesTest(TestCase):
         # 'missing-whitespace-before-tag',
     )
     @expectedFailure
+    @patch_nose1
     def test_ensure_same_html(self, test_id):
         mjml_filename = f'{test_id}.mjml'
         html_filename = f'{test_id}-expected.html'
         with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
             expected_html = html_fp.read()
 
-        _patch_nose1_result(test=self)
         with (TESTDATA_DIR / mjml_filename).open('rb') as mjml_fp:
             result = mjml_to_html(mjml_fp)
 
