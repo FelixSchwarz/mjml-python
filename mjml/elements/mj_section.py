@@ -62,7 +62,7 @@ class MjSection(BodyComponent):
         if self.getAttribute('background-url'):
             background = {
                 'background': self.getBackground(),
-                # background size, repeat and position has to be seperate since
+                # background size, repeat and position has to be separate since
                 # yahoo does not support shorthand background css property
                 'background-position': self.getBackgroundString(),
                 'background-repeat': self.getAttribute('background-repeat'),
@@ -169,7 +169,7 @@ class MjSection(BodyComponent):
         posSplit = self.getAttribute('background-position').split(' ')
         if len(posSplit) == 1:
             val, = posSplit
-            # here we must determine if x or y was provided ; other will be center
+            # here we must determine if x or y was provided; other will be center
             if val in ('top', 'bottom'):
                 return Position(x='center', y=val)
             else:
