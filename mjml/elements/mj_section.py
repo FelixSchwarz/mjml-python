@@ -59,7 +59,7 @@ class MjSection(BodyComponent):
     def get_styles(self):
         containerWidth = self.context['containerWidth']
         fullWidth = self.isFullWidth()
-        if self.getAttribute('background-url'):
+        if self.hasBackground():
             background = {
                 'background': self.getBackground(),
                 # background size, repeat and position has to be separate since
