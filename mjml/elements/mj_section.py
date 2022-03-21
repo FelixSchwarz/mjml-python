@@ -69,20 +69,22 @@ class MjSection(BodyComponent):
                 'background-size': self.getAttribute('background-size'),
             }
         else:
+            bg_color = self.getAttribute('background-color')
             background = {
-                'background': self.getAttribute('background-color'),
-                'background-color': self.getAttribute('background-color'),
+                'background': bg_color,
+                'background-color': bg_color,
             }
         this = self
+        border_radius = self.getAttribute('border-radius')
         return {
             'tableFullwidth': merge_dicts({
                 'width': '100%',
-                'border-radius': this.getAttribute('border-radius'),
+                'border-radius': border_radius,
                 }, (background if fullWidth else {})
             ),
             'table': merge_dicts({
                 'width': '100%',
-                'border-radius': this.getAttribute('border-radius'),
+                'border-radius': border_radius,
                 }, ({} if fullWidth else background)
             ),
             'td': {
@@ -102,7 +104,7 @@ class MjSection(BodyComponent):
             },
             'div': merge_dicts({} if fullWidth else background, {
                 'margin': '0px auto',
-                'border-radius': this.getAttribute('border-radius'),
+                'border-radius': border_radius,
                 'max-width': containerWidth,
             }),
             'innerDiv': {
@@ -276,19 +278,20 @@ class MjSection(BodyComponent):
         containerWidth = self.context['containerWidth']
 
         vSizeAttributes = {}
+        background_size = self.get_attr('background-size')
         # If background size is either cover or contain, we tell VML to keep
         # the aspect and fill the entire element.
-        if self.get_attr('background-size') in ('cover', 'contain'):
-            is_cover = (self.get_attr('background-size') == 'cover')
+        if background_size in ('cover', 'contain'):
+            is_cover = (background_size == 'cover')
             vSizeAttributes = {
                 'size'  : '1,1',
                 'aspect': 'atleast' if is_cover else 'atmost',
             }
-        elif self.get_attr('background-size') != 'auto':
-            bgSplit = self.get_attr('background-size').split(' ')
+        elif background_size != 'auto':
+            bgSplit = background_size.split(' ')
             if len(bgSplit) == 1:
                 vSizeAttributes = {
-                    'size'  : self.get_attr('background-size'),
+                    'size'  : background_size,
                     'aspect': 'atmost', # reproduces height auto
                 }
             else:
@@ -298,7 +301,7 @@ class MjSection(BodyComponent):
 
         is_bg_norepeat = (self.get_attr('background-repeat') == 'no-repeat')
         vmlType = 'frame' if is_bg_norepeat else 'tile'
-        if self.get_attr('background-size') == 'auto':
+        if background_size == 'auto':
             # if no size provided, keep old behavior because outlook can't use
             # original image size with "frame"
             vmlType = 'tile'
