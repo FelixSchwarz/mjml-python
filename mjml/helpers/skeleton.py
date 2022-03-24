@@ -38,7 +38,7 @@ def skeleton_str(*,
             return v(breakpoint)
         return tuple(map(_add_breakpoint, values))
     head_style_strs = apply_breakpoints(headStyle)
-    extra_style = f'<style type="text/css">{"".join(style)}</style>' if style else ''
+    extra_style = f'<style type="text/css">{"".join(style or "")}</style>'
 
     tmpl_vars = {
         'title'          : title,
