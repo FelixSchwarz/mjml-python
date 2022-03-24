@@ -118,7 +118,7 @@ class MjSection(BodyComponent):
             bg_url = self.getAttribute('background-url')
             bg_size = self.getAttribute('background-size')
             bg_parts = [
-                f"url({bg_url})",
+                f"url('{bg_url}')",
                 self.getBackgroundString(),
                 f'/ {bg_size}',
                 self.getAttribute('background-repeat'),
