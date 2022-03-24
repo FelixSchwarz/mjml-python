@@ -1,8 +1,10 @@
 
-0.x.x (not yet released)
+0.7.0 (2022-03-24)
 ------------------
 
 - fix incomplete implementation of `background` attributes for `<mj-section>`
+- check HTML output against mjml 4.12.0: test suite was updated with outputs
+  from mjml 4.12.0 and required fixes where ported.
 
 
 0.6.2 (2021-06-01)
