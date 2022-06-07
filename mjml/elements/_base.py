@@ -1,6 +1,6 @@
 
 
-from ..lib import merge_dicts
+from ..lib import merge_dicts, AttrDict
 from ..core import initComponent, Component
 from ..core.registry import _components
 from ..helpers import *
@@ -14,8 +14,11 @@ class BodyComponent(Component):
     def render(self):
         raise NotImplementedError(f'{self.__cls__.__name__} should override ".render()"')
 
-    def getShorthandAttrValue(self, attribute, direction):
-        mjAttributeDirection = self.getAttribute(f'{attribute}-{direction}')
+    def getShorthandAttrValue(self, attribute, direction, attr_with_direction=True):
+        if attr_with_direction:
+            mjAttributeDirection = self.getAttribute(f'{attribute}-{direction}')
+        else:
+            mjAttributeDirection = 0
         mjAttribute = self.getAttribute(attribute)
 
         if mjAttributeDirection:
@@ -35,12 +38,12 @@ class BodyComponent(Component):
         paddings = self.getShorthandAttrValue('padding', 'right') + self.getShorthandAttrValue('padding', 'left')
         borders = self.getShorthandBorderValue('right') + self.getShorthandBorderValue('left')
 
-        return {
+        return AttrDict({
             'totalWidth': parsedWidth,
             'borders'   : borders,
             'paddings'  : paddings,
             'box'       : parsedWidth - paddings - borders,
-        }
+        })
 
     # js: htmlAttributes(attributes)
     def html_attrs(self, **attrs):

@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-button width="100px">
+          send
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
