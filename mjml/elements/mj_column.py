@@ -182,7 +182,7 @@ class MjColumn(BodyComponent):
         return any(filter(lambda v: bool(v), attr_values))
 
     def renderGutter(self):
-        table_attrs = self.html_attrs({
+        table_attrs = self.html_attrs(**{
             'border': '0',
             'cellpadding': '0',
             'cellspacing': '0',
@@ -192,7 +192,7 @@ class MjColumn(BodyComponent):
         return f'''<table {table_attrs}>
             <tbody>
               <tr>
-                <td {self.htmlAttributes(style='gutter')}>
+                <td {self.html_attrs(style='gutter')}>
                   {self.renderColumn()}
                 </td>
               </tr>

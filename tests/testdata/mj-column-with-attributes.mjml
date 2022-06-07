@@ -1,0 +1,16 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-column padding="0" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>
+          Hello World!
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

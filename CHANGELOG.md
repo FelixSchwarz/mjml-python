@@ -1,4 +1,10 @@
 
+0.7.x (unreleased)
+------------------
+
+- prevent exception when trying to set padding for `<mj-column>`
+
+
 0.7.0 (2022-03-24)
 ------------------
 
