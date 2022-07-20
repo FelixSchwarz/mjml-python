@@ -2,6 +2,7 @@
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
 
+import css_inline
 from lxml import etree as lxml_etree
 
 from .core import initComponent
@@ -208,6 +209,10 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
     )
     # LATER: upstream has also beautify
     # LATER: upstream has also minify
+
+    if len(globalDatas.inlineStyle) > 0:
+        inliner = css_inline.CSSInliner(inline_style_tags=False, extra_css=''.join(globalDatas.inlineStyle))
+        content = inliner.inline(content)
 
     content = mergeOutlookConditionnals(content)
 
