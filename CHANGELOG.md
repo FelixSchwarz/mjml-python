@@ -3,6 +3,8 @@
 ------------------
 
 - prevent exception when trying to set padding for `<mj-column>`
+- fix setting `width` attribute for `mj-button`
+- support css inlining (via `inlineStyle`) if "css_inline" is installed
 
 
 0.7.0 (2022-03-24)
