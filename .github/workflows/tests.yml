@@ -26,3 +26,7 @@ jobs:
       run: |
         pytest
 
+    - name: Test CSS inlining
+      run: |
+        pip install -e .[css_inlining]
+        pytest

@@ -2,7 +2,7 @@
 from contextlib import contextmanager
 from json import load as json_load
 from pathlib import Path
-from unittest import TestCase
+from unittest import SkipTest, TestCase
 
 from ddt import ddt as DataDrivenTestCase, data as ddt_data
 from htmlcompare import assert_same_html
@@ -20,7 +20,6 @@ class UpstreamAlignmentTest(TestCase):
         'hello-world',
         'button',
         'text_with_html',
-        'css-inlining',
         'mj-body-with-background-color',
         'mj-title',
         'mj-style',
@@ -74,6 +73,20 @@ class UpstreamAlignmentTest(TestCase):
         assert not result.errors
         actual_html = result.html
         assert_same_html(expected_html, actual_html, verbose=True)
+
+    def test_can_use_css_inlining(self):
+        try:
+            import css_inline
+        except ImportError:
+            raise SkipTest('"css_inline" not installed')
+        test_id = 'css-inlining'
+        expected_html = load_expected_html(test_id)
+        with get_mjml_fp(test_id) as mjml_fp:
+            mjml_str = mjml_fp.read().decode('utf8')
+            result = mjml_to_html(mjml_str)
+
+        assert not result.errors
+        assert_same_html(expected_html, result.html, verbose=True)
 
 
 
