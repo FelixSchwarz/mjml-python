@@ -34,7 +34,7 @@ Alternatives / Additional Resources
 ------------------------------------
 
 - **django-mjml**: If deploying NodeJS is not an issue and you are using Django you could use the well established [django-mjml](https://github.com/liminspace/django-mjml) library. That library integrates the mjml JavaScript implementation with Django templates so you can access all mjml features.
-- **MJML.NET**: This is an unofficial port of mjml to C# ([github repo](https://github.com/LiamRiddell/MJML.NET/) which supports more components than this Python implementation.
+- **MJML.NET**: This is an unofficial port of mjml to C# ([github repo](https://github.com/LiamRiddell/MJML.NET/)) which supports more components than this Python implementation.
 - [email-bugs](https://github.com/hteumeuleu/email-bugs) is a github project which contains a lot of knowledge about rendering quirks in various email clients.
 - [htmlemailcheck](https://www.htmlemailcheck.com/knowledge-base/) is a commercial offering to help you checking email rendering in various environments. I don't have any experience with their services but they provide a free knowledgebase.
 
