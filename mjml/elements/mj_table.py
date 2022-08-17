@@ -1,6 +1,5 @@
 
 from ._base import BodyComponent
-from .mj_text import stringify_element
 from ..helpers import widthParser
 
 
@@ -75,10 +74,7 @@ class MjTable(BodyComponent):
             cellpadding = self.get_attr('cellpadding'),
             cellspacing = self.get_attr('cellspacing'),
         )
-        children_html = ''
-        for child in self.children:
-            children_html += stringify_element(child)
-        content_html = self.getContent() + children_html
+        content_html = self.getContent()
         return f'''<table {table_attrs}>
             {content_html}
         </table>'''

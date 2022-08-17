@@ -2,7 +2,7 @@
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
 
-from lxml import etree as lxml_etree
+from bs4 import BeautifulSoup
 
 from .core import initComponent
 from .helpers import mergeOutlookConditionnals, json_to_xml, omit, skeleton_str as default_skeleton
@@ -28,8 +28,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
     if template_dir is None and hasattr(xml_fp, 'name'):
         template_dir = Path(xml_fp.name).parent
 
-    mjml_doc = lxml_etree.parse(xml_fp)
-    mjml_root = mjml_doc.xpath('/mjml')[0]
+    mjml_doc = BeautifulSoup(xml_fp, 'html.parser')
+    mjml_root = mjml_doc.mjml
 
     skeleton_path = skeleton
     if skeleton_path:
@@ -66,8 +66,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
     errors = []
     # LATER: optional validation
 
-    mjBody = mjml_root.xpath('/mjml/mj-body')[0]
-    mjHead = mjml_root.xpath('/mjml/mj-head')
+    mjBody = mjml_root('mj-body')[0]
+    mjHead = mjml_root('mj-head')
     if mjHead:
         assert len(mjHead) == 1
         mjHead = mjHead[0]
@@ -80,7 +80,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
         # the right thing though...
         _mjml_data = parseMJML(node) if parseMJML else applyAttributes(node)
         initialDatas = merge_dicts(_mjml_data, {'context': context})
-        node_tag = getattr(node, 'tag', None)
+        node_tag = getattr(node, 'name', None)
         component = initComponent(name=node_tag, **initialDatas)
         if not component:
             return None
@@ -94,23 +94,24 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
         if len(mjml_element) == 0:
             return {}
         def parse(_mjml, parentMjClass='', *, template_dir):
-            tagName = _mjml.tag
+            tagName = _mjml.name
             is_comment = not isinstance(tagName, str)
             if is_comment:
                 # XML comment: <cyfunction Comment at 0x…>
                 # (this needs to be extended when "keepComments" should be implemented)
                 return None
-            attributes = _mjml.attrib
+            attributes = _mjml.attrs
             children = [child for child in _mjml]
             classes = ignore_empty(attributes.get('mj-class', '').split(' '))
 
             # upstream parses text contents (+ comments) in mjml-parser-xml/index.js
-            content = _mjml.text
+            content = _mjml.decode_contents()
 
             attributesClasses = {}
             for css_class in classes:
-                mjClassValues = globalDatas.classes[css_class]
-                attributesClasses.update(mjClassValues)
+                mjClassValues = globalDatas.classes.get(css_class)
+                if mjClassValues:
+                    attributesClasses.update(mjClassValues)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
             def default_attr_classes(value):
@@ -126,21 +127,12 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
                 _attrs_omit,
             )
 
-            # XXX: ugly - but need raw XML content for mj-raw tag
-            if tagName == 'mj-raw':
-                from lxml.etree import tostring
-                content = tostring(_mjml).strip().decode('utf-8')
-                content = content.replace('<mj-raw>', '').replace('</mj-raw>', '')
-            elif tagName == 'mj-include':
+            if tagName == 'mj-include':
                 mj_include_subtree = handle_include(attributes['path'], parse_mjml=parse, template_dir=template_dir)
                 return mj_include_subtree
             result = {
                 'tagName': tagName,
                 'content': content,
-                # see also https://stackoverflow.com/a/30986529/138526 for the
-                # ".text"/".tail" difference
-                'tail'   : _mjml.tail,
-
                 'attributes': _returned_attributes,
                 'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),
                 'children': [], # will be set afterwards
@@ -258,9 +250,9 @@ def handle_include(path_value, parse_mjml, *, template_dir):
     # lxml does not like non-ascii StringIO input but utf8-encoded BytesIO works
     # seen with pypy3 7.3.1, lxml 4.6.3 (Fedora 34)
     fp_included = BytesIO(included_bytes)
-    mjml_doc = lxml_etree.parse(fp_included)
-    _body = mjml_doc.xpath('/mjml/mj-body')
-    _head = mjml_doc.xpath('/mjml/mj-head')
+    mjml_doc = BeautifulSoup(fp_included, 'html.parser')
+    _body = mjml_doc('mj-body')
+    _head = mjml_doc('mj-head')
     assert (not _head), '<mj-head> within <mj-include> not yet implemented '
     assert _body
 
