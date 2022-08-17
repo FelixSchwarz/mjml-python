@@ -73,46 +73,6 @@ class MjText(BodyComponent):
         # upstream has a different parser which puts everything in .content
         # html5lib's TreeWalker does not do that by default so we do add the
         # children HTML manually here.
-        children_html = ''
-        for child in self.children:
-            children_html += stringify_element(child)
-        content_html = self.getContent() + children_html
+        content_html = self.getContent()
         return '<div ' + self.html_attrs(style='text') + '>' + content_html + '</div>'
-
-
-
-def stringify_element(elem):
-    if elem is None:
-        # "comment" node
-        return ''
-    tag = elem['tagName']
-    is_comment = (not isinstance(tag, str)) and (tag.func_name == 'Comment')
-    if is_comment:
-        return '<!-- {content} -->'
-    assert isinstance(tag, str), f'unexpected child: {elem}'
-
-    attrs = []
-    for attr_key, attr_value in elem['attributes'].items():
-        if isinstance(attr_key, (tuple, list)) and (len(attr_key) == 2):
-            ns, key = attr_key
-        else:
-            key = attr_key
-        attrs.append('%s="%s"' % (key, attr_value))
-    attr_str = (' ' if attrs else '') + ' '.join(attrs)
-
-    content = elem['content']
-    tail_content = elem['tail'] or ''
-
-    html = f'<{tag}{attr_str}'
-    children = elem['children']
-    if children or content:
-        html += '>'
-        if content:
-            html += content
-        for child in children:
-            html += stringify_element(child)
-        html += f'</{tag}>'
-    else:
-        html += ' />'
-    return f'{html}{tail_content}'
 

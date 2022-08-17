@@ -20,11 +20,6 @@ def patch_nose1(func):
 @DataDrivenTestCase
 class MissingFeaturesTest(TestCase):
     @ddt_data(
-        'html-entities',
-        'html-without-closing-tag',
-        # htmlcompare is currently unable to detect these kind of
-        # whitespace differences.
-        # 'missing-whitespace-before-tag',
     )
     @expectedFailure
     @patch_nose1

@@ -25,10 +25,9 @@ def initComponent(name, **initialDatas):
 
 class Component:
     # LATER: not sure upstream also passes tagName, makes code easier for us
-    def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None, tagName=None, tail=''):
+    def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None, tagName=None):
         self.children = list(children)
         self.content = content
-        self.tail = tail
         self.context = context
         self.tagName = tagName
 

@@ -4,6 +4,7 @@ from json import load as json_load
 from pathlib import Path
 from unittest import SkipTest, TestCase
 
+from bs4 import BeautifulSoup
 from ddt import ddt as DataDrivenTestCase, data as ddt_data
 from htmlcompare import assert_same_html
 
@@ -18,6 +19,8 @@ class UpstreamAlignmentTest(TestCase):
     @ddt_data(
         'minimal',
         'hello-world',
+        'html-entities',
+        'html-without-closing-tag',
         'button',
         'text_with_html',
         'mj-body-with-background-color',
@@ -87,6 +90,19 @@ class UpstreamAlignmentTest(TestCase):
 
         assert not result.errors
         assert_same_html(expected_html, result.html, verbose=True)
+
+    # htmlcompare is currently unable to detect these kind of
+    # whitespace differences.
+    def test_keep_whitespace_before_tag(self):
+        test_id = 'missing-whitespace-before-tag'
+        expected_html = load_expected_html(test_id)
+        with get_mjml_fp(test_id) as mjml_fp:
+            result = mjml_to_html(mjml_fp)
+
+        assert not result.errors
+        actual_text = BeautifulSoup(result.html, 'html.parser').body.get_text().strip()
+        expected_text = BeautifulSoup(expected_html, 'html.parser').body.get_text().strip()
+        self.assertEqual(expected_text, actual_text)
 
 
 
