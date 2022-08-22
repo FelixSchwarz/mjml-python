@@ -70,9 +70,6 @@ class MjText(BodyComponent):
         return f'''{start_conditional}{self._render_content()}{end_conditional}'''
 
     def _render_content(self):
-        # upstream has a different parser which puts everything in .content
-        # html5lib's TreeWalker does not do that by default so we do add the
-        # children HTML manually here.
         content_html = self.getContent()
         return '<div ' + self.html_attrs(style='text') + '>' + content_html + '</div>'
 
