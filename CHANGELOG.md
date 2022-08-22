@@ -1,10 +1,17 @@
 
-0.7.x (unreleased)
+0.8.x (unreleased)
 ------------------
 
-- prevent exception when trying to set padding for `<mj-column>`
-- fix setting `width` attribute for `mj-button`
-- support css inlining (via `inlineStyle`) if "css_inline" is installed
+- parse MJML using BeautifulSoup4 which fixes several issues with HTML inside
+  `mj-text` (e.g. HTML entities, missing white space) (Casey Holzer)
+- prevent exception when trying to set padding for `<mj-column>` (reported by Peter Coles)
+- fix setting `width` attribute for `mj-button` (spotted by Michael Romanenko)
+- support css inlining (via `inlineStyle`) if "css_inline" is installed (Casey Holzer)
+
+**New Contributors:**
+
+- [Casey Holzer](https://www.github.com/caseyjhol)
+- [Peter Coles](https://www.github.com/mrcoles)
 
 
 0.7.0 (2022-03-24)
