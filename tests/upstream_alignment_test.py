@@ -100,9 +100,12 @@ class UpstreamAlignmentTest(TestCase):
             result = mjml_to_html(mjml_fp)
 
         assert not result.errors
-        actual_text = BeautifulSoup(result.html, 'html.parser').body.get_text().strip()
         expected_text = BeautifulSoup(expected_html, 'html.parser').body.get_text().strip()
-        self.assertEqual(expected_text, actual_text)
+        body_actual = BeautifulSoup(result.html, 'html.parser').body
+        actual_text = body_actual.get_text().strip()
+        assert (expected_text == actual_text)
+        actual_html = (body_actual.select('table > tr > td > div')[0]).renderContents()
+        assert (b'foo <b>bar</b>.' == actual_html)
 
 
 
