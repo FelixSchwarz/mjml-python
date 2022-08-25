@@ -1,5 +1,5 @@
 
-0.8.x (unreleased)
+0.8.0 (2022-08-25)
 ------------------
 
 - parse MJML using BeautifulSoup4 which fixes several issues with HTML inside
