@@ -4,29 +4,31 @@ __all__ = []
 
 def _components():
     from ..elements import (MjButton, MjText, MjSection, MjColumn, MjBody,
-        MjGroup, MjImage, MjDivider, MjSpacer, MjTable, MjRaw, MjWrapper)
+        MjGroup, MjImage, MjNavbar, MjNavbarLink, MjDivider, MjSpacer, MjTable, MjRaw, MjWrapper)
     from ..elements.head import (MjAttributes, MjBreakpoint, MjFont, MjHead, MjPreview, MjStyle,
         MjTitle)
     components = {
-        'mj-body'      : MjBody,
-        'mj-button'    : MjButton,
-        'mj-column'    : MjColumn,
-        'mj-divider'   : MjDivider,
-        'mj-group'     : MjGroup,
-        'mj-image'     : MjImage,
-        'mj-raw'       : MjRaw,
-        'mj-section'   : MjSection,
-        'mj-spacer'    : MjSpacer,
-        'mj-table'     : MjTable,
-        'mj-text'      : MjText,
-        'mj-wrapper'   : MjWrapper,
+        'mj-body'       : MjBody,
+        'mj-button'     : MjButton,
+        'mj-column'     : MjColumn,
+        'mj-divider'    : MjDivider,
+        'mj-group'      : MjGroup,
+        'mj-image'      : MjImage,
+        'mj-navbar'     : MjNavbar,
+        'mj-navbar-link': MjNavbarLink,
+        'mj-raw'        : MjRaw,
+        'mj-section'    : MjSection,
+        'mj-spacer'     : MjSpacer,
+        'mj-table'      : MjTable,
+        'mj-text'       : MjText,
+        'mj-wrapper'    : MjWrapper,
         # --- head components ---
-        'mj-attributes': MjAttributes,
-        'mj-breakpoint': MjBreakpoint,
-        'mj-font'      : MjFont,
-        'mj-head'      : MjHead,
-        'mj-preview'   : MjPreview,
-        'mj-style'     : MjStyle,
-        'mj-title'     : MjTitle,
+        'mj-attributes' : MjAttributes,
+        'mj-breakpoint' : MjBreakpoint,
+        'mj-font'       : MjFont,
+        'mj-head'       : MjHead,
+        'mj-preview'    : MjPreview,
+        'mj-style'      : MjStyle,
+        'mj-title'      : MjTitle,
     }
     return components
