@@ -46,6 +46,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-raw-with-tags',
         'mj-raw-head',
         'mj-raw-head-with-tags',
+        'mj-spacer',
         'mj-wrapper',
     )
     def test_ensure_same_html(self, test_id):
