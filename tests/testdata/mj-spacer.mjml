@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Foo</mj-text>
+        <mj-spacer />
+        <mj-text>Bar</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
