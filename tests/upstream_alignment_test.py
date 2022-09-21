@@ -94,6 +94,25 @@ class UpstreamAlignmentTest(TestCase):
         assert not result.errors
         assert_same_html(expected_html, result.html, verbose=True)
 
+    # The dynamically generated menu key prevents us from just using
+    # test_ensure_same_html to test mj-navbar
+    def test_mj_navbar(self):
+        test_id = 'mj-navbar'
+        expected_html = load_expected_html(test_id)
+        with get_mjml_fp(test_id) as mjml_fp:
+            result = mjml_to_html(mjml_fp)
+
+        assert not result.errors
+        expected_soup = BeautifulSoup(expected_html, 'html.parser')
+        actual_soup = BeautifulSoup(result.html, 'html.parser')
+
+        # This key is randomly generated, so we need to manually replace it.
+        menuKey = actual_soup.find(attrs={'class': 'mj-menu-checkbox'})['id']
+        expected_soup.find(attrs={'class': 'mj-menu-checkbox'})['id'] = menuKey
+        expected_soup.find(attrs={'class': 'mj-menu-label'})['for'] = menuKey
+
+        assert_same_html(str(expected_soup), str(actual_soup), verbose=True)
+
     # htmlcompare is currently unable to detect these kind of
     # whitespace differences.
     def test_keep_whitespace_before_tag(self):

@@ -51,8 +51,8 @@ class BodyComponent(Component):
             key, value = kv
             if key == 'style':
                 value = self.styles(value)
-            elif key == 'class_':
-                key = 'class'
+            elif key in ['class_', 'for_']:
+                key = key[:-1]
                 if not value:
                     return None
             if value is None:
