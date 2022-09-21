@@ -9,3 +9,4 @@ from .mj_raw import *
 from .mj_section import *
 from .mj_table import *
 from .mj_text import *
+from .mj_wrapper import *
