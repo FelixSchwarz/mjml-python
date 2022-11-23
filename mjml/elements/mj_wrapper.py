@@ -15,8 +15,7 @@ class MjWrapper(MjSection):
             if component.isRawElement():
                 return component.render()
             td_ie_attrs = component.html_attrs(
-                # TODO: no component has an "align" attr, also never used?
-                #align=component.get_attr('align'),
+                align=component.get_attr('align', True),
                 class_=suffixCssClasses(
                       component.get_attr('css-class'),
                       'outlook',
