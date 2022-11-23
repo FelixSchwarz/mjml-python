@@ -1,4 +1,10 @@
 
+0.9.0 (?)
+------------------
+
+- add mjml-head-breakpoint, mjml-navbar, mjml-navbar-link, mjml-spacer, and mjml-wrapper components (Casey Holzer)
+
+
 0.8.0 (2022-08-25)
 ------------------
 
