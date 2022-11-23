@@ -26,9 +26,7 @@ class MjWrapper(MjSection):
             return f'''
               <!--[if mso | IE]>
                 <tr>
-                  <td
-                    {td_ie_attrs}
-                  >
+                  <td {td_ie_attrs}>
               <![endif]-->
                 {component.render()}
               <!--[if mso | IE]>

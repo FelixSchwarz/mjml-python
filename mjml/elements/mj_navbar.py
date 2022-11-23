@@ -109,40 +109,28 @@ class MjNavbar(BodyComponent):
 
     def renderHamburger(self):
         key = token_hex(8)
-
-        return f'''
-          {msoConditionalTag(
+        input_tag = msoConditionalTag(
             f'<input type="checkbox" id="{key}" class="mj-menu-checkbox" style="display:none !important; max-height:0; visibility:hidden;" />',
             True
-          )}
-          <div
-            {self.html_attrs(
-                class_='mj-menu-trigger',
-                style='trigger',
-            )}
-          >
-            <label
-              {self.html_attrs(
-                for_=key,
-                class_='mj-menu-label',
-                style='label',
-                align=self.getAttribute('ico-align'),
-              )}
-            >
-              <span
-                {self.html_attrs(
-                  class_='mj-menu-icon-open',
-                  style='icoOpen',
-                )}
-              >
+        )
+        div_attrs = self.html_attrs(class_='mj-menu-trigger', style='trigger')
+        label_attrs = self.html_attrs(
+            for_=key,
+            class_='mj-menu-label',
+            style='label',
+            align=self.getAttribute('ico-align'),
+        )
+        span_open_attrs = self.html_attrs(class_='mj-menu-icon-open', style='icoOpen')
+        span_close_attrs = self.html_attrs(class_='mj-menu-icon-close', style='icoClose')
+
+        return f'''
+          {input_tag}
+          <div {div_attrs}>
+            <label {label_attrs}>
+              <span {span_open_attrs}>
                 {self.getAttribute('ico-open')}
               </span>
-              <span
-                {self.html_attrs(
-                  class_='mj-menu-icon-close',
-                  style='icoClose',
-                )}
-              >
+              <span {span_close_attrs}>
                 {self.getAttribute('ico-close')}
               </span>
             </label>
@@ -152,26 +140,21 @@ class MjNavbar(BodyComponent):
     def render(self):
         children = self.props['children']
         hamburger = self.renderHamburger() if self.getAttribute('hamburger') == 'hamburger' else ''
-        conditional_open, conditional_close = [
+        div_attrs = self.html_attrs(
+            class_='mj-inline-links',
+        )
+        content = ''.join([
             conditionalTag(f'''
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="{self.getAttribute('align')}">
               <tr>
             '''),
+            self.renderChildren(children, attributes={'navbarBaseUrl': self.getAttribute('base-url')}),
             conditionalTag('</tr></table>')
-        ]
-        div_attrs = self.html_attrs(
-            class_='mj-inline-links',
-        )
+        ])
 
         return f'''
             {hamburger}
             <div {div_attrs}>
-              {conditional_open}
-              {self.renderChildren(children, 
-                attributes={
-                  'navbarBaseUrl': self.getAttribute('base-url'),
-                },
-              )}
-              {conditional_close}
+              {content}
             </div>
         '''

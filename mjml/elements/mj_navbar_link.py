@@ -74,44 +74,35 @@ class MjNavbarLink(BodyComponent):
 
     def renderContent(self):
         href = self.getAttribute('href')
-        navbarBaseUrl = self.getAttribute('navbarBaseUrl')
-        link = f'{navbarBaseUrl}{href}' if navbarBaseUrl else href
-
-        cssClass = f' {self.getAttribute("css-class")}' if self.getAttribute('css-class') else ''
+        navbar_base_url = self.getAttribute('navbarBaseUrl')
+        link = f'{navbar_base_url}{href}' if navbar_base_url else href
+        css_class = self.getAttribute("css-class") or ''
+        html_attrs = self.html_attrs(
+            class_=f'mj-link {css_class}',
+            href=link,
+            rel=self.getAttribute('rel'),
+            target=self.getAttribute('target'),
+            name=self.getAttribute('name'),
+            style='a',
+        )
 
         return f'''
-          <a
-            {self.html_attrs(
-              class_=f'mj-link{cssClass}',
-              href=link,
-              rel=self.getAttribute('rel'),
-              target=self.getAttribute('target'),
-              name=self.getAttribute('name'),
-              style='a',
-            )}
-          >
+          <a {html_attrs}>
             {self.getContent()}
           </a>
         '''
 
     def render(self):
-        conditional_open, conditional_close = [
-            conditionalTag(f'''
-            <td
-                {self.html_attrs(
-                  style='td',
-                  class_=suffixCssClasses(
-                    self.getAttribute('css-class'),
-                    'outlook',
-                  ),
-                )}
-              >
-            '''),
-            conditionalTag('</td>')
-        ]
+        html_attrs = self.html_attrs(
+            style='td',
+            class_=suffixCssClasses(
+                self.getAttribute('css-class'),
+                'outlook',
+            ),
+        )
 
-        return f'''
-            {conditional_open}
-            {self.renderContent()}
-            {conditional_close}
-        '''
+        return ''.join([
+            conditionalTag(f'<td {html_attrs}>'),
+            self.renderContent(),
+            conditionalTag('</td>'),
+        ])
