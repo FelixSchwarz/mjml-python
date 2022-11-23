@@ -1,5 +1,5 @@
-
-from secrets import token_hex
+import random
+import string
 
 from ._base import BodyComponent
 from ..helpers import msoConditionalTag, conditionalTag
@@ -108,7 +108,7 @@ class MjNavbar(BodyComponent):
         }
 
     def renderHamburger(self):
-        key = token_hex(8)
+        key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
         input_tag = msoConditionalTag(
             f'<input type="checkbox" id="{key}" class="mj-menu-checkbox" style="display:none !important; max-height:0; visibility:hidden;" />',
             True
