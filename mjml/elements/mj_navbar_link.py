@@ -74,9 +74,9 @@ class MjNavbarLink(BodyComponent):
 
     def renderContent(self):
         href = self.getAttribute('href')
-        navbar_base_url = self.getAttribute('navbarBaseUrl')
+        navbar_base_url = self.getAttribute('navbarBaseUrl', True)
         link = f'{navbar_base_url}{href}' if navbar_base_url else href
-        css_class = self.getAttribute("css-class") or ''
+        css_class = self.getAttribute('css-class', True) or ''
         html_attrs = self.html_attrs(
             class_=f'mj-link {css_class}',
             href=link,
@@ -96,7 +96,7 @@ class MjNavbarLink(BodyComponent):
         html_attrs = self.html_attrs(
             style='td',
             class_=suffixCssClasses(
-                self.getAttribute('css-class'),
+                self.getAttribute('css-class', True),
                 'outlook',
             ),
         )
