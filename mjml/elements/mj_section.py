@@ -254,9 +254,7 @@ class MjSection(BodyComponent):
             )
             return f'''
               <!--[if mso | IE]>
-                <td
-                  {td_ie_attrs}
-                >
+                <td {td_ie_attrs}>
               <![endif]-->
                 {component.render()}
               <!--[if mso | IE]>
