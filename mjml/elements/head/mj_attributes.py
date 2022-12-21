@@ -6,6 +6,8 @@ from mjml.helpers import omit
 __all__ = ['MjAttributes']
 
 class MjAttributes(HeadComponent):
+    component_name = 'mj-attributes'
+
     def handler(self):
         add = self.context['add']
         _children = self.props.children

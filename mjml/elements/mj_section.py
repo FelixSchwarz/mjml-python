@@ -14,6 +14,8 @@ Position = namedtuple('Position', ('x', 'y'))
 
 
 class MjSection(BodyComponent):
+    component_name = 'mj-section'
+
     @classmethod
     def allowed_attrs(cls):
         return {

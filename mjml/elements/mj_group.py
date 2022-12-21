@@ -7,6 +7,8 @@ from ..lib import merge_dicts
 __all__ = ['MjGroup']
 
 class MjGroup(BodyComponent):
+    component_name = 'mj-group'
+
     @classmethod
     def default_attrs(cls):
         return {

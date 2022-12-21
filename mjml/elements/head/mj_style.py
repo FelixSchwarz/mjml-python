@@ -5,6 +5,8 @@ from ._head_base import HeadComponent
 __all__ = ['MjStyle']
 
 class MjStyle(HeadComponent):
+    component_name = 'mj-style'
+
     @classmethod
     def default_attrs(cls):
         return {

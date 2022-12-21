@@ -7,6 +7,8 @@ from ..lib import merge_dicts
 __all__ = ['MjColumn']
 
 class MjColumn(BodyComponent):
+    component_name = 'mj-column'
+
     @classmethod
     def allowed_attrs(cls):
         return {

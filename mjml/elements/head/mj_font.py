@@ -6,6 +6,8 @@ __all__ = ['MjFont']
 
 
 class MjFont(HeadComponent):
+    component_name = 'mj-font'
+
     @classmethod
     def allowed_attrs(cls):
         return {

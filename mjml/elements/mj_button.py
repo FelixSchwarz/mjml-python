@@ -6,6 +6,8 @@ from ..helpers import widthParser
 __all__ = ['MjButton']
 
 class MjButton(BodyComponent):
+    component_name = 'mj-button'
+
     @classmethod
     def allowed_attrs(cls):
         return {
