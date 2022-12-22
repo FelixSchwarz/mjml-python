@@ -126,4 +126,21 @@ class UpstreamAlignmentTest(TestCase):
         actual_html = (body_actual.select('table > tr > td > div')[0]).renderContents()
         assert (b'foo <b>bar</b>.' == actual_html)
 
+    def test_custom_components(self):
+        import custom as custom_components
+        from custom.mj_text_custom import MjTextCustom
+        from custom.mj_text_override import MjTextOverride
+        expected_html = load_expected_html('_custom')
+        with get_mjml_fp('_custom') as mjml_fp:
+            result_module = mjml_to_html(mjml_fp, custom_components=custom_components)
+        with get_mjml_fp('_custom') as mjml_fp:
+            result_list = mjml_to_html(mjml_fp, custom_components=[MjTextCustom, MjTextOverride])
+
+        assert not result_module.errors
+        assert not result_list.errors
+        module_actual_html = result_module.html
+        list_actual_html = result_list.html
+        assert_same_html(expected_html, module_actual_html, verbose=True)
+        assert_same_html(expected_html, list_actual_html, verbose=True)
+
 
