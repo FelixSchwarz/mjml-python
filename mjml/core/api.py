@@ -77,7 +77,7 @@ class Component:
         return self.context
 
     # js: getAttribute(name)
-    def get_attr(self, name, missing_ok=False):
+    def get_attr(self, name, *, missing_ok=False):
         if not missing_ok and (name not in self.allowed_attrs()) and (name not in self.default_attrs()):
             raise AssertionError(f'{self.__class__.__name__} has no declared attr {name}')
         return self.attrs.get(name)

@@ -205,9 +205,9 @@ class MjColumn(BodyComponent):
             if component.isRawElement():
                 return component.render()
             td_attrs = component.html_attrs(
-                align = component.getAttribute('align', True),
+                align = component.getAttribute('align', missing_ok=True),
                 # vertical-align
-                class_ = component.getAttribute('css-class', True),
+                class_ = component.getAttribute('css-class', missing_ok=True),
                 style = {
                     'background': component.getAttribute(
                       'container-background-color',
@@ -221,7 +221,7 @@ class MjColumn(BodyComponent):
                     'padding-left': component.getAttribute('padding-left'),
                     'word-break': 'break-word',
                   },
-                **{'vertical-align': component.getAttribute('vertical-align', True)}
+                **{'vertical-align': component.getAttribute('vertical-align', missing_ok=True)}
             )
             return f'''<tr>
               <td {td_attrs}>
