@@ -7,6 +7,8 @@ __all__ = ['MjWrapper']
 
 
 class MjWrapper(MjSection):
+    component_name = 'mj-wrapper'
+
     def renderWrappedChildren(self):
         children = self.props['children']
         containerWidth = self.context['containerWidth']

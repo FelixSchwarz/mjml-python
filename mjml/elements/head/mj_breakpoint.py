@@ -6,6 +6,8 @@ __all__ = ['MjBreakpoint']
 
 
 class MjBreakpoint(HeadComponent):
+    component_name = 'mj-breakpoint'
+
     @classmethod
     def allowed_attrs(cls):
         return {
