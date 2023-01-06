@@ -17,7 +17,7 @@ class MjWrapper(MjSection):
             if component.isRawElement():
                 return component.render()
             td_ie_attrs = component.html_attrs(
-                align=component.get_attr('align', True),
+                align=component.get_attr('align', missing_ok=True),
                 class_=suffixCssClasses(
                       component.get_attr('css-class'),
                       'outlook',

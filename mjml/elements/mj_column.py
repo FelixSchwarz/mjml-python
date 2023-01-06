@@ -212,8 +212,8 @@ class MjColumn(BodyComponent):
                 class_ = component.getAttribute('css-class', missing_ok=True),
                 style = {
                     'background': component.getAttribute(
-                      'container-background-color',
-                        True
+                        'container-background-color',
+                        missing_ok=True
                     ),
                     'font-size': '0px',
                     'padding': component.getAttribute('padding'),
