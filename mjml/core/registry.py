@@ -9,6 +9,10 @@ components = {}
 
 def register_core_components():
     from ..elements import (
+        MjAccordion,
+        MjAccordionElement,
+        MjAccordionText,
+        MjAccordionTitle,
         MjBody,
         MjButton,
         MjColumn,
@@ -35,6 +39,10 @@ def register_core_components():
     )
 
     register_components([
+        MjAccordion,
+        MjAccordionElement,
+        MjAccordionText,
+        MjAccordionTitle,
         MjButton,
         MjText,
         MjDivider,

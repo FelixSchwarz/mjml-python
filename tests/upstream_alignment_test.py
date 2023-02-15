@@ -23,6 +23,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-breakpoint',
         'mj-title',
         'mj-style',
+        'mj-accordion',
         'mj-attributes',
         'mj-column-with-attributes',
         'mj-group',
