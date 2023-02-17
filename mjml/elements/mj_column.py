@@ -211,7 +211,7 @@ class MjColumn(BodyComponent):
                 style = {
                     'background': component.getAttribute(
                       'container-background-color',
-                        True
+                      missing_ok=True
                     ),
                     'font-size': '0px',
                     'padding': component.getAttribute('padding'),
