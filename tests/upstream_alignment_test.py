@@ -1,7 +1,5 @@
 
-from contextlib import contextmanager
 from json import load as json_load
-from pathlib import Path
 from unittest import SkipTest, TestCase
 
 from bs4 import BeautifulSoup
@@ -9,10 +7,9 @@ from ddt import ddt as DataDrivenTestCase, data as ddt_data
 from htmlcompare import assert_same_html
 
 from mjml import mjml_to_html
+from mjml.testing_helpers import get_mjml_fp, load_expected_html
 
 
-
-TESTDATA_DIR = Path(__file__).parent / 'testdata'
 
 @DataDrivenTestCase
 class UpstreamAlignmentTest(TestCase):
@@ -129,30 +126,4 @@ class UpstreamAlignmentTest(TestCase):
         actual_html = (body_actual.select('table > tr > td > div')[0]).renderContents()
         assert (b'foo <b>bar</b>.' == actual_html)
 
-    def test_custom_components(self):
-        from .custom.mj_text_custom import MjTextCustom
-        from .custom.mj_text_override import MjTextOverride
-        expected_html = load_expected_html('_custom')
-        with get_mjml_fp('_custom') as mjml_fp:
-            result_list = mjml_to_html(mjml_fp, custom_components=[MjTextCustom, MjTextOverride])
-
-        assert not result_list.errors
-        list_actual_html = result_list.html
-        assert_same_html(expected_html, list_actual_html, verbose=True)
-
-
-
-def load_expected_html(test_id):
-    html_filename = f'{test_id}-expected.html'
-    with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
-        expected_html = html_fp.read()
-    return expected_html
-
-@contextmanager
-def get_mjml_fp(test_id, json=False):
-    mjml_filename = f'{test_id}.mjml'
-    if json:
-        mjml_filename += '.json'
-    with (TESTDATA_DIR / mjml_filename).open('rb') as mjml_fp:
-        yield mjml_fp
 
