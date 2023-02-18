@@ -4,5 +4,3 @@
 /venv*
 /.project
 *.pyc
-/update-expected-html.py
-/verify-commits.py
