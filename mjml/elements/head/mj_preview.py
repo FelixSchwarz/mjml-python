@@ -6,6 +6,7 @@ __all__ = ['MjPreview']
 
 
 class MjPreview(HeadComponent):
+    component_name = 'mj-preview'
 
     def handler(self):
         add = self.context['add']

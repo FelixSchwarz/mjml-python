@@ -6,6 +6,8 @@ from ..lib import merge_dicts
 __all__ = ['MjBody']
 
 class MjBody(BodyComponent):
+    component_name = 'mj-body'
+
     @classmethod
     def allowed_attrs(cls):
         return {

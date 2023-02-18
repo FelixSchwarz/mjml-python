@@ -5,6 +5,8 @@ from ._base import BodyComponent
 __all__ = ['MjText']
 
 class MjText(BodyComponent):
+    component_name = 'mj-text'
+
     @classmethod
     def allowed_attrs(cls):
         return {

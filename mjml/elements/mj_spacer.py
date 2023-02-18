@@ -6,6 +6,8 @@ __all__ = ['MjSpacer']
 
 
 class MjSpacer(BodyComponent):
+    component_name = 'mj-spacer'
+
     @classmethod
     def allowed_attrs(cls):
         return {

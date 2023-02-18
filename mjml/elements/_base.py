@@ -2,7 +2,7 @@
 
 from ..lib import merge_dicts, AttrDict
 from ..core import initComponent, Component
-from ..core.registry import _components
+from ..core.registry import components
 from ..helpers import *
 
 
@@ -111,7 +111,7 @@ class BodyComponent(Component):
         #  child => !find(rawComponents, c => c.getTagName() === child.tagName),
         #).length
         raw_tag_names = set()
-        for tag_name, component in _components().items():
+        for tag_name, component in components.items():
             if component.isRawElement():
                 raw_tag_names.add(tag_name)
         is_raw_element = lambda c: (c['tagName'] in raw_tag_names)

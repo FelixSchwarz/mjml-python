@@ -6,6 +6,8 @@ from ..helpers import widthParser
 __all__ = ['MjTable']
 
 class MjTable(BodyComponent):
+    component_name = 'mj-table'
+
     @classmethod
     def allowed_attrs(cls):
         return {

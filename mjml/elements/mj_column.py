@@ -7,6 +7,8 @@ from ..lib import merge_dicts
 __all__ = ['MjColumn']
 
 class MjColumn(BodyComponent):
+    component_name = 'mj-column'
+
     @classmethod
     def allowed_attrs(cls):
         return {
@@ -210,8 +212,8 @@ class MjColumn(BodyComponent):
                 class_ = component.getAttribute('css-class', missing_ok=True),
                 style = {
                     'background': component.getAttribute(
-                      'container-background-color',
-                      missing_ok=True
+                        'container-background-color',
+                        missing_ok=True
                     ),
                     'font-size': '0px',
                     'padding': component.getAttribute('padding'),

@@ -9,6 +9,8 @@ __all__ = ['MjNavbar']
 
 
 class MjNavbar(BodyComponent):
+    component_name = 'mj-navbar'
+
     @classmethod
     def allowed_attrs(cls):
         return {

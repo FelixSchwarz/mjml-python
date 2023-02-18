@@ -8,6 +8,8 @@ from ..helpers import parse_int, strip_unit, widthParser
 __all__ = ['MjImage']
 
 class MjImage(BodyComponent):
+    component_name = 'mj-image'
+
     @classmethod
     def allowed_attrs(cls):
         return {

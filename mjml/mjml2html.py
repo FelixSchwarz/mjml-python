@@ -1,10 +1,12 @@
 
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
+from typing import List, Type
 
 from bs4 import BeautifulSoup
 
 from .core import initComponent
+from .core.registry import register_components, register_core_components
 from .helpers import mergeOutlookConditionnals, json_to_xml, omit, skeleton_str as default_skeleton
 from .lib import merge_dicts, AttrDict
 
@@ -17,7 +19,9 @@ def ignore_empty(values):
     return tuple(result)
 
 
-def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
+def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_components: List[Type] = None):
+    register_core_components()
+
     if isinstance(xml_fp_or_json, dict):
         xml_fp = StringIO(json_to_xml(xml_fp_or_json))
     elif isinstance(xml_fp_or_json, str):
@@ -35,6 +39,9 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None):
     if skeleton_path:
         raise NotImplementedError('not yet implemented')
     skeleton = default_skeleton
+
+    if custom_components:
+        register_components(custom_components)
 
     fonts = {
       'Open Sans': 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700',

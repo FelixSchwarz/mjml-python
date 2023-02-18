@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text-custom>This is a new component</mj-text-custom>
+        <mj-text>This component has been changed</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

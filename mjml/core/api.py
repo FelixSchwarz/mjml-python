@@ -1,7 +1,7 @@
 
 from ..lib import merge_dicts, AttrDict
 
-from .registry import _components
+from .registry import components
 
 
 __all__ = ['initComponent', 'Component']
@@ -9,7 +9,6 @@ __all__ = ['initComponent', 'Component']
 def initComponent(name, **initialDatas):
     if name is None:
         return None
-    components = _components()
     component_cls = components[name]
     if not component_cls:
         return None

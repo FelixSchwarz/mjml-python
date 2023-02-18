@@ -7,6 +7,8 @@ from ..lib import merge_dicts
 __all__ = ['MjDivider']
 
 class MjDivider(BodyComponent):
+    component_name = 'mj-divider'
+
     @classmethod
     def allowed_attrs(cls):
         return {
