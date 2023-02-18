@@ -7,7 +7,6 @@ from schwarz.fakefs_helpers import FakeFS
 from mjml import mjml_to_html
 
 
-
 class IncludesWithUmlautsTest(TestCase):
     def test_can_properly_handle_include_umlauts(self):
         fs = FakeFS.set_up(test=self)
@@ -32,4 +31,3 @@ class IncludesWithUmlautsTest(TestCase):
         html = result.html
 
         assert ('äöüß' in html)
-

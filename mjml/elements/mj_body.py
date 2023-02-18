@@ -1,6 +1,6 @@
 
-from ._base import BodyComponent
 from ..lib import merge_dicts
+from ._base import BodyComponent
 
 
 __all__ = ['MjBody']
@@ -41,4 +41,3 @@ class MjBody(BodyComponent):
         html_attrs = self.html_attrs(class_=self.get_attr('css-class'), style='div')
         children_str = self.renderChildren()
         return f'<div {html_attrs}>{children_str}</div>'
-

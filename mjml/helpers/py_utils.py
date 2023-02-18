@@ -1,6 +1,6 @@
 
-from decimal import Decimal
 import re
+from decimal import Decimal
 
 
 __all__ = [
@@ -57,4 +57,3 @@ def is_empty(v):
 
 def is_not_empty(v):
     return not is_empty(v)
-

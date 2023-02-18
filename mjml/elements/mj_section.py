@@ -1,11 +1,11 @@
 
+import re
 from collections import namedtuple
 from decimal import Decimal
-import re
 
-from ._base import BodyComponent
 from ..helpers import parse_percentage, strip_unit, suffixCssClasses
-from ..lib import merge_dicts, AttrDict
+from ..lib import AttrDict, merge_dicts
+from ._base import BodyComponent
 
 
 __all__ = ['MjSection']
@@ -229,7 +229,7 @@ class MjSection(BodyComponent):
         wrapper_attr_str = self.html_attrs(class_=wrapper_class, style='div')
 
         bg_div_start = f'<div {self.html_attrs(style="innerDiv")}>' if hasBackground else ''
-        bg_div_end = f'</div>' if hasBackground else ''
+        bg_div_end = '</div>' if hasBackground else ''
 
         table_attrs = self.html_attrs(
             align='center',
@@ -433,4 +433,3 @@ def is_percentage(value):
 
 def makeBackgroundString(parts):
     return ' '.join(filter(None, parts))
-

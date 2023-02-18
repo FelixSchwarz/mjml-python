@@ -1,8 +1,8 @@
 import random
 import string
 
+from ..helpers import conditionalTag, msoConditionalTag
 from ._base import BodyComponent
-from ..helpers import msoConditionalTag, conditionalTag
 
 
 __all__ = ['MjNavbar']

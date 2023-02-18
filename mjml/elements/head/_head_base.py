@@ -1,5 +1,5 @@
 
-from mjml.core import initComponent, Component
+from mjml.core import Component, initComponent
 
 
 __all__ = ['HeadComponent']
@@ -27,4 +27,3 @@ class HeadComponent(Component):
 
         childrens = self.props.children
         return tuple(map(handle_children, childrens))
-

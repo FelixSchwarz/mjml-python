@@ -1,6 +1,5 @@
 
-from ..lib import merge_dicts, AttrDict
-
+from ..lib import AttrDict, merge_dicts
 from .registry import components
 
 
@@ -24,7 +23,8 @@ def initComponent(name, **initialDatas):
 
 class Component:
     # LATER: not sure upstream also passes tagName, makes code easier for us
-    def __init__(self, *, attributes=None, children=(), content='', context=None, props=None, globalAttributes=None, headStyle=None, tagName=None):
+    def __init__(self, *, attributes=None, children=(), content='', context=None,
+                 props=None, globalAttributes=None, headStyle=None, tagName=None):
         self.children = list(children)
         self.content = content
         self.context = context
@@ -77,11 +77,12 @@ class Component:
 
     # js: getAttribute(name)
     def get_attr(self, name, *, missing_ok=False):
-        if not missing_ok and (name not in self.allowed_attrs()) and (name not in self.default_attrs()):
+        is_allowed_attr = name in self.allowed_attrs()
+        is_default_attr = name in self.default_attrs()
+        if not missing_ok and (not is_allowed_attr) and (not is_default_attr):
             raise AssertionError(f'{self.__class__.__name__} has no declared attr {name}')
         return self.attrs.get(name)
     getAttribute = get_attr
 
     def render(self):
         return ''
-

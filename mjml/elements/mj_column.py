@@ -1,7 +1,7 @@
 
-from ._base import BodyComponent
 from ..helpers import parse_float, parse_int, strip_unit, widthParser
 from ..lib import merge_dicts
+from ._base import BodyComponent
 
 
 __all__ = ['MjColumn']
@@ -179,7 +179,13 @@ class MjColumn(BodyComponent):
 
 
     def hasGutter(self):
-        padding_attrs = ('padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top')
+        padding_attrs = (
+            'padding',
+            'padding-bottom',
+            'padding-left',
+            'padding-right',
+            'padding-top'
+        )
         attr_values = map(lambda n: self.get_attr(n), padding_attrs)
         return any(filter(lambda v: bool(v), attr_values))
 
@@ -244,4 +250,3 @@ class MjColumn(BodyComponent):
                 {self.renderChildren(children, renderer=render_child)}
             </tbody>
         </table>'''
-

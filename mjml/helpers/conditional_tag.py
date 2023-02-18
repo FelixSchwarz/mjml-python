@@ -27,4 +27,3 @@ def msoConditionalTag(content, negation=False):
     else:
         start, end = startConditionalTag, endConditionalTag
     return start + content + end
-

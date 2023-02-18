@@ -10,4 +10,3 @@ class MjTitle(HeadComponent):
     def handler(self):
         add = self.context['add']
         add('title', self.getContent())
-

@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
-from .helpers import mergeOutlookConditionnals, json_to_xml, omit, skeleton_str as default_skeleton
-from .lib import merge_dicts, AttrDict
+from .helpers import json_to_xml, mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
+from .lib import AttrDict, merge_dicts
 
 
 def ignore_empty(values):

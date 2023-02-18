@@ -4,13 +4,35 @@ __all__ = ['components', 'register_components', 'register_core_components']
 
 from typing import List, Type
 
+
 components = {}
 
 def register_core_components():
-    from ..elements import (MjButton, MjText, MjSection, MjColumn, MjBody,
-        MjGroup, MjImage, MjNavbar, MjNavbarLink, MjDivider, MjSpacer, MjTable, MjRaw, MjWrapper)
-    from ..elements.head import (MjAttributes, MjBreakpoint, MjFont, MjHead, MjPreview, MjStyle,
-        MjTitle)
+    from ..elements import (
+        MjBody,
+        MjButton,
+        MjColumn,
+        MjDivider,
+        MjGroup,
+        MjImage,
+        MjNavbar,
+        MjNavbarLink,
+        MjRaw,
+        MjSection,
+        MjSpacer,
+        MjTable,
+        MjText,
+        MjWrapper,
+    )
+    from ..elements.head import (
+        MjAttributes,
+        MjBreakpoint,
+        MjFont,
+        MjHead,
+        MjPreview,
+        MjStyle,
+        MjTitle,
+    )
 
     register_components([
         MjButton,

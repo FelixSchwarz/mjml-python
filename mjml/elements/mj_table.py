@@ -1,6 +1,6 @@
 
-from ._base import BodyComponent
 from ..helpers import widthParser
+from ._base import BodyComponent
 
 
 __all__ = ['MjTable']
@@ -80,4 +80,3 @@ class MjTable(BodyComponent):
         return f'''<table {table_attrs}>
             {content_html}
         </table>'''
-

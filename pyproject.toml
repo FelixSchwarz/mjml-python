@@ -1,0 +1,29 @@
+[tool.ruff]
+line-length = 100
+
+ignore = [
+    # F403 "`from pythonic_testcase import *` used; unable to detect undefined names
+    # F405 "… may be undefined, or defined from star imports: …"
+    #    Sometimes star imports are perfectly fine IMHO.
+    "F403",
+    "F405",
+    # E731: "Do not assign a `lambda` expression, use a `def`"
+    #    I think assigning to lambda expressions is ok.
+    "E731",
+]
+
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # isort
+    "I001"
+]
+src = ["mjml", "tests"]
+
+[tool.ruff.isort]
+lines-after-imports = 2
+known-first-party = ["mjml"]
+combine-as-imports = true

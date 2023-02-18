@@ -1,8 +1,8 @@
 
 import math
 
-from ._base import BodyComponent
 from ..helpers import parse_int, strip_unit, widthParser
+from ._base import BodyComponent
 
 
 __all__ = ['MjImage']
@@ -172,4 +172,3 @@ class MjImage(BodyComponent):
               </tr>
             </tbody>
           </table>'''
-
