@@ -31,4 +31,3 @@ def buildMediaQueriesTags(breakpoint, mediaQueries=None):
         {thunderbird_media_queries_str}
     </style>
     '''
-

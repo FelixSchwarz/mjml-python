@@ -1,7 +1,7 @@
 
-from ._base import BodyComponent
 from ..helpers import strip_unit, widthParser
 from ..lib import merge_dicts
+from ._base import BodyComponent
 
 
 __all__ = ['MjGroup']
@@ -47,7 +47,8 @@ class MjGroup(BodyComponent):
         parentWidth = float(strip_unit(self.context['containerWidth']))
         nonRawSiblings = self.props['nonRawSiblings']
         children = self.props['children']
-        paddingSize = self.getShorthandAttrValue('padding', 'left') + self.getShorthandAttrValue('padding', 'right')
+        get_padding = lambda d: self.getShorthandAttrValue('padding', d)
+        paddingSize = get_padding('right') + get_padding('left')
 
         containerWidth = self.getAttribute('width') or f'{(parentWidth / nonRawSiblings)}px'
         parsedWidth, unit = widthParser(containerWidth, parseFloatToInt=False)
@@ -59,7 +60,11 @@ class MjGroup(BodyComponent):
             width_px = parsedWidth - paddingSize
         containerWidth = f'{width_px}px'
 
-        return merge_dicts(self.context, {'containerWidth': containerWidth, 'nonRawSiblings': len(children)})
+        extra_ctx = {
+            'containerWidth': containerWidth,
+            'nonRawSiblings': len(children),
+        }
+        return merge_dicts(self.context, extra_ctx)
 
     def getParsedWidth(self, toString=False):
         nonRawSiblings = self.props['nonRawSiblings']
@@ -162,5 +167,4 @@ class MjGroup(BodyComponent):
               </tr>
               </table>
             <![endif]-->
-        </div>'''
-
+        </div>''' # noqa: line-too-long

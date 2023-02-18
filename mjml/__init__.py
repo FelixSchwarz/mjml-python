@@ -1,3 +1,2 @@
 
-from .mjml2html import mjml_to_html
-
+from .mjml2html import mjml_to_html  # noqa: unused-import

@@ -67,11 +67,10 @@ class MjText(BodyComponent):
 
         start_conditional = f'''
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td height="{height}" style="vertical-align:top;height:{height};">
-        '''
+        ''' # noqa: line-too-long
         end_conditional = '</td></tr></table>'
         return f'''{start_conditional}{self._render_content()}{end_conditional}'''
 
     def _render_content(self):
         content_html = self.getContent()
         return '<div ' + self.html_attrs(style='text') + '>' + content_html + '</div>'
-

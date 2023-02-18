@@ -43,4 +43,3 @@ def borderParser(border):
         return 0
     border_value = match.group(1)
     return parse_int(border_value)
-

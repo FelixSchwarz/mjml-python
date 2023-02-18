@@ -1,6 +1,6 @@
 
-from collections import namedtuple
 import re
+from collections import namedtuple
 
 from .py_utils import strip_unit
 
@@ -43,4 +43,3 @@ def widthParser(width, parseFloatToInt=True):
         parsed_width = width_int
 
     return WidthUnit(width=parsed_width, unit=widthUnit)
-

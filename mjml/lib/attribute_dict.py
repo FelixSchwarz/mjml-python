@@ -2,7 +2,7 @@
 
 # License: Public Domain
 # Authors: Felix Schwarz <felix.schwarz@oss.schwarz.eu>
-# 
+#
 # Version 1.2
 #
 # 1.2 (2018-02-16)
@@ -24,10 +24,12 @@ class AttrDict(dict):
 
     def __getattr__(self, name):
         if name not in self:
-            raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, name))
+            class_name = self.__class__.__name__
+            raise AttributeError("'%s' object has no attribute '%s'" % (class_name, name))
         return self[name]
 
     def __setattr__(self, name, value):
         if name not in self:
-            raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, name))
+            class_name = self.__class__.__name__
+            raise AttributeError("'%s' object has no attribute '%s'" % (class_name, name))
         self[name] = value

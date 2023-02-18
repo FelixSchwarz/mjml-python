@@ -1,7 +1,7 @@
 
-from ._base import BodyComponent
 from ..helpers import parse_int, widthParser
 from ..lib import merge_dicts
+from ._base import BodyComponent
 
 
 __all__ = ['MjDivider']
@@ -57,7 +57,8 @@ class MjDivider(BodyComponent):
     def getOutlookWidth(self):
         this = self
         containerWidth = this.context['containerWidth']
-        paddingSize = this.getShorthandAttrValue('padding', 'left') + this.getShorthandAttrValue('padding', 'right')
+        get_padding = lambda d: self.getShorthandAttrValue('padding', d)
+        paddingSize = get_padding('right') + get_padding('left')
         width = this.getAttribute('width')
         parsedWidth, unit = widthParser(width)
 
@@ -95,4 +96,3 @@ class MjDivider(BodyComponent):
             <p {self.html_attrs(style='p')} > </p>
             {self.renderAfter()}
         '''
-

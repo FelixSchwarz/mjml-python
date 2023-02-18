@@ -1,6 +1,6 @@
 
-from ._base import BodyComponent
 from ..helpers import widthParser
+from ._base import BodyComponent
 
 
 __all__ = ['MjButton']

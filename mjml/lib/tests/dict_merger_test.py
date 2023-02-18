@@ -6,6 +6,7 @@ from pythonic_testcase import *
 
 from ..dict_merger import merge_dicts
 
+
 class DictMergerTest(PythonicTestCase):
     def test_returns_single_dict_unmodified(self):
         assert_equals({}, merge_dicts({}))
@@ -21,4 +22,3 @@ class DictMergerTest(PythonicTestCase):
         b = {'b': 2}
         c = {'c': 3}
         assert_equals({'a': 1, 'b': 2, 'c': 3}, merge_dicts(a, b, c))
-

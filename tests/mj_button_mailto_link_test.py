@@ -1,12 +1,11 @@
 
-from io import StringIO
 import re
+from io import StringIO
 from unittest import TestCase
 
 import lxml.html
 
 from mjml import mjml_to_html
-
 
 
 class MjButtonMailtoLinkTest(TestCase):
@@ -34,4 +33,3 @@ class MjButtonMailtoLinkTest(TestCase):
         #   https://bugzilla.mozilla.org/show_bug.cgi?id=1589968
         #   https://bugzilla.mozilla.org/show_bug.cgi?id=421310
         assert not target, f'target="{target}"'
-
