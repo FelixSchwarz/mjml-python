@@ -37,28 +37,28 @@ class MjAccordionText(BodyComponent):
     def get_styles(self):
         return {
             'td'   : {
-                'background'    : self.get_attr('background-color'),
-                'font-size'     : self.get_attr('font-size'),
-                'font-family'   : self.get_attr('font-family'),
-                'font-weight'   : self.get_attr('font-weight'),
-                'letter-spacing': self.get_attr('letter-spacing'),
-                'line-height'   : self.get_attr('line-height'),
-                'color'         : self.get_attr('color'),
-                'padding-bottom': self.get_attr('padding-bottom'),
-                'padding-left'  : self.get_attr('padding-left'),
-                'padding-right' : self.get_attr('padding-right'),
-                'padding-top'   : self.get_attr('padding-top'),
-                'padding'       : self.get_attr('padding'),
+                'background'    : self.getAttribute('background-color'),
+                'font-size'     : self.getAttribute('font-size'),
+                'font-family'   : self.getAttribute('font-family'),
+                'font-weight'   : self.getAttribute('font-weight'),
+                'letter-spacing': self.getAttribute('letter-spacing'),
+                'line-height'   : self.getAttribute('line-height'),
+                'color'         : self.getAttribute('color'),
+                'padding-bottom': self.getAttribute('padding-bottom'),
+                'padding-left'  : self.getAttribute('padding-left'),
+                'padding-right' : self.getAttribute('padding-right'),
+                'padding-top'   : self.getAttribute('padding-top'),
+                'padding'       : self.getAttribute('padding'),
             },
             'table': {
                 'width'        : '100%',
-                'border-bottom': self.get_attr('border', missing_ok=True),
+                'border-bottom': self.getAttribute('border', missing_ok=True),
             },
         }
 
     def renderContent(self):
         td_attrs = self.html_attrs(
-            class_=self.get_attr('css-class', missing_ok=True),
+            class_=self.getAttribute('css-class', missing_ok=True),
             style='td',
         )
 

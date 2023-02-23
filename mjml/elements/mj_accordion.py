@@ -71,24 +71,24 @@ class MjAccordion(BodyComponent):
             'table': {
                 'width'          : '100%',
                 'border-collapse': 'collapse',
-                'border'         : self.get_attr('border'),
+                'border'         : self.getAttribute('border'),
                 'border-bottom'  : 'none',
-                'font-family'    : self.get_attr('font-family'),
+                'font-family'    : self.getAttribute('font-family'),
             },
         }
 
     def render(self):
         children = self.props['children']
         children_attrs = {
-            'border'            : self.get_attr('border'),
-            'icon-align'        : self.get_attr('icon-align'),
-            'icon-width'        : self.get_attr('icon-width'),
-            'icon-height'       : self.get_attr('icon-height'),
-            'icon-position'     : self.get_attr('icon-position'),
-            'icon-wrapped-url'  : self.get_attr('icon-wrapped-url'),
-            'icon-wrapped-alt'  : self.get_attr('icon-wrapped-alt'),
-            'icon-unwrapped-url': self.get_attr('icon-unwrapped-url'),
-            'icon-unwrapped-alt': self.get_attr('icon-unwrapped-alt'),
+            'border'            : self.getAttribute('border'),
+            'icon-align'        : self.getAttribute('icon-align'),
+            'icon-width'        : self.getAttribute('icon-width'),
+            'icon-height'       : self.getAttribute('icon-height'),
+            'icon-position'     : self.getAttribute('icon-position'),
+            'icon-wrapped-url'  : self.getAttribute('icon-wrapped-url'),
+            'icon-wrapped-alt'  : self.getAttribute('icon-wrapped-alt'),
+            'icon-unwrapped-url': self.getAttribute('icon-unwrapped-url'),
+            'icon-unwrapped-alt': self.getAttribute('icon-unwrapped-alt'),
         }
         table_attrs = self.html_attrs(
             cellspacing='0',

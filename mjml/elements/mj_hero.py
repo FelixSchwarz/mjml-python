@@ -73,8 +73,8 @@ class MjHero(BodyComponent):
     # js: getStyles()
     def get_styles(self):
         containerWidth = self.context['containerWidth']
-        backgroundHeight = self.get_attr('background-height')
-        backgroundWidth = self.get_attr('background-width')
+        backgroundHeight = self.getAttribute('background-height')
+        backgroundWidth = self.getAttribute('background-width')
         backgroundRatio = round(
             (parse_int(backgroundHeight) /
              parse_int(backgroundWidth)) *
@@ -100,15 +100,15 @@ class MjHero(BodyComponent):
             },
             'hero'               : {
                 'background'         : self.getBackground(),
-                'background-position': self.get_attr('background-position'),
+                'background-position': self.getAttribute('background-position'),
                 'background-repeat'  : 'no-repeat',
-                'border-radius'      : self.get_attr('border-radius'),
-                'padding'            : self.get_attr('padding'),
-                'padding-top'        : self.get_attr('padding-top'),
-                'padding-left'       : self.get_attr('padding-left'),
-                'padding-right'      : self.get_attr('padding-right'),
-                'padding-bottom'     : self.get_attr('padding-bottom'),
-                'vertical-align'     : self.get_attr('vertical-align'),
+                'border-radius'      : self.getAttribute('border-radius'),
+                'padding'            : self.getAttribute('padding'),
+                'padding-top'        : self.getAttribute('padding-top'),
+                'padding-left'       : self.getAttribute('padding-left'),
+                'padding-right'      : self.getAttribute('padding-right'),
+                'padding-bottom'     : self.getAttribute('padding-bottom'),
+                'vertical-align'     : self.getAttribute('vertical-align'),
             },
             'outlook-table'      : {
                 'width': containerWidth,
@@ -131,27 +131,27 @@ class MjHero(BodyComponent):
                 'z-index'                : '-3',
             },
             'outlook-inner-td'   : {
-                'background-color': self.get_attr('inner-background-color'),
-                'padding'         : self.get_attr('inner-padding'),
-                'padding-top'     : self.get_attr('inner-padding-top'),
-                'padding-left'    : self.get_attr('inner-padding-left'),
-                'padding-right'   : self.get_attr('inner-padding-right'),
-                'padding-bottom'  : self.get_attr('inner-padding-bottom'),
+                'background-color': self.getAttribute('inner-background-color'),
+                'padding'         : self.getAttribute('inner-padding'),
+                'padding-top'     : self.getAttribute('inner-padding-top'),
+                'padding-left'    : self.getAttribute('inner-padding-left'),
+                'padding-right'   : self.getAttribute('inner-padding-right'),
+                'padding-bottom'  : self.getAttribute('inner-padding-bottom'),
             },
             'inner-table'        : {
                 'width' : '100%',
                 'margin': '0px',
             },
             'inner-div'          : {
-                'background-color': self.get_attr('inner-background-color'),
-                'float'           : self.get_attr('align', missing_ok=True),
+                'background-color': self.getAttribute('inner-background-color'),
+                'float'           : self.getAttribute('align', missing_ok=True),
                 'margin'          : '0px auto',
-                'width'           : self.get_attr('width', missing_ok=True),
+                'width'           : self.getAttribute('width', missing_ok=True),
             },
         }
 
     def hasBackground(self):
-        return bool(self.get_attr('background-url'))
+        return bool(self.getAttribute('background-url'))
 
     def getBackground(self):
         if self.hasBackground():

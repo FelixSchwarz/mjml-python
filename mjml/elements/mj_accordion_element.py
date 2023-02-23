@@ -42,11 +42,11 @@ class MjAccordionElement(BodyComponent):
         return {
             'td'   : {
                 'padding'         : '0px',
-                'background-color': self.get_attr('background-color'),
+                'background-color': self.getAttribute('background-color'),
             },
             'label': {
                 'font-size'  : '13px',
-                'font-family': self.get_attr('font-family'),
+                'font-family': self.getAttribute('font-family'),
             },
             'input': {
                 'display': 'none',
@@ -59,15 +59,15 @@ class MjAccordionElement(BodyComponent):
 
         children = self.props['children']
         children_attrs = {
-            'border'            : self.get_attr('border'),
-            'icon-align'        : self.get_attr('icon-align'),
-            'icon-width'        : self.get_attr('icon-width'),
-            'icon-height'       : self.get_attr('icon-height'),
-            'icon-position'     : self.get_attr('icon-position'),
-            'icon-wrapped-url'  : self.get_attr('icon-wrapped-url'),
-            'icon-wrapped-alt'  : self.get_attr('icon-wrapped-alt'),
-            'icon-unwrapped-url': self.get_attr('icon-unwrapped-url'),
-            'icon-unwrapped-alt': self.get_attr('icon-unwrapped-alt'),
+            'border'            : self.getAttribute('border'),
+            'icon-align'        : self.getAttribute('icon-align'),
+            'icon-width'        : self.getAttribute('icon-width'),
+            'icon-height'       : self.getAttribute('icon-height'),
+            'icon-position'     : self.getAttribute('icon-position'),
+            'icon-wrapped-url'  : self.getAttribute('icon-wrapped-url'),
+            'icon-wrapped-alt'  : self.getAttribute('icon-wrapped-alt'),
+            'icon-unwrapped-url': self.getAttribute('icon-unwrapped-url'),
+            'icon-unwrapped-alt': self.getAttribute('icon-unwrapped-alt'),
         }
         has_title = False
         has_text = False
@@ -114,7 +114,7 @@ class MjAccordionElement(BodyComponent):
             />
         '''
         return f'''
-            <tr {self.html_attrs(class_=self.get_attr('css-class', missing_ok=True))}>
+            <tr {self.html_attrs(class_=self.getAttribute('css-class', missing_ok=True))}>
                 <td {self.html_attrs(style='td')}>
                     <label {label_attrs}>
                         {conditionalTag(checkbox, True)}
