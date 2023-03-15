@@ -24,6 +24,8 @@ def register_core_components():
         MjNavbarLink,
         MjRaw,
         MjSection,
+        MjSocial,
+        MjSocialElement,
         MjSpacer,
         MjTable,
         MjText,
@@ -57,6 +59,8 @@ def register_core_components():
         MjRaw,
         MjNavbar,
         MjNavbarLink,
+        MjSocial,
+        MjSocialElement,
         MjSpacer,
         MjWrapper,
         # --- head components ---

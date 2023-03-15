@@ -14,6 +14,8 @@ from .mj_navbar import *
 from .mj_navbar_link import *
 from .mj_raw import *
 from .mj_section import *
+from .mj_social import *
+from .mj_social_element import *
 from .mj_spacer import *
 from .mj_table import *
 from .mj_text import *
