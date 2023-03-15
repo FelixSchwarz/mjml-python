@@ -47,6 +47,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-raw-with-tags',
         'mj-raw-head',
         'mj-raw-head-with-tags',
+        'mj-social',
         'mj-spacer',
         'mj-wrapper',
     )

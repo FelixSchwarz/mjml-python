@@ -2,7 +2,7 @@
 0.9.0 (?)
 ------------------
 
-- add mjml-accordion, mjml-accordion-element, mjml-accordion-text, mjml-accordion-title, mjml-head-breakpoint, mjml-hero, mjml-navbar, mjml-navbar-link, mjml-spacer, and mjml-wrapper components (Casey Holzer)
+- add mjml-accordion, mjml-accordion-element, mjml-accordion-text, mjml-accordion-title, mjml-head-breakpoint, mjml-hero, mjml-navbar, mjml-navbar-link, mjml-social, mjml-spacer, and mjml-wrapper components (Casey Holzer)
 - add support for custom components (Casey Holzer)
 
 
