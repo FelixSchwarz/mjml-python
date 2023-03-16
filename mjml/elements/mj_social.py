@@ -61,7 +61,8 @@ class MjSocial(BodyComponent):
 
     def getSocialElementAttributes(self):
         base = {}
-        if padding := self.getAttribute('inner-padding'):
+        padding = self.getAttribute('inner-padding')
+        if padding:
             base['padding'] = padding
 
         for attr_name in [
