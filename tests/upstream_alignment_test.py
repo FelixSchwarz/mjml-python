@@ -25,6 +25,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-style',
         'mj-accordion',
         'mj-attributes',
+        'mj-html-attributes',
         'mj-column-with-attributes',
         'mj-group',
         'mj-hero-fixed',
