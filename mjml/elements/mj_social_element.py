@@ -236,8 +236,8 @@ class MjSocialElement(BodyComponent):
             '''
 
         def get_img():
-            height, height_unit = widthParser(iconHeight or iconSize)
-            width, width_unit = widthParser(iconSize)
+            height, _ = widthParser(iconHeight or iconSize)
+            width, _ = widthParser(iconSize)
 
             img = f'''
                 <img
