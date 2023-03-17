@@ -8,7 +8,7 @@ components = {}
 
 def register_core_components():
     from ..elements import (MjAccordion, MjAccordionElement, MjAccordionText, MjAccordionTitle,
-        MjButton, MjText, MjSection, MjColumn, MjBody,
+        MjButton, MjText, MjSection, MjCarousel, MjCarouselImage, MjColumn, MjBody,
         MjGroup, MjHero, MjImage, MjNavbar, MjNavbarLink, MjDivider, MjSocial, MjSocialElement, MjSpacer, MjTable, MjRaw, MjWrapper)
     from ..elements.head import (MjAttributes, MjBreakpoint, MjFont, MjHead, MjPreview, MjStyle,
         MjTitle)
@@ -19,6 +19,8 @@ def register_core_components():
         MjAccordionText,
         MjAccordionTitle,
         MjButton,
+        MjCarousel,
+        MjCarouselImage,
         MjText,
         MjDivider,
         MjHero,

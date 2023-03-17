@@ -5,6 +5,8 @@ from .mj_accordion_text import *
 from .mj_accordion_title import *
 from .mj_body import *
 from .mj_button import *
+from .mj_carousel import *
+from .mj_carousel_image import *
 from .mj_column import *
 from .mj_divider import *
 from .mj_group import *
