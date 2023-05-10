@@ -70,7 +70,10 @@ class BodyComponent(Component):
         _styles = None
         if key and isinstance(key, str):
             _styles_dict = self.get_styles()
-            _styles = _styles_dict.get(key)
+            keys = key.split('.')
+            _styles = _styles_dict.get(keys[0])
+            if len(keys) > 1:
+                _styles = _styles.get(keys[1])
             if _styles and not isinstance(_styles, dict):
                 raise ValueError(f'key={key}')
         elif key:
