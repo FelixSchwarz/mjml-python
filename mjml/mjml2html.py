@@ -58,6 +58,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
         'classes'            : {},
         'classesDefault'     : {},
         'defaultAttributes'  : {},
+        'htmlAttributes'     : {},
         'fonts'              : fonts,
         'inlineStyle'        : [],
         'headStyle'          : {},
@@ -199,11 +200,20 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
     globalDatas.headRaw = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
 
+    if globalDatas.htmlAttributes:
+        contentSoup = BeautifulSoup(content, 'html.parser')
+        for selector, data in globalDatas.htmlAttributes.items():
+            for attrName, value in data.items():
+                for element in contentSoup.select(selector):
+                    element[attrName] = value or ''
+
+        content = contentSoup.decode_contents()
+
     content = skeleton(
         content=content,
         # upstream just passes this extra key to skeleton() as JavaScript
         # won't complain about additional parameters.
-        **omit(globalDatas, ('classesDefault',)),
+        **omit(globalDatas, ('classesDefault', 'htmlAttributes')),
     )
     # LATER: upstream has also beautify
     # LATER: upstream has also minify

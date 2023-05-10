@@ -2,8 +2,9 @@
 0.9.0 (?)
 ------------------
 
-- add mjml-head-breakpoint, mjml-navbar, mjml-navbar-link, mjml-spacer, and mjml-wrapper components (Casey Holzer)
+- add mjml-accordion, mjml-accordion-element, mjml-accordion-text, mjml-accordion-title, mjml-carousel, mjml-head-breakpoint, mjml-hero, mjml-navbar, mjml-navbar-link, mjml-social, mjml-spacer, and mjml-wrapper components (Casey Holzer)
 - add support for custom components (Casey Holzer)
+- add support for full-width attribute to mj-section (Casey Holzer)
 
 
 0.8.0 (2022-08-25)
