@@ -240,6 +240,8 @@ class MjColumn(BodyComponent):
             width='100%',
         )
         return f'''<table {table_attrs}>
-            {self.renderChildren(children, renderer=render_child)}
+            <tbody>
+                {self.renderChildren(children, renderer=render_child)}
+            </tbody>
         </table>'''
 

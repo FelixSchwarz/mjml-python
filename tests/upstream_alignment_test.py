@@ -33,6 +33,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-head-with-comment',
         'mj-image-with-empty-alt-attribute',
         'mj-image-with-href',
+        'mj-section-with-css-class',
         'mj-section-with-mj-class',
         'mj-section-with-background-url',
         'mj-font',
@@ -123,7 +124,7 @@ class UpstreamAlignmentTest(TestCase):
         body_actual = BeautifulSoup(result.html, 'html.parser').body
         actual_text = body_actual.get_text().strip()
         assert (expected_text == actual_text)
-        actual_html = (body_actual.select('table > tr > td > div')[0]).renderContents()
+        actual_html = (body_actual.select('.mj-column-per-100 div')[0]).renderContents()
         assert (b'foo <b>bar</b>.' == actual_html)
 
 

@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body>
+    <mj-section css-class="section-class">
+      <mj-column>
+        <mj-text>some text</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
