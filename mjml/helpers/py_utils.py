@@ -40,7 +40,7 @@ def parse_percentage(value_str):
 
 def strip_unit(value_str):
     match = re.search(r'^(\d+).*', value_str)
-    return int(match.group(1))
+    return int(match.group(1)) if match else None
 
 def is_nil(v):
     return (v is None)

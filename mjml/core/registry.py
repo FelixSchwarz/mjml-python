@@ -7,15 +7,23 @@ from typing import List, Type
 components = {}
 
 def register_core_components():
-    from ..elements import (MjButton, MjText, MjSection, MjColumn, MjBody,
-        MjGroup, MjImage, MjNavbar, MjNavbarLink, MjDivider, MjSpacer, MjTable, MjRaw, MjWrapper)
-    from ..elements.head import (MjAttributes, MjBreakpoint, MjFont, MjHead, MjPreview, MjStyle,
+    from ..elements import (MjAccordion, MjAccordionElement, MjAccordionText, MjAccordionTitle,
+        MjButton, MjText, MjSection, MjCarousel, MjCarouselImage, MjColumn, MjBody,
+        MjGroup, MjHero, MjImage, MjNavbar, MjNavbarLink, MjDivider, MjSocial, MjSocialElement, MjSpacer, MjTable, MjRaw, MjWrapper)
+    from ..elements.head import (MjAttributes, MjBreakpoint, MjFont, MjHead, MjHtmlAttributes, MjPreview, MjStyle,
         MjTitle)
 
     register_components([
+        MjAccordion,
+        MjAccordionElement,
+        MjAccordionText,
+        MjAccordionTitle,
         MjButton,
+        MjCarousel,
+        MjCarouselImage,
         MjText,
         MjDivider,
+        MjHero,
         MjImage,
         MjSection,
         MjColumn,
@@ -25,12 +33,15 @@ def register_core_components():
         MjRaw,
         MjNavbar,
         MjNavbarLink,
+        MjSocial,
+        MjSocialElement,
         MjSpacer,
         MjWrapper,
         # --- head components ---
         MjAttributes,
         MjFont,
         MjHead,
+        MjHtmlAttributes,
         MjPreview,
         MjTitle,
         MjStyle,
