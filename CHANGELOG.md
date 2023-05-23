@@ -84,4 +84,3 @@
 ------------------
 
 - mjml script: use setuptools-based wrapper so Windows users can run it more easily
-

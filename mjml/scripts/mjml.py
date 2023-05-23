@@ -9,7 +9,7 @@ Usage:
 Options:
   --template-dir=<path>    base dir for mj-include (default: path of mjml file)
 """
-# ruff: noqa: line-too-long
+# ruff: noqa: E501
 
 import sys
 from io import BytesIO

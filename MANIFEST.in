@@ -3,4 +3,3 @@ include CHANGELOG.md
 include tests/*.py
 include tests/testdata/*.html
 include tools/*.py
-
