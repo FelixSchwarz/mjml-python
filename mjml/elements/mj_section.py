@@ -147,7 +147,33 @@ class MjSection(BodyComponent):
         return self.renderSimple()
 
     def renderFullWidth(self):
-        raise NotImplementedError()
+        content = f'{self.renderBefore()}{self.renderSection()}{self.renderAfter()}'
+
+        if self.hasBackground():
+            content = self.renderWithBackground(content)
+
+        return f'''
+            <table
+                {self.html_attrs(
+                    align='center',
+                    class_=self.getAttribute('css-class'),
+                    background=self.getAttribute('background-url'),
+                    border='0',
+                    cellpadding='0',
+                    cellspacing='0',
+                    role='presentation',
+                    style='tableFullwidth',
+                )}
+            >
+                <tbody>
+                    <tr>
+                        <td>
+                            {content}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        '''
 
     def renderSimple(self):
         section = self.renderSection()
