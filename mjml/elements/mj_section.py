@@ -225,7 +225,7 @@ class MjSection(BodyComponent):
     def renderSection(self):
         hasBackground = self.hasBackground()
 
-        wrapper_class = self.get_attr('css-class') if self.isFullWidth() else None
+        wrapper_class = None if self.isFullWidth() else self.get_attr('css-class')
         wrapper_attr_str = self.html_attrs(class_=wrapper_class, style='div')
 
         bg_div_start = f'<div {self.html_attrs(style="innerDiv")}>' if hasBackground else ''
