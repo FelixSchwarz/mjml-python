@@ -19,7 +19,13 @@ select = [
     "E",
     "W",
     # isort
-    "I001"
+    "I001",
+
+    # Special rule code to enforce that your noqa directives are "valid", in that
+    # the violations they say they ignore are actually being triggered on that line
+    # (and thus suppressed).
+    # replaces basically "yesqa"
+    "RUF100",
 ]
 src = ["mjml", "tests"]
 
