@@ -1,6 +1,13 @@
 name: run
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - main
+    - ci
+  pull_request:
+    branches:
+    - main
 
 jobs:
   tests:

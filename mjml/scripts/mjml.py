@@ -9,10 +9,11 @@ Usage:
 Options:
   --template-dir=<path>    base dir for mj-include (default: path of mjml file)
 """
+# ruff: noqa: E501
 
+import sys
 from io import BytesIO
 from pathlib import Path
-import sys
 
 from docopt import docopt
 
@@ -48,4 +49,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -1,14 +1,13 @@
-
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
-from typing import List, Type
+from typing import List, Optional
 
 from bs4 import BeautifulSoup
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
-from .helpers import mergeOutlookConditionnals, json_to_xml, omit, skeleton_str as default_skeleton
-from .lib import merge_dicts, AttrDict
+from .helpers import json_to_xml, mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
+from .lib import AttrDict, merge_dicts
 
 
 def ignore_empty(values):
@@ -19,7 +18,8 @@ def ignore_empty(values):
     return tuple(result)
 
 
-def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_components: List[Type] = None):
+def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
+                 custom_components: Optional[List]=None):
     register_core_components()
 
     if isinstance(xml_fp_or_json, dict):
@@ -70,7 +70,9 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
         'title'              : '',
     })
 
-    validationLevel = 'skip'
+    # "validationLevel" is not used but available upstream - makes it easier to
+    # match the line of code with the upstream sources.
+    validationLevel = 'skip' # noqa: F841
     errors = []
     # LATER: optional validation
 
@@ -136,7 +138,9 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
             )
 
             if tagName == 'mj-include':
-                mj_include_subtree = handle_include(attributes['path'], parse_mjml=parse, template_dir=template_dir)
+                mj_include_subtree = handle_include(attributes['path'],
+                                                    parse_mjml=parse,
+                                                    template_dir=template_dir)
                 return mj_include_subtree
             result = {
                 'tagName': tagName,
@@ -160,7 +164,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
 
     def addMediaQuery(className, parsedWidth, unit):
         width_str = f'{parsedWidth}{unit}'
-        globalDatas.mediaQueries[className] = f'{{ width:{width_str} !important; max-width: {width_str}; }}'
+        width_css = f'{{ width:{width_str} !important; max-width: {width_str}; }}'
+        globalDatas.mediaQueries[className] = width_css
 
     def addComponentHeadSyle(headStyle):
         globalDatas.componentsHeadStyle.append(headStyle)
@@ -179,7 +184,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
     def _head_data_add(attr, *params):
         if attr not in globalDatas:
             param_str = ''.join(params) if isinstance(params, list) else params
-            exc_msg = f'A mj-head element add an unknown head attribute : {attr} with params {param_str}'
+            exc_msg = f'A mj-head element add an unknown head attribute: {attr} with params {param_str}' # noqa: E501
             raise ValueError(exc_msg)
 
         current_attr_value = globalDatas[attr]
@@ -222,9 +227,10 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None, custom_compon
         try:
             import css_inline
         except ImportError:
-            raise ImportError('CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies.')
+            raise ImportError('CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies.') # noqa: E501
 
-        inliner = css_inline.CSSInliner(inline_style_tags=False, extra_css=''.join(globalDatas.inlineStyle))
+        extra_css = ''.join(globalDatas.inlineStyle)
+        inliner = css_inline.CSSInliner(inline_style_tags=False, extra_css=extra_css)
         content = inliner.inline(content)
 
     content = mergeOutlookConditionnals(content)

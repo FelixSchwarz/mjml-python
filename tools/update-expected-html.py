@@ -15,12 +15,12 @@ options:
 """
 
 import argparse
-from collections import namedtuple
-from multiprocessing import Pool
 import os
-from pathlib import Path
 import subprocess
 import sys
+from collections import namedtuple
+from multiprocessing import Pool
+from pathlib import Path
 
 
 Job = namedtuple('Job', ('mjml_path', 'expected_path', 'mjml_bin'))
@@ -93,4 +93,3 @@ def main(argv=sys.argv):
 
 if __name__ == '__main__':
     main()
-

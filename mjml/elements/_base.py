@@ -1,9 +1,9 @@
 
 
-from ..lib import merge_dicts, AttrDict
-from ..core import initComponent, Component
+from ..core import Component, initComponent
 from ..core.registry import components
 from ..helpers import *
+from ..lib import AttrDict, merge_dicts
 
 
 __all__ = [
@@ -35,7 +35,8 @@ class BodyComponent(Component):
     def getBoxWidths(self):
         containerWidth = self.context['containerWidth']
         parsedWidth = strip_unit(containerWidth)
-        paddings = self.getShorthandAttrValue('padding', 'right') + self.getShorthandAttrValue('padding', 'left')
+        get_padding = lambda d: self.getShorthandAttrValue('padding', d)
+        paddings = get_padding('right') + get_padding('left')
         borders = self.getShorthandBorderValue('right') + self.getShorthandBorderValue('left')
 
         return AttrDict({
@@ -89,7 +90,8 @@ class BodyComponent(Component):
         style_str = ';'.join(style_attr_strs)
         return style_str
 
-    def renderChildren(self, childrens=None, props=None, renderer=None, attributes=None, rawXML=False):
+    def renderChildren(self, childrens=None, props=None, renderer=None,
+                       attributes=None, rawXML=False):
         if not props:
             props = {}
         if not renderer:
@@ -154,4 +156,3 @@ class BodyComponent(Component):
                 output += renderer(component)
             index += 1
         return output
-

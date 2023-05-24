@@ -20,4 +20,3 @@ def get_mjml_fp(test_id, json=False):
         mjml_filename += '.json'
     with (TESTDATA_DIR / mjml_filename).open('rb') as mjml_fp:
         yield mjml_fp
-

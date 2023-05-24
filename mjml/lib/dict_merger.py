@@ -23,4 +23,3 @@ def merge_dicts(*sources):
                 else:
                     current_dst[key] = current_src[key]
     return result
-

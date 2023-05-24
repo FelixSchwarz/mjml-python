@@ -1,8 +1,8 @@
 
 from pathlib import Path
-from unittest import expectedFailure, TestCase
+from unittest import TestCase, expectedFailure
 
-from ddt import ddt as DataDrivenTestCase, data as ddt_data
+from ddt import data as ddt_data, ddt as DataDrivenTestCase
 from htmlcompare import assert_same_html
 
 from mjml import mjml_to_html
@@ -44,5 +44,7 @@ def _patch_nose1_result(test):
     if not hasattr(result, 'addExpectedFailure'):
         result.addExpectedFailure = result.addSkip
     if not hasattr(result, 'addUnexpectedSuccess'):
-        result.addUnexpectedSuccess = lambda test: result.addFailure(test, (AssertionError, AssertionError('unexpected success'), None))
-
+        def _addUnexpectedSuccess(test):
+            error = (AssertionError, AssertionError('unexpected success'), None)
+            return result.addFailure(test, error)
+        result.addUnexpectedSuccess = _addUnexpectedSuccess

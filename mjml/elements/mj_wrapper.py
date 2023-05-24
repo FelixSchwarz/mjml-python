@@ -1,6 +1,6 @@
 
-from . import MjSection
 from ..helpers import suffixCssClasses
+from . import MjSection
 
 
 __all__ = ['MjWrapper']

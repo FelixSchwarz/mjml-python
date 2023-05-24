@@ -1,8 +1,8 @@
 import random
 import string
 
+from ..helpers import conditionalTag, msoConditionalTag
 from ._base import BodyComponent
-from ..helpers import msoConditionalTag, conditionalTag
 
 
 __all__ = ['MjNavbar']
@@ -67,7 +67,7 @@ class MjNavbar(BodyComponent):
               .mj-menu-checkbox[type="checkbox"] ~ .mj-inline-links > a {{ display:block!important; }}
               .mj-menu-checkbox[type="checkbox"]:checked ~ .mj-menu-trigger .mj-menu-icon-close {{ display:block!important; }}
               .mj-menu-checkbox[type="checkbox"]:checked ~ .mj-menu-trigger .mj-menu-icon-open {{ display:none!important; }}
-            }}'''
+            }}''' # noqa: E501
 
     def get_styles(self):
         return {
@@ -111,10 +111,8 @@ class MjNavbar(BodyComponent):
 
     def renderHamburger(self):
         key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        input_tag = msoConditionalTag(
-            f'<input type="checkbox" id="{key}" class="mj-menu-checkbox" style="display:none !important; max-height:0; visibility:hidden;" />',
-            True
-        )
+        checkbox_html = f'<input type="checkbox" id="{key}" class="mj-menu-checkbox" style="display:none !important; max-height:0; visibility:hidden;" />' # noqa: E501
+        input_tag = msoConditionalTag(checkbox_html, True)
         div_attrs = self.html_attrs(class_='mj-menu-trigger', style='trigger')
         label_attrs = self.html_attrs(
             for_=key,
@@ -142,18 +140,18 @@ class MjNavbar(BodyComponent):
     def render(self):
         children = self.props['children']
         hamburger = self.renderHamburger() if self.getAttribute('hamburger') == 'hamburger' else ''
-        div_attrs = self.html_attrs(
-            class_='mj-inline-links',
-        )
+        navbar_base_url = self.getAttribute('base-url')
         content = ''.join([
             conditionalTag(f'''
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="{self.getAttribute('align')}">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                align="{self.getAttribute('align')}">
               <tr>
             '''),
-            self.renderChildren(children, attributes={'navbarBaseUrl': self.getAttribute('base-url')}),
+            self.renderChildren(children, attributes={'navbarBaseUrl': navbar_base_url}),
             conditionalTag('</tr></table>')
         ])
 
+        div_attrs = self.html_attrs(class_='mj-inline-links')
         return f'''
             {hamburger}
             <div {div_attrs}>

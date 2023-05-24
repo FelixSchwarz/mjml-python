@@ -1,10 +1,8 @@
 <mjml>
   <mj-body>
-    <mj-section>
+    <mj-section css-class="section-class">
       <mj-column>
-        <mj-button width="100px">
-          send
-        </mj-button>
+        <mj-text>some text</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>

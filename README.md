@@ -39,4 +39,3 @@ Alternatives / Additional Resources
 - [email-bugs](https://github.com/hteumeuleu/email-bugs) is a github project which contains a lot of knowledge about rendering quirks in various email clients.
 - [htmlemailcheck](https://www.htmlemailcheck.com/knowledge-base/) is a commercial offering to help you checking email rendering in various environments. I don't have any experience with their services but they provide a free knowledgebase.
 - [#emailgeeks](https://email.geeks.chat) - Slack community for email marketers, designers, and developers
-

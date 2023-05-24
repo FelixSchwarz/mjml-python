@@ -9,4 +9,3 @@ class MjHead(HeadComponent):
 
     def handler(self):
         return self.handlerChildren()
-

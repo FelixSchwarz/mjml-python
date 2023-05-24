@@ -1,6 +1,7 @@
 
-from ._head_base import HeadComponent
 from mjml.helpers import omit
+
+from ._head_base import HeadComponent
 
 
 __all__ = ['MjAttributes']
@@ -39,4 +40,3 @@ class MjAttributes(HeadComponent):
                     # TODO: not present upstream
                     continue
                 add('defaultAttributes', tagName, attributes)
-

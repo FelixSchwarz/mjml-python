@@ -1,11 +1,11 @@
 
+import re
 from collections import namedtuple
 from decimal import Decimal
-import re
 
-from ._base import BodyComponent
 from ..helpers import parse_percentage, strip_unit, suffixCssClasses
-from ..lib import merge_dicts, AttrDict
+from ..lib import AttrDict, merge_dicts
+from ._base import BodyComponent
 
 
 __all__ = ['MjSection']
@@ -147,7 +147,33 @@ class MjSection(BodyComponent):
         return self.renderSimple()
 
     def renderFullWidth(self):
-        raise NotImplementedError()
+        content = f'{self.renderBefore()}{self.renderSection()}{self.renderAfter()}'
+
+        if self.hasBackground():
+            content = self.renderWithBackground(content)
+
+        return f'''
+            <table
+                {self.html_attrs(
+                    align='center',
+                    class_=self.getAttribute('css-class'),
+                    background=self.getAttribute('background-url'),
+                    border='0',
+                    cellpadding='0',
+                    cellspacing='0',
+                    role='presentation',
+                    style='tableFullwidth',
+                )}
+            >
+                <tbody>
+                    <tr>
+                        <td>
+                            {content}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        '''
 
     def renderSimple(self):
         section = self.renderSection()
@@ -199,11 +225,11 @@ class MjSection(BodyComponent):
     def renderSection(self):
         hasBackground = self.hasBackground()
 
-        wrapper_class = self.get_attr('css-class') if self.isFullWidth() else None
+        wrapper_class = None if self.isFullWidth() else self.get_attr('css-class')
         wrapper_attr_str = self.html_attrs(class_=wrapper_class, style='div')
 
         bg_div_start = f'<div {self.html_attrs(style="innerDiv")}>' if hasBackground else ''
-        bg_div_end = f'</div>' if hasBackground else ''
+        bg_div_end = '</div>' if hasBackground else ''
 
         table_attrs = self.html_attrs(
             align='center',
@@ -407,4 +433,3 @@ def is_percentage(value):
 
 def makeBackgroundString(parts):
     return ' '.join(filter(None, parts))
-

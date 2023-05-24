@@ -1,6 +1,6 @@
 
-from ._base import BodyComponent
 from ..helpers import widthParser
+from ._base import BodyComponent
 
 
 __all__ = ['MjButton']
@@ -121,10 +121,10 @@ class MjButton(BodyComponent):
         if unit != 'px':
             return None
 
-        _box_widths = self.getBoxWidths()
-        borders = _box_widths.borders
-        _inner_padding = lambda d: self.getShorthandAttrValue('inner-padding', d, attr_with_direction=False)
+        def _inner_padding(d):
+            return self.getShorthandAttrValue('inner-padding', d, attr_with_direction=False)
         innerPaddings = _inner_padding('left') + _inner_padding('right')
+        borders = self.getBoxWidths().borders
         width_int = parsedWidth - innerPaddings - borders
         return f'{width_int}px'
 

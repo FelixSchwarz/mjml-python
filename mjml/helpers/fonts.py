@@ -30,4 +30,3 @@ def buildFontsTags(content, inlineStyle, fonts=None):
         </style>
       <!--<![endif]-->\n
     '''
-

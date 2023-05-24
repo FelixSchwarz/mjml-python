@@ -20,4 +20,3 @@ with html_filename.open('rb') as html_fp:
 assert not result.errors
 actual_html = result.html
 assert_same_html(expected_html, actual_html, verbose=True)
-
