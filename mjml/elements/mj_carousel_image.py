@@ -1,7 +1,8 @@
 
 
+from ..helpers import suffixCssClasses, widthParser
 from ._base import BodyComponent
-from ..helpers import widthParser, suffixCssClasses
+
 
 __all__ = ['MjCarouselImage']
 
@@ -77,11 +78,17 @@ class MjCarouselImage(BodyComponent):
             'thumbnail',
         )
 
+        thumbnail_classes = [
+            'mj-carousel-thumbnail',
+            f'mj-carousel-{carouselId}-thumbnail',
+            f'mj-carousel-{carouselId}-thumbnail-{imgIndex}',
+            f'{cssClass}',
+        ]
         a_attrs = self.html_attrs(
             style='thumbnails.a',
             href=f'#{imgIndex}',
             target=self.getAttribute('target'),
-            class_=f'mj-carousel-thumbnail mj-carousel-{carouselId}-thumbnail mj-carousel-{carouselId}-thumbnail-{imgIndex} {cssClass}'
+            class_=' '.join(thumbnail_classes)
         )
         img_attrs = self.html_attrs(
             style='thumbnails.img',
@@ -101,11 +108,16 @@ class MjCarouselImage(BodyComponent):
     def renderRadio(self):
         index = self.props['index']
         carouselId = self.getAttribute('carouselId', missing_ok=True)
+        input_classes = [
+            'mj-carousel-radio',
+            f'mj-carousel-{carouselId}-radio',
+            f'mj-carousel-{carouselId}-radio-{index + 1}',
+        ]
 
         return f'''
             <input
                 {self.html_attrs(
-                    class_=f'mj-carousel-radio mj-carousel-{carouselId}-radio mj-carousel-{carouselId}-radio-{index + 1}',
+                    class_=' '.join(input_classes),
                     checked='checked' if index == 0 else None,
                     type='radio',
                     name=f'mj-carousel-radio-{carouselId}',
@@ -134,6 +146,9 @@ class MjCarouselImage(BodyComponent):
             />
         '''
 
+        if href:
+            image = f'<a {self.html_attrs(href=href, rel=rel, target="_blank")}>{image}</a>'
+
         cssClass = self.getAttribute('css-class', missing_ok=True) or ''
 
         return f'''
@@ -143,8 +158,6 @@ class MjCarouselImage(BodyComponent):
                     style='images.firstImageDiv' if index == 0 else 'images.otherImageDiv',
                 )}
             >
-                {
-                    f'<a {self.html_attrs(href=href, rel=rel, target="_blank")}>{image}</a>' if href else image
-                }
+                {image}
             </div>
         '''

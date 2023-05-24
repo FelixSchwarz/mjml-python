@@ -6,6 +6,7 @@ __all__ = ['MjSocialElement']
 
 from ..helpers import widthParser
 
+
 IMG_BASE_URL = 'https://www.mailjet.com/images/theme/v1/icons/ico-social/'
 
 defaultSocialNetworks = {
@@ -298,4 +299,3 @@ class MjSocialElement(BodyComponent):
                 {content_html}
             </tr>
         '''
-

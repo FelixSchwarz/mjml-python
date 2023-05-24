@@ -1,10 +1,10 @@
 
-from itertools import repeat
 import random
 import string
+from itertools import repeat
 
+from ..helpers import msoConditionalTag, widthParser
 from ._base import BodyComponent
-from ..helpers import widthParser, msoConditionalTag
 
 
 __all__ = ['MjCarousel']
@@ -90,7 +90,7 @@ class MjCarousel(BodyComponent):
             .mj-carousel-previous {{
                 touch-action: manipulation;
             }}
-            
+
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-radio:checked',
                 lambda i: i,
@@ -98,7 +98,7 @@ class MjCarousel(BodyComponent):
             )} {{
                 display: none !important;
             }}
-            
+
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-radio-{i + 1}:checked',
                 lambda i: length - i - 1,
@@ -112,16 +112,24 @@ class MjCarousel(BodyComponent):
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-radio-{i + 1}:checked',
                 lambda i: length - i - 1,
-                lambda i: f'.mj-carousel-content .mj-carousel-next-{((i + (1 % length) + length) % length) + 1}'
+                lambda i:
+                    ' '.join([
+                        '.mj-carousel-content',
+                        f'.mj-carousel-next-{((i + (1 % length) + length) % length) + 1}'
+                    ])
             )},
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-radio-{i + 1}:checked',
                 lambda i: length - i - 1,
-                lambda i: f'.mj-carousel-content .mj-carousel-previous-{((i - (1 % length) + length) % length) + 1}'
+                lambda i:
+                    ' '.join([
+                        '.mj-carousel-content',
+                        f'.mj-carousel-previous-{((i - (1 % length) + length) % length) + 1}'
+                    ])
             )} {{
                 display: block !important;
             }}
-            
+
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-radio-{i + 1}:checked',
                 lambda i: length - i - 1,
@@ -129,16 +137,16 @@ class MjCarousel(BodyComponent):
             )} {{
                 border-color: {self.getAttribute('tb-selected-border-color')} !important;
             }}
-            
+
             .mj-carousel-image img + div,
             .mj-carousel-thumbnail img + div {{
                 display: none !important;
             }}
-            
+
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-thumbnail:hover',
                 lambda i: length - i - 1,
-                lambda i: f'.mj-carousel-main .mj-carousel-image'
+                lambda i: '.mj-carousel-main .mj-carousel-image'
             )} {{
                 display: none !important;
             }}
@@ -146,7 +154,7 @@ class MjCarousel(BodyComponent):
             .mj-carousel-thumbnail:hover {{
                 border-color: {self.getAttribute('tb-hover-border-color')} !important;
             }}
-            
+
             {buildCssSelectors(
                 lambda i: f'.mj-carousel-{carouselId}-thumbnail-{i + 1}:hover',
                 lambda i: length - i - 1,
@@ -170,7 +178,7 @@ class MjCarousel(BodyComponent):
                 .mj-carousel-next-icons {{
                     display: none !important;
                 }}
-            
+
                 {buildCssSelectors(
                     lambda i: f'.mj-carousel-{carouselId}-radio-1:checked',
                     lambda i: length - 1,
@@ -313,7 +321,7 @@ class MjCarousel(BodyComponent):
                 <div
                     {self.html_attrs(class_='mj-carousel-images')}
                 >
-                    {self.renderChildren(self.props['children'], 
+                    {self.renderChildren(self.props['children'],
                         attributes={
                             'border-radius': self.getAttribute('border-radius'),
                         },

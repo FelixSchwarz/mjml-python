@@ -1,6 +1,7 @@
 
+from ..helpers import parse_int, widthParser
 from ._base import BodyComponent
-from ..helpers import widthParser, parse_int
+
 
 __all__ = ['MjHero']
 
@@ -54,13 +55,15 @@ class MjHero(BodyComponent):
 
     def getChildContext(self):
         containerWidth = self.context['containerWidth']
-        paddingSize = self.getShorthandAttrValue('padding', 'left') + self.getShorthandAttrValue('padding', 'right')
+        paddingSize = self.getShorthandAttrValue('padding', 'left') + \
+                      self.getShorthandAttrValue('padding', 'right')
 
         currentContainerWidth = f'{parse_int(containerWidth)}px'
         parsedWidth, unit = widthParser(currentContainerWidth, parseFloatToInt=False)
 
         if unit == '%':
-            currentContainerWidth = f'{(parse_int(containerWidth) * parsedWidth) / 100 - paddingSize}px'
+            parsedContainerWidth = parse_int(containerWidth)
+            currentContainerWidth = f'{(parsedContainerWidth * parsedWidth) / 100 - paddingSize}px'
         else:
             currentContainerWidth = f'{parsedWidth - paddingSize}px'
 

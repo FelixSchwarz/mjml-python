@@ -20,7 +20,8 @@ class MjHtmlAttributes(HeadComponent):
 
                 custom = {}
                 for c in children:
-                    if c['tagName'] == 'mj-html-attribute' and bool(c.get('attributes', {}).get('name', None)):
+                    has_attributes_name = bool(c.get('attributes', {}).get('name', None))
+                    if c['tagName'] == 'mj-html-attribute' and has_attributes_name:
                         custom[c['attributes']['name']] = c['content']
 
                 add('htmlAttributes', path, custom)

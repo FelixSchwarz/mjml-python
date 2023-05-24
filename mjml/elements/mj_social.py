@@ -132,7 +132,11 @@ class MjSocial(BodyComponent):
                 >
                     <tr>
             <![endif]-->
-            {self.renderChildren(children, attributes=self.getSocialElementAttributes(), renderer=render_child)}
+            {self.renderChildren(
+                children,
+                attributes=self.getSocialElementAttributes(),
+                renderer=render_child,
+            )}
             <!--[if mso | IE]>
                     </tr>
                 </table>
@@ -159,5 +163,6 @@ class MjSocial(BodyComponent):
         '''
 
     def render(self):
-        return self.renderHorizontal() if self.getAttribute('mode') == 'horizontal' else self.renderVertical()
-
+        if self.getAttribute('mode') == 'horizontal':
+            return self.renderHorizontal()
+        return self.renderVertical()

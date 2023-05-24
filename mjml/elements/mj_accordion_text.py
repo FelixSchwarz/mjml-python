@@ -89,4 +89,3 @@ class MjAccordionText(BodyComponent):
                 </table>
             </div>
         '''
-

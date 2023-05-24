@@ -54,8 +54,7 @@ class MjAccordionElement(BodyComponent):
         }
 
     def handleMissingChildren(self):
-        from . import MjAccordionText
-        from . import MjAccordionTitle
+        from . import MjAccordionText, MjAccordionTitle
 
         children = self.props['children']
         children_attrs = {
@@ -125,4 +124,3 @@ class MjAccordionElement(BodyComponent):
                 </td>
             </tr>
         '''
-

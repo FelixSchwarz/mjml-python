@@ -129,8 +129,12 @@ class UpstreamAlignmentTest(TestCase):
         actual_soup = BeautifulSoup(result.html, 'html.parser')
 
         # This ID is randomly generated, so we need to manually replace it.
-        expected_carousel_id = expected_soup.find(attrs={'class': 'mj-carousel-radio'})['name'].replace('mj-carousel-radio-', '')
-        actual_carousel_id = actual_soup.find(attrs={'class': 'mj-carousel-radio'})['name'].replace('mj-carousel-radio-', '')
+        expected_carousel_id = expected_soup \
+            .find(attrs={'class': 'mj-carousel-radio'})['name'] \
+            .replace('mj-carousel-radio-', '')
+        actual_carousel_id = actual_soup \
+            .find(attrs={'class': 'mj-carousel-radio'})['name'] \
+            .replace('mj-carousel-radio-', '')
         actual_html = str(actual_soup).replace(actual_carousel_id, expected_carousel_id)
 
         assert_same_html(str(expected_soup), actual_html, verbose=True)
