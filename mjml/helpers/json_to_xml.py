@@ -20,7 +20,7 @@ def json_to_xml(root: Mapping[str, Any], indent: str = '') -> str:
             # {"passport": "hidden"} is a special attribute only present in
             # JSON MJML. The attribute is set by Passport (Mailjet's template
             # editor) to hide specific elements.
-            # https://github.com/FelixSchwarz/mjml-stub/commit/e1c006e213f26fb6dd9cf406b6e7b849350f6bc7#r47810966
+            # https://github.com/FelixSchwarz/mjml-python/commit/e1c006e213f26fb6dd9cf406b6e7b849350f6bc7#r47810966
             if child.get('attributes', {}).get('passport', {}).get('hidden'):
                 continue
             child_xml = json_to_xml(child, indent=child_indent)
