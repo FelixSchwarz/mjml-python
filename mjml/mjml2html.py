@@ -244,7 +244,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             include_star_selectors=True,
             css_text=globalDatas.inlineStyle,
             # Premailer applies these attributes for all elements, not just table elements.
-            # This doesn't match MJML upstream. Disable these attributes and implement our own logic.
+            # Disable these attributes and implement our own logic to match MJML upstream.
             disable_basic_attributes=['align', 'bgcolor', 'height', 'valign', 'width'],
         )
         content = inliner.transform(content, pretty_print=False)
