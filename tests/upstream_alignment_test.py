@@ -129,10 +129,12 @@ class UpstreamAlignmentTest(TestCase):
         actual_soup = BeautifulSoup(result.html, 'html.parser')
 
         # This ID is randomly generated, so we need to manually replace it.
-        expected_carousel_id = expected_soup.find(attrs={'class': 'mj-carousel-radio'})['name'].replace('mj-carousel-radio-', '') # noqa: E501
-        actual_carousel_id = actual_soup.find(attrs={'class': 'mj-carousel-radio'})['name'].replace('mj-carousel-radio-', '') # noqa: E501
+        def _replace_random_radio_class(soup):
+            _mj_cr_str = 'mj-carousel-radio'
+            return soup.find(attrs={'class': _mj_cr_str})['name'].replace(f'{_mj_cr_str}-', '')
+        expected_carousel_id = _replace_random_radio_class(expected_soup)
+        actual_carousel_id = _replace_random_radio_class(actual_soup)
         actual_html = str(actual_soup).replace(actual_carousel_id, expected_carousel_id)
-
         assert_same_html(str(expected_soup), actual_html, verbose=True)
 
     # htmlcompare is currently unable to detect these kind of

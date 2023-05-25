@@ -60,12 +60,10 @@ class MjCarousel(BodyComponent):
             return ''
 
         def buildCssSelectors(parent, repeatCount, sibling):
-            ','.join(map(lambda i: f'''
-                {parent(i)} {repeat(
-                    '+ * ',
-                    repeatCount(i),
-                    )}+ {sibling(i)}
-            ''', range(length)))
+            def _selector_str(i):
+                return f'{parent(i)} {repeat("+ * ", repeatCount(i))}+ {sibling(i)}'
+            _selectors = [_selector_str(i) for i in range(length)]
+            return ','.join(_selectors)
 
         carouselCss = f'''
             .mj-carousel {{
@@ -226,12 +224,9 @@ class MjCarousel(BodyComponent):
 
     def thumbnailsWidth(self):
         childrenLen = len(self.props['children'])
-
         if not childrenLen:
             return 0
-
         parentWidth, _ = widthParser(self.context['containerWidth'])
-
         return self.getAttribute('tb-width') or f'{min([parentWidth / childrenLen, 110])}px'
 
     def imagesAttributes(self):
@@ -249,7 +244,6 @@ class MjCarousel(BodyComponent):
 
     def generateThumbnails(self):
         children = self.props['children']
-
         if self.getAttribute('thumbnails') != 'visible':
             return ''
 
@@ -266,6 +260,12 @@ class MjCarousel(BodyComponent):
     def generateControls(self, direction, icon):
         iconWidth, _ = widthParser(self.getAttribute('icon-width'))
 
+        img_attrs = self.html_attrs(
+            src=icon,
+            alt=direction,
+            style='controls.img',
+            width=iconWidth
+        )
         content = ''.join(map(
             lambda i: f'''
                 <label
@@ -274,32 +274,23 @@ class MjCarousel(BodyComponent):
                         class_=f'mj-carousel-{direction} mj-carousel-{direction}-{i}',
                     )}
                 >
-                    <img
-                        {self.html_attrs(
-                            src=icon,
-                            alt=direction,
-                            style='controls.img',
-                            width=iconWidth
-                        )}
-                    />
+                    <img {img_attrs} />
                 </label>
             ''',
             range(1, len(self.props['children']) + 1)
         ))
 
+        td_attrs = self.html_attrs(
+            class_=f'mj-carousel-{self.carouselId}-icons-cell',
+            style='controls.td',
+        )
+        div_attrs = self.html_attrs(
+            class_=f'mj-carousel-{direction}-icons',
+            style='controls.div',
+        )
         return f'''
-            <td
-                {self.html_attrs(
-                    class_=f'mj-carousel-{self.carouselId}-icons-cell',
-                    style='controls.td',
-                )}
-            >
-                <div
-                    {self.html_attrs(
-                        class_=f'mj-carousel-{direction}-icons',
-                        style='controls.div',
-                    )}
-                >
+            <td {td_attrs}>
+                <div {div_attrs}>
                     {content}
                 </div>
             </td>
@@ -307,12 +298,8 @@ class MjCarousel(BodyComponent):
 
     def generateImages(self):
         return f'''
-            <td
-                {self.html_attrs(style='images.td')}
-            >
-                <div
-                    {self.html_attrs(class_='mj-carousel-images')}
-                >
+            <td {self.html_attrs(style='images.td')}>
+                <div {self.html_attrs(class_='mj-carousel-images')}>
                     {self.renderChildren(self.props['children'],
                         attributes={
                             'border-radius': self.getAttribute('border-radius'),
@@ -323,18 +310,17 @@ class MjCarousel(BodyComponent):
         '''
 
     def generateCarousel(self):
+        table_attrs = self.html_attrs(
+            style       = 'carousel.table',
+            border      = '0',
+            cellpadding = '0',
+            cellspacing = '0',
+            width       = '100%',
+            role        = 'presentation',
+            class_      = 'mj-carousel-main',
+        )
         return f'''
-            <table
-                {self.html_attrs(
-                    style='carousel.table',
-                    border='0',
-                    cellpadding='0',
-                    cellspacing='0',
-                    width='100%',
-                    role='presentation',
-                    class_='mj-carousel-main',
-                )}
-            >
+            <table {table_attrs}>
                 <tbody>
                     <tr>
                         {self.generateControls('previous', self.getAttribute('left-icon'))}
@@ -361,27 +347,20 @@ class MjCarousel(BodyComponent):
         )
 
     def render(self):
+        content_div_attrs = self.html_attrs(
+            class_=f'mj-carousel-content mj-carousel-{self.carouselId}-content',
+            style='carousel.div',
+        )
         content = msoConditionalTag(
             f'''
-                <div
-                    {self.html_attrs(class_='mj-carousel')}
-                >
+                <div {self.html_attrs(class_='mj-carousel')}>
                     {self.generateRadios()}
-                    <div
-                        {self.html_attrs(
-                            class_=f'mj-carousel-content mj-carousel-{self.carouselId}-content',
-                            style='carousel.div',
-                        )}
-                    >
+                    <div {content_div_attrs}>
                         {self.generateThumbnails()}
                         {self.generateCarousel()}
                     </div>
                 </div>
             ''',
-            True
+            negation=True
         )
-
-        return f'''
-            {content}
-            {self.renderFallback()}
-        '''
+        return content + self.renderFallback()
