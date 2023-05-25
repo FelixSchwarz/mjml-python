@@ -1,10 +1,11 @@
 
-0.9.0 (?)
+0.9.0 (2023-05-25)
 ------------------
 
 - add mjml-accordion, mjml-accordion-element, mjml-accordion-text, mjml-accordion-title, mjml-carousel, mjml-head-breakpoint, mjml-hero, mjml-navbar, mjml-navbar-link, mjml-social, mjml-spacer, and mjml-wrapper components (Casey Holzer)
 - add support for custom components (Casey Holzer)
 - add support for full-width attribute to mj-section (Casey Holzer)
+- renamed project to "mjml-python", dropping the "-stub" suffix
 
 
 0.8.0 (2022-08-25)
