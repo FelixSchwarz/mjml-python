@@ -101,51 +101,40 @@ class MjCarouselImage(BodyComponent):
 
     def renderRadio(self):
         index = self.props['index']
-        carouselId = self.getAttribute('carouselId', missing_ok=True)
-
-        return f'''
-            <input
-                {self.html_attrs(
-                    class_=f'mj-carousel-radio mj-carousel-{carouselId}-radio mj-carousel-{carouselId}-radio-{index + 1}',
-                    checked='checked' if index == 0 else None,
-                    type='radio',
-                    name=f'mj-carousel-radio-{carouselId}',
-                    id=f'mj-carousel-{carouselId}-radio-{index + 1}',
-                    style='radio.input',
-                )}
-            />
-        ''' # noqa: E501
+        carousel_id = self.getAttribute('carouselId', missing_ok=True)
+        _c_radio_class_str = f'mj-carousel-{carousel_id}-radio'
+        input_attrs = self.html_attrs(
+            class_  = f'mj-carousel-radio {_c_radio_class_str} {_c_radio_class_str}-{index + 1}',
+            checked = 'checked' if index == 0 else None,
+            type    = 'radio',
+            name    = f'mj-carousel-radio-{carousel_id}',
+            id      = f'{_c_radio_class_str}-{index + 1}',
+            style   = 'radio.input',
+        )
+        return f'<input {input_attrs} />'
 
     def render(self):
-        href = self.getAttribute('href')
-        rel = self.getAttribute('rel')
-        width, _ = widthParser(self.context['containerWidth'])
         index = self.props['index']
+        css_class = self.getAttribute('css-class', missing_ok=True) or ''
+        div_attrs = self.html_attrs(
+            class_ = f'mj-carousel-image mj-carousel-image-{index + 1} {css_class}',
+            style  = 'images.firstImageDiv' if index == 0 else 'images.otherImageDiv',
+        )
 
-        image = f'''
-            <img
-                {self.html_attrs(
-                    title=self.getAttribute('title'),
-                    src=self.getAttribute('src'),
-                    alt=self.getAttribute('alt'),
-                    style='images.img',
-                    width=width,
-                    border='0',
-                )}
-            />
-        '''
+        img_attrs = self.html_attrs(
+            title  = self.getAttribute('title'),
+            src    = self.getAttribute('src'),
+            alt    = self.getAttribute('alt'),
+            style  = 'images.img',
+            width  = widthParser(self.context['containerWidth'])[0],
+            border = '0',
+        )
+        image = f'<img {img_attrs} />'
+        href = self.getAttribute('href')
+        if href:
+            rel = self.getAttribute('rel')
+            div_content = f'<a {self.html_attrs(href=href, rel=rel, target="_blank")}>{image}</a>'
+        else:
+            div_content = image
 
-        cssClass = self.getAttribute('css-class', missing_ok=True) or ''
-
-        return f'''
-            <div
-                {self.html_attrs(
-                    class_=f'mj-carousel-image mj-carousel-image-{index + 1} {cssClass}',
-                    style='images.firstImageDiv' if index == 0 else 'images.otherImageDiv',
-                )}
-            >
-                {
-                    f'<a {self.html_attrs(href=href, rel=rel, target="_blank")}>{image}</a>' if href else image
-                }
-            </div>
-        ''' # noqa: E501
+        return f'<div {div_attrs}>{div_content}</div>'

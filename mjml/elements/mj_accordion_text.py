@@ -61,7 +61,6 @@ class MjAccordionText(BodyComponent):
             class_=self.get_attr('css-class', missing_ok=True),
             style='td',
         )
-
         return f'''
             <td {td_attrs}>
                 {self.getContent()}
@@ -69,15 +68,12 @@ class MjAccordionText(BodyComponent):
         '''
 
     def render(self):
-        div_attrs = self.html_attrs(
-            class_='mj-accordion-content',
-        )
+        div_attrs = self.html_attrs(class_='mj-accordion-content')
         table_attrs = self.html_attrs(
             cellspacing='0',
             cellpadding='0',
             style='table',
         )
-
         return f'''
             <div {div_attrs}>
                 <table {table_attrs}>

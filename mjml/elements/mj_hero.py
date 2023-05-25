@@ -54,15 +54,17 @@ class MjHero(BodyComponent):
 
     def getChildContext(self):
         containerWidth = self.context['containerWidth']
-        paddingSize = self.getShorthandAttrValue('padding', 'left') + self.getShorthandAttrValue('padding', 'right') # noqa: line-too-long
+        padding_left = self.getShorthandAttrValue('padding', 'left')
+        padding_right = self.getShorthandAttrValue('padding', 'right')
+        paddingSize = padding_left + padding_right
 
-        currentContainerWidth = f'{parse_int(containerWidth)}px'
-        parsedWidth, unit = widthParser(currentContainerWidth, parseFloatToInt=False)
-
+        container_width: int = parse_int(containerWidth)
+        parsed_width, unit = widthParser(f'{container_width}px', parseFloatToInt=False)
         if unit == '%':
-            currentContainerWidth = f'{(parse_int(containerWidth) * parsedWidth) / 100 - paddingSize}px'  # noqa: line-too-long
+            container_width = (container_width * parsed_width) / 100 - paddingSize
         else:
-            currentContainerWidth = f'{parsedWidth - paddingSize}px'
+            container_width = parsed_width - paddingSize
+        currentContainerWidth = f'{container_width}px'
 
         return merge_dicts(
             self.context,
@@ -255,10 +257,8 @@ class MjHero(BodyComponent):
             'style': 'hero',
         }
         mode = self.getAttribute('mode')
-
         if mode == 'fluid-height':
             magicTd = self.html_attrs(style='td-fluid')
-
             return f'''
                 <td {magicTd} />
                 <td {self.html_attrs(**commonAttributes)}>
@@ -267,11 +267,10 @@ class MjHero(BodyComponent):
                 <td {magicTd} />
             '''
         else:
-            height =\
-                parse_int(self.getAttribute('height')) -\
-                self.getShorthandAttrValue('padding', 'top') -\
-                self.getShorthandAttrValue('padding', 'bottom')
-
+            height_attr = parse_int(self.getAttribute('height'))
+            padding_top = self.getShorthandAttrValue('padding', 'top')
+            paddig_bottom = self.getShorthandAttrValue('padding', 'bottom')
+            height = height_attr - padding_top - paddig_bottom
             return f'''
                 <td {self.html_attrs(**commonAttributes, height=height)}>
                     {self.renderContent()}

@@ -90,6 +90,7 @@ for key, value in list(defaultSocialNetworks.items()):
         'share-url': '[[URL]]',
     }
 
+
 class MjSocialElement(BodyComponent):
     component_name = 'mj-social-element'
 
@@ -187,85 +188,62 @@ class MjSocialElement(BodyComponent):
         }
 
     def getSocialAttributes(self):
-        attrs = {}
         socialNetwork = defaultSocialNetworks.get(self.getAttribute('name'), {})
         href = self.getAttribute('href')
 
         if href and socialNetwork.get('share-url'):
             href = socialNetwork.get('share-url', '').replace('[[URL]]', href)
 
-        for attr in [
-            'icon-size',
-            'icon-height',
-            'srcset',
-            'sizes',
-            'src',
-            'background-color',
-        ]:
+        attrs = {}
+        attr_names = ['icon-size', 'icon-height', 'srcset', 'sizes', 'src', 'background-color']
+        for attr in attr_names:
             attrs[attr] = self.getAttribute(attr) or socialNetwork.get(attr)
-
-        return {
-            'href': href,
-            **attrs,
-        }
+        return {'href': href, **attrs}
 
     def render(self):
         attributes = self.getSocialAttributes()
         iconSize = attributes['icon-size']
         iconHeight = attributes['icon-height']
         hasLink = bool(self.getAttribute('href'))
-        content = self.getContent()
-        content_html = ''
-
-        def get_text(content):
-            if hasLink:
-                return f'''
-                    <a {self.html_attrs(
-                        href=attributes['href'],
-                        style='text',
-                        rel=self.getAttribute('rel'),
-                        target=self.getAttribute('target'),
-                    )}>
-                        {content}
-                    </a>
-                '''
-
-            return f'''
-                <span {self.html_attrs(style='text')}>{content}</span>
-            '''
 
         def get_img():
             height, _ = widthParser(iconHeight or iconSize)
             width, _ = widthParser(iconSize)
-
-            img = f'''
-                <img
-                    {self.html_attrs(
-                        alt=self.getAttribute('alt'),
-                        title=self.getAttribute('title'),
-                        height=height,
-                        src=attributes['src'],
-                        style='img',
-                        width=width,
-                        sizes=attributes['sizes'],
-                        srcset=attributes['srcset'],
-                    )}
-                />
-            '''
+            img_attrs = self.html_attrs(
+                alt    = self.getAttribute('alt'),
+                title  = self.getAttribute('title'),
+                height = height,
+                src    = attributes['src'],
+                style  = 'img',
+                width  = width,
+                sizes  = attributes['sizes'],
+                srcset = attributes['srcset'],
+            )
+            img = f'<img {img_attrs} />'
 
             if hasLink:
-                return f'''
-                    <a {self.html_attrs(
-                        href=attributes['href'],
-                        rel=self.getAttribute('rel'),
-                        target=self.getAttribute('target'),
-                    )}>
-                        {img}
-                    </a>
-                '''
-
+                link_attrs = self.html_attrs(
+                    href   = attributes['href'],
+                    rel    = self.getAttribute('rel'),
+                    target = self.getAttribute('target'),
+                )
+                return f'<a {link_attrs}>{img}</a>'
             return img
 
+        def get_text(content):
+            if hasLink:
+                link_attrs = self.html_attrs(
+                    href   = attributes['href'],
+                    style  = 'text',
+                    rel    = self.getAttribute('rel'),
+                    target = self.getAttribute('target'),
+                )
+                return f'<a {link_attrs}>{content}</a>'
+
+            return f'<span {self.html_attrs(style="text")}>{content}</span>'
+
+        content_html = ''
+        content = self.getContent()
         if content:
             content_html = f'''
                 <td {self.html_attrs(style='tdText')}>
@@ -273,18 +251,17 @@ class MjSocialElement(BodyComponent):
                 </td>
             '''
 
+        table_attrs = self.html_attrs(
+            border      = '0',
+            cellpadding = '0',
+            cellspacing = '0',
+            role        = 'presentation',
+            style       = 'table',
+        )
         return f'''
             <tr {self.html_attrs(class_=self.getAttribute('css-class', missing_ok=True))}>
                 <td {self.html_attrs(style='td')}>
-                    <table
-                        {self.html_attrs(
-                            border='0',
-                            cellpadding='0',
-                            cellspacing='0',
-                            role='presentation',
-                            style='table',
-                        )}
-                    >
+                    <table {table_attrs}>
                         <tbody>
                             <tr>
                                 <td {self.html_attrs(style='icon')}>

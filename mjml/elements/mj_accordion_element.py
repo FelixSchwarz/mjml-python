@@ -98,19 +98,16 @@ class MjAccordionElement(BodyComponent):
 
 
     def render(self):
+        checkbox_attrs = self.html_attrs(
+            class_='mj-accordion-checkbox',
+            type='checkbox',
+            style='input',
+        )
+        checkbox = f'<input {checkbox_attrs} />'
         label_attrs = self.html_attrs(
             class_='mj-accordion-element',
             style='label',
         )
-        checkbox = f'''
-            <input
-                {self.html_attrs(
-                    class_='mj-accordion-checkbox',
-                    type='checkbox',
-                    style='input',
-                )}
-            />
-        '''
         return f'''
             <tr {self.html_attrs(class_=self.get_attr('css-class', missing_ok=True))}>
                 <td {self.html_attrs(style='td')}>

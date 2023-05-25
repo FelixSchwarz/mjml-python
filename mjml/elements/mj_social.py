@@ -107,9 +107,7 @@ class MjSocial(BodyComponent):
                 <!--[if mso | IE]>
                     <td>
                 <![endif]-->
-                    <table
-                        {table_attrs}
-                    >
+                    <table {table_attrs}>
                         <tbody>
                             {component.render()}
                         </tbody>
@@ -119,17 +117,16 @@ class MjSocial(BodyComponent):
                 <![endif]-->
             '''
 
+        table_attrs = self.html_attrs(
+            align       = align,
+            border      = '0',
+            cellpadding = '0',
+            cellspacing = '0',
+            role        = 'presentation',
+        )
         return f'''
             <!--[if mso | IE]>
-                <table
-                    ${self.html_attrs(
-                        align=align,
-                        border='0',
-                        cellpadding='0',
-                        cellspacing='0',
-                        role='presentation',
-                    )}
-                >
+                <table {table_attrs}>
                     <tr>
             <![endif]-->
             {self.renderChildren(children, attributes=self.getSocialElementAttributes(), renderer=render_child)}
@@ -140,23 +137,21 @@ class MjSocial(BodyComponent):
         ''' # noqa: E501
 
     def renderVertical(self):
+        table_attrs = self.html_attrs(
+            border      = '0',
+            cellpadding = '0',
+            cellspacing = '0',
+            role        = 'presentation',
+            style       = 'tableVertical',
+        )
         children = self.props['children']
-
         return f'''
-            <table
-                {self.html_attrs(
-                    border='0',
-                    cellpadding='0',
-                    cellspacing='0',
-                    role='presentation',
-                    style='tableVertical',
-                )}
-            >
+            <table {table_attrs}>
                 <tbody>
                     {self.renderChildren(children, attributes=self.getSocialElementAttributes())}
                 </tbody>
             </table>
-        ''' # noqa: E501
+        '''
 
     def render(self):
         if self.getAttribute('mode') == 'horizontal':
