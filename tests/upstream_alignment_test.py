@@ -85,7 +85,7 @@ class UpstreamAlignmentTest(TestCase):
 
     def test_can_use_css_inlining(self):
         try:
-            import css_inline  # noqa: unused-import
+            import premailer  # noqa: unused-import
         except ImportError:
             raise SkipTest('"css_inline" not installed')
         test_id = 'css-inlining'

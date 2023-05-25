@@ -225,13 +225,29 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
 
     if len(globalDatas.inlineStyle) > 0:
         try:
-            import css_inline
+            from premailer import Premailer
         except ImportError:
             raise ImportError('CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies.') # noqa: E501
 
-        extra_css = ''.join(globalDatas.inlineStyle)
-        inliner = css_inline.CSSInliner(inline_style_tags=False, extra_css=extra_css)
-        content = inliner.inline(content)
+        # Ensure styles added via MJML are not inlined
+        contentSoup = BeautifulSoup(content, 'html.parser')
+        for style in contentSoup.find_all('style'):
+            media = style.get('media')
+            if media and media not in ('all', 'screen'):
+                continue
+            style['data-premailer'] = 'ignore'
+
+        # BeautifulSoup defaults to utf-8 instead of UTF-8
+        content = contentSoup.decode(eventual_encoding='UTF-8')
+        inliner = Premailer(
+            strip_important=False,
+            include_star_selectors=True,
+            css_text=globalDatas.inlineStyle,
+            # Premailer applies these attributes for all elements, not just table elements.
+            # This doesn't match MJML upstream. Disable these attributes and implement our own logic.
+            disable_basic_attributes=['align', 'bgcolor', 'height', 'valign', 'width'],
+        )
+        content = inliner.transform(content, pretty_print=False)
 
     content = mergeOutlookConditionnals(content)
 
