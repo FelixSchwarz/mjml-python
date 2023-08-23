@@ -100,18 +100,6 @@ class MjHero(BodyComponent):
                 'padding-bottom'        : f'{backgroundRatio}%',
                 'mso-padding-bottom-alt': '0',
             },
-            'hero'               : {
-                'background'         : self.getBackground(),
-                'background-position': self.get_attr('background-position'),
-                'background-repeat'  : 'no-repeat',
-                'border-radius'      : self.get_attr('border-radius'),
-                'padding'            : self.get_attr('padding'),
-                'padding-top'        : self.get_attr('padding-top'),
-                'padding-left'       : self.get_attr('padding-left'),
-                'padding-right'      : self.get_attr('padding-right'),
-                'padding-bottom'     : self.get_attr('padding-bottom'),
-                'vertical-align'     : self.get_attr('vertical-align'),
-            },
             'outlook-table'      : {
                 'width': containerWidth,
             },
@@ -254,7 +242,18 @@ class MjHero(BodyComponent):
     def renderMode(self):
         commonAttributes = {
             'background': self.getAttribute('background-url'),
-            'style': 'hero',
+            'style': {
+                'background'         : self.getBackground(),
+                'background-position': self.get_attr('background-position'),
+                'background-repeat'  : 'no-repeat',
+                'border-radius'      : self.get_attr('border-radius'),
+                'padding'            : self.get_attr('padding'),
+                'padding-top'        : self.get_attr('padding-top'),
+                'padding-left'       : self.get_attr('padding-left'),
+                'padding-right'      : self.get_attr('padding-right'),
+                'padding-bottom'     : self.get_attr('padding-bottom'),
+                'vertical-align'     : self.get_attr('vertical-align'),
+            }
         }
         mode = self.getAttribute('mode')
         if mode == 'fluid-height':
@@ -269,10 +268,12 @@ class MjHero(BodyComponent):
         else:
             height_attr = parse_int(self.getAttribute('height'))
             padding_top = self.getShorthandAttrValue('padding', 'top')
-            paddig_bottom = self.getShorthandAttrValue('padding', 'bottom')
-            height = height_attr - padding_top - paddig_bottom
+            padding_bottom = self.getShorthandAttrValue('padding', 'bottom')
+            height = height_attr - padding_top - padding_bottom
+            style = {**commonAttributes['style'], 'height': f'{height}px'}
+            del commonAttributes['style']
             return f'''
-                <td {self.html_attrs(**commonAttributes, height=height)}>
+                <td {self.html_attrs(**commonAttributes, height=height, style=style)}>
                     {self.renderContent()}
                 </td>
             '''

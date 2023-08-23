@@ -243,11 +243,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             strip_important=False,
             include_star_selectors=True,
             css_text=globalDatas.inlineStyle,
-            # Premailer applies these attributes for all elements, not just table elements.
-            # Disable these attributes and implement our own logic to match MJML upstream.
-            disable_basic_attributes=['align', 'bgcolor', 'height', 'valign', 'width'],
         )
-        content = inliner.transform(content, pretty_print=False)
+        content = remove_attrs_on_non_table_elements(inliner.transform(content, pretty_print=False))
 
     content = mergeOutlookConditionnals(content)
 
@@ -255,6 +252,26 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         'html': content,
         'errors': errors,
     })
+
+
+def remove_attrs_on_non_table_elements(content):
+    # Premailer applies these attributes for all elements, not just table elements.
+    contentSoup = BeautifulSoup(content, 'html.parser')
+
+    table_tags = ['table', 'th', 'tr', 'td', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'img']
+    attrs_to_remove = ['align', 'bgcolor', 'height', 'valign', 'width']
+
+    def has_attr_to_remove(tag):
+        return tag.name not in table_tags and any(key in tag.attrs for key in attrs_to_remove)
+
+    should_remove = contentSoup.find_all(has_attr_to_remove)
+
+    for tag in should_remove:
+        for attr in attrs_to_remove:
+            if tag.get(attr):
+                del tag[attr]
+
+    return contentSoup.decode(eventual_encoding='UTF-8')
 
 
 def _map_to_tuple(items, map_fn, filter_none=None):
