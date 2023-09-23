@@ -3,6 +3,7 @@
 ------------------
 
 - require css_inline < 0.10 due to an incompatible API change
+- move project out of "alpha" state, it is at least "beta" by now
 
 
 0.9.0 (2023-05-25)
