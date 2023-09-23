@@ -1,4 +1,10 @@
 
+0.9.1 (2023-XX-XX)
+------------------
+
+- require css_inline < 0.10 due to an incompatible API change
+
+
 0.9.0 (2023-05-25)
 ------------------
 
