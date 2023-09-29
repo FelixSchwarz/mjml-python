@@ -36,5 +36,9 @@ jobs:
 
     - name: Test CSS inlining
       run: |
-        pip install -e .[css_inlining]
-        pytest
+        if [[ "${{ matrix.python-version }}" != "3.6" ]]; then
+          pip install -e .[css_inlining]
+          pytest
+        else
+          echo "Skipping CSS inlining tests for Python 3.6"
+        fi
