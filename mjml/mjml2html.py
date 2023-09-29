@@ -230,7 +230,12 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             raise ImportError('CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies.') # noqa: E501
 
         extra_css = ''.join(globalDatas.inlineStyle)
-        inliner = css_inline.CSSInliner(inline_style_tags=False, extra_css=extra_css)
+        inliner = css_inline.CSSInliner(
+            extra_css=extra_css,
+            inline_style_tags=False,
+            keep_link_tags=True,
+            keep_style_tags=True,
+        )
         content = inliner.inline(content)
 
     content = mergeOutlookConditionnals(content)

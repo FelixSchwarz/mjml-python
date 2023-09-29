@@ -1,4 +1,11 @@
 
+0.10.0 (?)
+------------------
+
+- require css-inline 0.11.x for performance improvements
+- drop css-inline Python 3.6 support
+
+
 0.9.1 (2023-09-23)
 ------------------
 
