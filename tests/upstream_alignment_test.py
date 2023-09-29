@@ -1,4 +1,5 @@
-
+import sys
+import unittest
 from json import load as json_load
 from unittest import SkipTest, TestCase
 
@@ -83,6 +84,7 @@ class UpstreamAlignmentTest(TestCase):
         actual_html = result.html
         assert_same_html(expected_html, actual_html, verbose=True)
 
+    @unittest.skipIf(sys.version_info < (3, 7), reason='css_inline requires >= python3.7')
     def test_can_use_css_inlining(self):
         try:
             import css_inline  # noqa: unused-import
