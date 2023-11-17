@@ -40,6 +40,7 @@ class UpstreamAlignmentTest(TestCase):
         'mj-section-with-css-class',
         'mj-section-with-mj-class',
         'mj-section-with-background-url',
+        'mj-section-with-background',
         'mj-font',
         'mj-font-multiple',
         'mj-font-unused',
@@ -86,7 +87,7 @@ class UpstreamAlignmentTest(TestCase):
     @skipIf(sys.version_info < (3, 7), reason='css_inline requires >= python3.7')
     def test_can_use_css_inlining(self):
         try:
-            import css_inline  # noqa: unused-import
+            import css_inline  # noqa: F401 (unused-import)
         except ImportError:
             raise SkipTest('"css_inline" not installed')
         test_id = 'css-inlining'

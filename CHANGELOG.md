@@ -4,6 +4,7 @@
 
 - require css-inline 0.11.x for performance improvements
 - drop css-inline Python 3.6 support
+- fix exception when processing an `mj-section` with `background-size` (reported by Thomas Handorf)
 
 
 0.9.1 (2023-09-23)

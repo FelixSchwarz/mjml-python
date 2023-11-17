@@ -339,7 +339,7 @@ class MjSection(BodyComponent):
             bgPosY = self._get_bg_percentage(bgPos.posY, ('top', 'center', 'bottom'), default='0%')
             # this logic is different when using repeat or no-repeat
             vX = self._calc_origin_pos_value(is_x=True, bg_pos=bgPosX)
-            vY = self._calc_origin_pos_value(is_y=False, bg_pos=bgPosY)
+            vY = self._calc_origin_pos_value(is_x=False, bg_pos=bgPosY)
 
         vrect_style = {'mso-width-percent': '1000'} if fullWidth else {'width': str(containerWidth)}
         vrect_attrs = self.html_attrs(**{
