@@ -1,9 +1,9 @@
 
-0.10.0 (?)
+0.10.0 (2023-11-17)
 ------------------
 
 - fix CSS child selectors
-- disable loading remote stylesheets
+- disable loading remote stylesheets when inlining CSS
 - require css-inline 0.11.x for performance improvements
 - drop css-inline Python 3.6 support
 - fix exception when processing an `mj-section` with `background-size` (reported by Thomas Handorf)
