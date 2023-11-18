@@ -3,8 +3,10 @@ import re
 from collections import namedtuple
 from decimal import Decimal
 
+from dotmap import DotMap
+
 from ..helpers import parse_percentage, strip_unit, suffixCssClasses
-from ..lib import AttrDict, merge_dicts
+from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -188,7 +190,7 @@ class MjSection(BodyComponent):
 
     def getBackgroundPosition(self):
         pos = self.parseBackgroundPosition()
-        return AttrDict({
+        return DotMap({
             'posX': self.getAttribute('background-position-x') or pos.x,
             'posY': self.getAttribute('background-position-y') or pos.y,
         })

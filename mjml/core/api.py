@@ -1,5 +1,7 @@
 
-from ..lib import AttrDict, merge_dicts
+from dotmap import DotMap
+
+from ..lib import merge_dicts
 from .registry import components
 
 
@@ -30,7 +32,7 @@ class Component:
         self.context = context
         self.tagName = tagName
 
-        self.props = AttrDict(merge_dicts(props, {'children': children, 'content': content}))
+        self.props = DotMap(merge_dicts(props, {'children': children, 'content': content}))
 
         # upstream also checks "self.allowed_attrs"
         self.attrs = merge_dicts(

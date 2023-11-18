@@ -3,11 +3,12 @@ from pathlib import Path, PurePath
 from typing import List, Optional
 
 from bs4 import BeautifulSoup
+from dotmap import DotMap
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
 from .helpers import json_to_xml, mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
-from .lib import AttrDict, merge_dicts
+from .lib import merge_dicts
 
 
 def ignore_empty(values):
@@ -52,7 +53,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     }
     # LATER: ability to override fonts via **options
 
-    globalDatas = AttrDict({
+    globalDatas = DotMap({
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
         'classes'            : {},
@@ -173,7 +174,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     def setBackgroundColor(color):
         globalDatas.backgroundColor = color
 
-    bodyHelpers = AttrDict(
+    bodyHelpers = DotMap(
         addHeadStyle = addHeadStyle,
         addMediaQuery = addMediaQuery,
         addComponentHeadSyle = addComponentHeadSyle,
@@ -199,7 +200,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             assert len(param_values) == 1, 'shortcut in implementation'
             current_attr_value[param_key] = param_values[0]
 
-    headHelpers = AttrDict(
+    headHelpers = DotMap(
         add = _head_data_add,
     )
     globalDatas.headRaw = processing(mjHead, headHelpers)
@@ -241,7 +242,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
 
     content = mergeOutlookConditionnals(content)
 
-    return AttrDict({
+    return DotMap({
         'html': content,
         'errors': errors,
     })
