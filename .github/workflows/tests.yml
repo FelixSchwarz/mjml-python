@@ -28,7 +28,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -e .[testing]
-        pip install pytest
 
     - name: Run test suite
       run: |
