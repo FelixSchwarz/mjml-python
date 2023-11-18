@@ -1,9 +1,11 @@
 
 
+from dotmap import DotMap
+
 from ..core import Component, initComponent
 from ..core.registry import components
 from ..helpers import *
-from ..lib import AttrDict, merge_dicts
+from ..lib import merge_dicts
 
 
 __all__ = [
@@ -39,7 +41,7 @@ class BodyComponent(Component):
         paddings = get_padding('right') + get_padding('left')
         borders = self.getShorthandBorderValue('right') + self.getShorthandBorderValue('left')
 
-        return AttrDict({
+        return DotMap({
             'totalWidth': parsedWidth,
             'borders'   : borders,
             'paddings'  : paddings,
