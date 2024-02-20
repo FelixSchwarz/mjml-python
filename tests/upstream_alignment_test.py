@@ -48,6 +48,7 @@ TEST_IDS = (
     'mj-raw-head-with-tags',
     'mj-social',
     'mj-spacer',
+    'mj-text-escaped-html', # this test is security-critical
     'mj-wrapper',
 )
 
