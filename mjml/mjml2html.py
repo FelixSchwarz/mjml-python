@@ -116,7 +116,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             classes = ignore_empty(attributes.get('mj-class', '').split(' '))
 
             # upstream parses text contents (+ comments) in mjml-parser-xml/index.js
-            content = _mjml.decode_contents(formatter=None)
+            content = _mjml.decode_contents()
 
             attributesClasses = {}
             for css_class in classes:
@@ -213,7 +213,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
                 for element in contentSoup.select(selector):
                     element[attrName] = value or ''
 
-        content = contentSoup.decode_contents(formatter=None)
+        content = contentSoup.decode_contents()
 
     content = skeleton(
         content=content,
