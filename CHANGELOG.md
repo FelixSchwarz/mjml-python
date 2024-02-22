@@ -1,5 +1,5 @@
 
-0.11.0 (2024-02-xx)
+0.11.0 (2024-02-22)
 -------------------
 
 - security fix: escaped HTML entities like `&gt;` were unescaped in the final mjml output, leading to potential injection of untrusted user data (reported by @sh-at-cs)
