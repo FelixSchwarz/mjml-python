@@ -33,3 +33,16 @@ src = ["mjml", "tests"]
 lines-after-imports = 2
 known-first-party = ["mjml"]
 combine-as-imports = true
+
+
+[tool.mypy]
+python_version = "3.8"
+# strict = true
+warn_unused_configs = true
+warn_unused_ignores = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_no_return = true
+warn_unreachable = true
+warn_incomplete_stub = true
