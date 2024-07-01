@@ -1,19 +1,15 @@
-
 import re
-from collections import namedtuple
+import typing as t
 
 from .py_utils import strip_unit
 
 
 __all__ = ['widthParser']
 
-_WidthUnit = namedtuple('_WidthUnit', ('width', 'unit'))
 
-class WidthUnit(_WidthUnit):
-    def __new__(cls, width, *, unit='px'):
-        if not unit:
-            unit = 'px'
-        return super().__new__(cls, width=width, unit=unit)
+class WidthUnit(t.NamedTuple):
+    width: int
+    unit: str = "px"
 
     @property
     def parsedWidth(self):
@@ -23,23 +19,33 @@ class WidthUnit(_WidthUnit):
         return f'{self.width}{self.unit}'
 
 
-unitRegex = re.compile(r'[\d.,]*(\D*)$')
+def widthParser(width: str, parseFloatToInt: bool=True) -> WidthUnit:
+    pattern = re.compile(r'[\d\.\,]+(?P<unit>\D*)$')
 
-def widthParser(width, parseFloatToInt=True):
     width_str = str(width)
-    match = unitRegex.search(width_str)
-    widthUnit = match.group(1)
-    if (widthUnit == '%') and not parseFloatToInt:
-        parser = float
-    else:
-        parser = int
-    width = strip_unit(width_str)
-    parsed_width = parser(width)
-    # LATER: somehow JS works differently here (as it does not have a strict
-    # type sytem). parseFloat() might return a number without fractional but
-    # python does.
-    width_int = int(width)
-    if parsed_width == width_int:
-        parsed_width = width_int
 
-    return WidthUnit(width=parsed_width, unit=widthUnit)
+    if (match := pattern.search(width_str)) is None:
+        raise ValueError(f"invalid width '{width}'")
+
+    if (unit := match.groupdict().get("unit")) is None:
+        raise RuntimeError("something went wrong...")
+
+    if not isinstance(unit, str):
+        raise TypeError(f"invalid unit '{unit}' ({type(unit)})")
+
+    parser = float if (unit == '%') and not parseFloatToInt else int
+
+    # TODO: the value returned from `strip_unit` is already an integer...
+    clean_width = strip_unit(width_str)
+    parsed_width = parser(clean_width)
+
+    # NOTE: only relevant if we're parsing as float, and the value is an integer
+    numerator, denominator = parsed_width.as_integer_ratio()
+
+    if denominator == 1:
+        parsed_width = numerator
+
+    if not unit:
+        return WidthUnit(width=parsed_width)
+
+    return WidthUnit(width=parsed_width, unit=unit)
