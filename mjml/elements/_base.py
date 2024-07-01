@@ -1,6 +1,4 @@
-
-
-from dotmap import DotMap
+import typing as t
 
 from ..core import Component, initComponent
 from ..core.registry import components
@@ -34,19 +32,19 @@ class BodyComponent(Component):
         border = self.getAttribute('border')
         return borderParser(borderDirection or border or '0')
 
-    def getBoxWidths(self):
+    def getBoxWidths(self) -> t.Dict[str, t.Any]:
         containerWidth = self.context['containerWidth']
         parsedWidth = strip_unit(containerWidth)
         get_padding = lambda d: self.getShorthandAttrValue('padding', d)
         paddings = get_padding('right') + get_padding('left')
         borders = self.getShorthandBorderValue('right') + self.getShorthandBorderValue('left')
 
-        return DotMap({
+        return {
             'totalWidth': parsedWidth,
             'borders'   : borders,
             'paddings'  : paddings,
             'box'       : parsedWidth - paddings - borders,
-        })
+        }
 
     # js: htmlAttributes(attributes)
     def html_attrs(self, **attrs):
@@ -100,7 +98,7 @@ class BodyComponent(Component):
             renderer = lambda component: component.render()
         if not attributes:
             attributes = {}
-        childrens = childrens or self.props.children
+        childrens = childrens or self.props.get("children")
 
         if rawXML:
             # return childrens.map(child => jsonToXML(child)).join('\n')
