@@ -5,7 +5,7 @@ from .py_utils import parse_int
 
 
 if t.TYPE_CHECKING:
-    _Direction = t.Literal["top", "bottom", "left", "right"]
+    from mjml._types import _Direction
 
 
 __all__ = ['shorthandParser', 'borderParser']
