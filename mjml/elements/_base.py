@@ -1,3 +1,4 @@
+import itertools
 import typing as t
 
 from ..core import Component, initComponent
@@ -6,15 +7,22 @@ from ..helpers import *
 from ..lib import merge_dicts
 
 
+if t.TYPE_CHECKING:
+    from mjml._types import _Direction
+
+
 __all__ = [
     'BodyComponent',
 ]
 
+
 class BodyComponent(Component):
-    def render(self):
+    def render(self) -> str:
         raise NotImplementedError(f'{self.__cls__.__name__} should override ".render()"')
 
-    def getShorthandAttrValue(self, attribute, direction, attr_with_direction=True):
+    def getShorthandAttrValue(self,
+                              attribute: str, direction: "_Direction",
+                              attr_with_direction: bool=True) -> int:
         if attr_with_direction:
             mjAttributeDirection = self.getAttribute(f'{attribute}-{direction}')
         else:
@@ -27,7 +35,7 @@ class BodyComponent(Component):
             return 0
         return shorthandParser(mjAttribute, direction)
 
-    def getShorthandBorderValue(self, direction):
+    def getShorthandBorderValue(self, direction: "_Direction") -> int:
         borderDirection = direction and self.getAttribute(f'border-{direction}')
         border = self.getAttribute('border')
         return borderParser(borderDirection or border or '0')
@@ -47,9 +55,8 @@ class BodyComponent(Component):
         }
 
     # js: htmlAttributes(attributes)
-    def html_attrs(self, **attrs):
-        def _to_str(kv):
-            key, value = kv
+    def html_attrs(self, **attrs: t.Any) -> str:
+        def _to_str(key: str, value: t.Any) -> t.Optional[str]:
             if key == 'style':
                 value = self.styles(value)
             elif key in ['class_', 'for_']:
@@ -59,34 +66,39 @@ class BodyComponent(Component):
             if value is None:
                 return None
             return f'{key}="{value}"'
-        serialized_attrs = map(_to_str, attrs.items())
+        serialized_attrs = itertools.starmap(_to_str, attrs.items())
         return ' '.join(filter(None, serialized_attrs))
 
     # js: getStyles()
-    def get_styles(self):
+    def get_styles(self) -> t.Dict[str, t.Any]:
         return {}
 
     # js: styles(styles)
-    def styles(self, key=None):
-        _styles = None
+    def styles(self, key: t.Optional[t.Any]=None) -> str:
+        _styles: t.Optional[t.Dict[str, t.Any]] = None
+
         if key and isinstance(key, str):
             _styles_dict = self.get_styles()
             keys = key.split('.')
             _styles = _styles_dict.get(keys[0])
             if len(keys) > 1:
+                # TODO typing: fix
+                if not _styles:
+                    raise RuntimeError()
                 _styles = _styles.get(keys[1])
             if _styles and not isinstance(_styles, dict):
                 raise ValueError(f'key={key}')
         elif key:
             # predefined dict
             _styles = key
+
         if not _styles:
             _styles = {}
 
-        def serializer(kv):
-            k, v = kv
+        def serializer(k: str, v: t.Any) -> t.Optional[str]:
             return f'{k}:{v}' if is_not_empty(v) else None
-        style_attr_strs = filter(None, map(serializer, _styles.items()))
+
+        style_attr_strs = filter(None, itertools.starmap(serializer, _styles.items()))
         style_str = ';'.join(style_attr_strs)
         return style_str
 
