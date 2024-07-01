@@ -11,7 +11,7 @@ class MjAttributes(HeadComponent):
 
     def handler(self):
         add = self.context['add']
-        _children = self.props.children
+        _children = self.props.get("children")
 
         for child in _children:
             tagName = child['tagName']

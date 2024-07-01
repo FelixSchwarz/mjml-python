@@ -1,3 +1,4 @@
+import typing as t
 from collections.abc import Mapping, Sequence
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
@@ -16,9 +17,10 @@ if TYPE_CHECKING:
     from _typeshed import StrPath, SupportsRead
 
     from mjml.core.api import Component
+    T = t.TypeVar("T")
 
 
-class MJMLOutput(NamedTuple):
+class ParseResult(NamedTuple):
     html: str
     errors: Sequence[str]
 
@@ -31,7 +33,7 @@ def mjml_to_html(
     skeleton: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
     custom_components: Optional[Sequence[type["Component"]]] = None,
-) -> MJMLOutput:
+) -> ParseResult:
     register_core_components()
 
     if isinstance(xml_fp_or_json, dict):
@@ -66,7 +68,7 @@ def mjml_to_html(
 
     mjml_lang = mjml_root.attrs.get('lang', 'und')
     mjml_dir = mjml_root.attrs.get('dir', 'auto')
-    globalDatas = DotMap({
+    globalDatas: Mapping[str, t.Any] = DotMap({
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
         'classes'            : {},
@@ -89,7 +91,7 @@ def mjml_to_html(
     # "validationLevel" is not used but available upstream - makes it easier to
     # match the line of code with the upstream sources.
     validationLevel = 'skip' # noqa: F841
-    errors = []
+    errors: t.List[str] = []
     # LATER: optional validation
 
     mjBody = _find_child(mjml_root, 'mj-body')
@@ -97,7 +99,8 @@ def mjml_to_html(
         raise ValueError('Did not find <mj-body>!')
     mjHead = _find_child(mjml_root, 'mj-head')
 
-    def processing(node, context, parseMJML=None) -> Union[str, None]:
+    def processing(node: t.Optional[t.Any], context: t.Dict[str, t.Any],
+                   parseMJML: t.Optional[t.Callable[[t.Any], t.Any]]=None) -> t.Optional[str]:
         if node is None:
             return None
         # LATER: upstream passes "parseMJML=identity" for head components
@@ -111,6 +114,7 @@ def mjml_to_html(
             return None
         if hasattr(component, 'handler'):
             return component.handler()
+        # TODO typing: this check is redundant, delete?
         if hasattr(component, 'render'):
             return component.render()
         raise AssertionError('should not reach this')
@@ -134,19 +138,19 @@ def mjml_to_html(
 
             attributesClasses = {}
             for css_class in classes:
-                mjClassValues = globalDatas.classes.get(css_class)
+                mjClassValues = globalDatas.get("classes").get(css_class)
                 if mjClassValues:
                     attributesClasses.update(mjClassValues)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
             def default_attr_classes(value):
-                return globalDatas.classesDefault.get(value, {}).get(tagName, {})
+                return globalDatas.get("classesDefault").get(value, {}).get(tagName, {})
             defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))
             nextParentMjClass = attributes.get('mj-class', parentMjClass)
 
             _attrs_omit = omit(attributes, 'mj-class')
             _returned_attributes = merge_dicts(
-                globalDatas.defaultAttributes.get(tagName, {}),
+                globalDatas.get("defaultAttributes").get(tagName, {}),
                 attributesClasses,
                 defaultAttributesForClasses,
                 _attrs_omit,
@@ -161,7 +165,7 @@ def mjml_to_html(
                 'tagName': tagName,
                 'content': content,
                 'attributes': _returned_attributes,
-                'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),
+                'globalAttributes': globalDatas.get("defaultAttributes").get('mj-all', {}).copy(),
                 'children': [], # will be set afterwards
             }
             _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass, template_dir=template_dir)
@@ -175,20 +179,20 @@ def mjml_to_html(
         return parse(mjml_element, template_dir=template_dir)
 
     def addHeadStyle(identifier, headStyle):
-        globalDatas.headStyle[identifier] = headStyle
+        globalDatas["headStyle"][identifier] = headStyle
 
     def addMediaQuery(className, parsedWidth, unit):
         width_str = f'{parsedWidth}{unit}'
         width_css = f'{{ width:{width_str} !important; max-width: {width_str}; }}'
-        globalDatas.mediaQueries[className] = width_css
+        globalDatas["mediaQueries"][className] = width_css
 
     def addComponentHeadSyle(headStyle):
-        globalDatas.componentsHeadStyle.append(headStyle)
+        globalDatas["componentsHeadStyle"].append(headStyle)
 
     def setBackgroundColor(color):
-        globalDatas.backgroundColor = color
+        globalDatas["backgroundColor"] = color
 
-    bodyHelpers = DotMap(
+    bodyHelpers = dict(
         addHeadStyle = addHeadStyle,
         addMediaQuery = addMediaQuery,
         addComponentHeadSyle = addComponentHeadSyle,
@@ -217,17 +221,17 @@ def mjml_to_html(
             assert len(param_values) == 1, 'shortcut in implementation'
             current_attr_value[param_key] = param_values[0]
 
-    headHelpers = DotMap(
+    headHelpers = dict(
         add = _head_data_add,
     )
-    globalDatas.headRaw = processing(mjHead, headHelpers)
+    globalDatas["headRaw"] = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
     if content is None:
         raise ValueError('No <mj-body> content generated!')
 
-    if globalDatas.htmlAttributes:
+    if attrs := globalDatas.get("htmlAttributes"):
         contentSoup = BeautifulSoup(content, 'html.parser')
-        for selector, data in globalDatas.htmlAttributes.items():
+        for selector, data in attrs.items():
             for attrName, value in data.items():
                 for element in contentSoup.select(selector):
                     element[attrName] = value or ''
@@ -243,13 +247,13 @@ def mjml_to_html(
     # LATER: upstream has also beautify
     # LATER: upstream has also minify
 
-    if len(globalDatas.inlineStyle) > 0:
+    if len(globalDatas.get("inlineStyle")) > 0:
         try:
             import css_inline
         except ImportError:
             raise ImportError('CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies.') # noqa: E501
 
-        extra_css = ''.join(globalDatas.inlineStyle)
+        extra_css = ''.join(globalDatas.get("inlineStyle"))
         inliner = css_inline.CSSInliner(
             extra_css=extra_css,
             inline_style_tags=False,
@@ -261,7 +265,7 @@ def mjml_to_html(
 
     content = mergeOutlookConditionals(content)
 
-    return MJMLOutput(
+    return ParseResult(
         html=content,
         errors=errors,
     )
@@ -275,8 +279,8 @@ def _find_child(parent, tagName: str) -> Optional[Any]:
     return None
 
 
-def ignore_empty(values):
-    result = []
+def ignore_empty(values: Sequence[Optional["T"]]) -> Sequence["T"]:
+    result: list["T"] = []
     for value in values:
         if value:
             result.append(value)

@@ -25,5 +25,5 @@ class HeadComponent(Component):
                 return component.render()
             return None
 
-        childrens = self.props.children
+        childrens = self.props.get("children")
         return tuple(map(handle_children, childrens))
