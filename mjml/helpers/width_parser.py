@@ -1,34 +1,30 @@
-
 import re
-from collections import namedtuple
+from typing import NamedTuple, Union
 
 from .py_utils import strip_unit
 
 
 __all__ = ['widthParser']
 
-_WidthUnit = namedtuple('_WidthUnit', ('width', 'unit'))
 
-class WidthUnit(_WidthUnit):
-    def __new__(cls, width, *, unit='px'):
-        if not unit:
-            unit = 'px'
-        return super().__new__(cls, width=width, unit=unit)
+class WidthUnit(NamedTuple):
+    width: Union[int, float]
+    unit: str = "px"
 
     @property
-    def parsedWidth(self):
+    def parsedWidth(self) -> Union[int, float]:
         return self.width
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.width}{self.unit}'
 
 
 unitRegex = re.compile(r'[\d.,]*(\D*)$')
 
-def widthParser(width, parseFloatToInt=True):
+def widthParser(width: str, parseFloatToInt: bool=True) -> WidthUnit:
     width_str = str(width)
     match = unitRegex.search(width_str)
-    widthUnit = match.group(1)
+    widthUnit = match.group(1) or 'px'
 
     if (widthUnit == '%') and not parseFloatToInt:
         parsed_width = strip_unit(width_str)
