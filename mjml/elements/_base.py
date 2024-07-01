@@ -102,8 +102,10 @@ class BodyComponent(Component):
         style_str = ';'.join(style_attr_strs)
         return style_str
 
-    def renderChildren(self, childrens=None, props=None, renderer=None,
-                       attributes=None, rawXML=False):
+    # TODO typing: finish rest of type annotations
+    def renderChildren(self, childrens=None, props=None,
+                       renderer: t.Optional[t.Callable[[Component], str]]=None,
+                       attributes=None, rawXML=False) -> str:
         if not props:
             props = {}
         if not renderer:
@@ -128,8 +130,8 @@ class BodyComponent(Component):
         #  child => !find(rawComponents, c => c.getTagName() === child.tagName),
         #).length
         raw_tag_names = set()
-        for tag_name, component in components.items():
-            if component.isRawElement():
+        for tag_name, component_cls in components.items():
+            if component_cls.isRawElement():
                 raw_tag_names.add(tag_name)
         is_raw_element = lambda c: (c['tagName'] in raw_tag_names)
 
