@@ -1,3 +1,6 @@
+import typing as t
+
+import typing_extensions as te
 
 from mjml.helpers import omit
 
@@ -6,12 +9,15 @@ from ._head_base import HeadComponent
 
 __all__ = ['MjAttributes']
 
-class MjAttributes(HeadComponent):
-    component_name = 'mj-attributes'
 
-    def handler(self):
+class MjAttributes(HeadComponent):
+    component_name: t.ClassVar[str] = 'mj-attributes'
+
+    @te.override
+    def handler(self) -> None:
         add = self.context['add']
-        _children = self.props.get("children")
+        if (_children := self.props.get("children")) is None:
+            return None
 
         for child in _children:
             tagName = child['tagName']

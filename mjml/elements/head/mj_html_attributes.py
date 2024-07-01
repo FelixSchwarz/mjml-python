@@ -1,3 +1,6 @@
+import typing as t
+
+import typing_extensions as te
 
 from ._head_base import HeadComponent
 
@@ -5,9 +8,10 @@ from ._head_base import HeadComponent
 __all__ = ['MjHtmlAttributes']
 
 class MjHtmlAttributes(HeadComponent):
-    component_name = 'mj-html-attributes'
+    component_name: t.ClassVar[str] = 'mj-html-attributes'
 
-    def handler(self):
+    @te.override
+    def handler(self) -> None:
         add = self.context['add']
         _children = self.props.get("children")
 

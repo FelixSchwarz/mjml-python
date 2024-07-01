@@ -1,12 +1,15 @@
+import typing as t
 
 from mjml.core import Component, initComponent
 
 
 __all__ = ['HeadComponent']
 
+
 class HeadComponent(Component):
+    # TODO typing: figure out proper type annotations
     def handlerChildren(self):
-        def handle_children(children):
+        def handle_children(children: t.Dict[str, t.Any]) -> t.Optional[str]:
             tagName = children['tagName']
             component = initComponent(
                 name = tagName,
