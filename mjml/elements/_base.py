@@ -18,7 +18,7 @@ __all__ = [
 
 class BodyComponent(Component):
     def render(self) -> str:
-        raise NotImplementedError(f'{self.__cls__.__name__} should override ".render()"')
+        raise NotImplementedError(f'{self.__class__.__name__} should override ".render()"')
 
     def getShorthandAttrValue(self,
                               attribute: str, direction: "_Direction",
