@@ -4,6 +4,8 @@ from pathlib import Path, PurePath
 
 from bs4 import BeautifulSoup
 
+from mjml.elements.head._head_base import HeadComponent
+
 from .core import initComponent
 from .core.registry import register_components, register_core_components
 from .helpers import json_to_xml, mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
@@ -42,7 +44,9 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         template_dir = Path(xml_fp.name).parent
 
     mjml_doc = BeautifulSoup(xml_fp, 'html.parser')
-    mjml_root = mjml_doc.mjml
+
+    if (mjml_root := mjml_doc.mjml) is None:
+        raise ValueError(f"could not parse '{xml_fp.name}'")
 
     skeleton_path = skeleton
     if skeleton_path:
@@ -104,17 +108,19 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         component = initComponent(name=node_tag, **initialDatas)
         if not component:
             return None
-        if hasattr(component, 'handler'):
+        if isinstance(component, HeadComponent):
             return component.handler()
         # TODO typing: this check is redundant, delete?
         if hasattr(component, 'render'):
             return component.render()
         raise AssertionError('should not reach this')
 
-    def applyAttributes(mjml_element):
+    def applyAttributes(mjml_element: t.Any) -> t.Dict[str, t.Any]:
         if len(mjml_element) == 0:
             return {}
-        def parse(_mjml, parentMjClass='', *, template_dir):
+
+        # TODO typing: figure out proper annotations
+        def parse(_mjml, parentMjClass: str='', *, template_dir: str) -> t.Any:
             tagName = _mjml.name
             is_comment = not isinstance(tagName, str)
             if is_comment:
@@ -129,14 +135,18 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             content = _mjml.decode_contents()
 
             attributesClasses = {}
+
             for css_class in classes:
                 mjClassValues = globalDatas.get("classes").get(css_class)
                 if mjClassValues:
                     attributesClasses.update(mjClassValues)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
-            def default_attr_classes(value):
+
+            # TODO typing: figure out proper annotations
+            def default_attr_classes(value: t.Any) -> t.Any:
                 return globalDatas.get("classesDefault").get(value, {}).get(tagName, {})
+
             defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))
             nextParentMjClass = attributes.get('mj-class', parentMjClass)
 

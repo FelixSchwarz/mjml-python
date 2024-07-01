@@ -93,5 +93,8 @@ class Component:
         return self.attrs.get(name)
     getAttribute = get_attr
 
+    def handler(self) -> t.Optional[str]:
+        return None
+
     def render(self) -> str:
         return ''
