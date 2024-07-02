@@ -1,0 +1,56 @@
+name: typecheck
+
+on:
+  push:
+    branches:
+      - main
+      - typing
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy-3.9", "pypy-3.10"]
+        option: ["", "--strict"]
+        include:
+          - python-version: "3.8"
+            version-name: "3.8"
+          - python-version: "3.9"
+            version-name: "3.9"
+          - python-version: "3.10"
+            version-name: "3.10"
+          - python-version: "3.11"
+            version-name: "3.11"
+          - python-version: "3.12"
+            version-name: "3.12"
+          - python-version: "pypy-3.9"
+            version-name: "3.9"
+          - python-version: "pypy-3.10"
+            version-name: "3.10"
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # TODO typing: fix
+      - name: Install dependencies
+        run: |
+          pip install "mypy==1.10.1"
+          pip install -e .[testing]
+          pip install -e .[css_inlining]
+          pip install types-docopt types-beautifulsoup4
+
+      - name: Run mypy ${{ matrix.option }}
+        run: |
+          mypy ${{ matrix.option }} --python-version="${{ matrix.version-name }}" mjml
+        if: ${{ !cancelled() }}
