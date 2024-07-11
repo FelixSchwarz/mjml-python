@@ -2,6 +2,7 @@ import pathlib
 import typing as t
 
 if t.TYPE_CHECKING:
+    import typing_extensions as te
     from _typeshed import SupportsRead
 
     from mjml.core.api import Component
@@ -9,6 +10,19 @@ if t.TYPE_CHECKING:
     class _Output(t.NamedTuple):
         html: str
         errors: t.Sequence[str]
+
+        @te.overload
+        def __getitem__(self, _: t.Literal["html"]) -> str: ...
+        @te.overload
+        def __getitem__(self, _: t.Literal["errors"]) -> t.Sequence[str]: ...
+        @te.overload
+        def get(self, key: t.Literal["html"], /) -> t.Optional[str]: ...
+        @te.overload
+        def get(self, key: t.Literal["html"], default: str, /) -> str: ...
+        @te.overload
+        def get(self, key: t.Literal["errors"], /) -> t.Optional[t.Sequence[str]]: ...
+        @te.overload
+        def get(self, key: t.Literal["errors"], default: t.Sequence[str], /) -> t.Sequence[str]: ...
 
     FpOrJson = t.Union[t.Dict[str, t.Any], str, bytes, SupportsRead[str], SupportsRead[bytes]]
     StrOrPath = t.Union[str, pathlib.PurePath]
