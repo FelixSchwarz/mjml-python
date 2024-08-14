@@ -1,9 +1,8 @@
-import pathlib
 import typing as t
 
 if t.TYPE_CHECKING:
     import typing_extensions as te
-    from _typeshed import SupportsRead
+    from _typeshed import StrPath, SupportsRead
 
     from mjml.core.api import Component
 
@@ -25,11 +24,10 @@ if t.TYPE_CHECKING:
         def get(self, key: t.Literal["errors"], default: t.Sequence[str], /) -> t.Sequence[str]: ...
 
     FpOrJson = t.Union[t.Dict[str, t.Any], str, bytes, SupportsRead[str], SupportsRead[bytes]]
-    StrOrPath = t.Union[str, pathlib.PurePath]
 
 def mjml_to_html(
     xml_fp_or_json: "FpOrJson",
     skeleton: t.Optional[str] = None,
-    template_dir: t.Optional["StrOrPath"] = None,
+    template_dir: t.Optional["StrPath"] = None,
     custom_components: t.Optional[t.List[t.Type["Component"]]] = None,
 ) -> "_Output": ...
