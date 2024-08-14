@@ -1,20 +1,24 @@
 
+import os
+from contextlib import contextmanager
 from io import StringIO
-
-import pytest
-from schwarz.fakefs_helpers import FakeFS
 
 from mjml import mjml_to_html
 
 
-@pytest.fixture
-def fs():
-    _fs = FakeFS.set_up()
-    yield _fs
-    _fs.tear_down()
+# could use "contextlib.chdir" in Python 3.11+
+# https://github.com/python/cpython/commit/3592980f9122ab0d9ed93711347742d110b749c2
+@contextmanager
+def chdir(path):
+    old_chdir = os.getcwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(old_chdir)
 
 
-def test_can_properly_handle_include_umlauts(fs):
+def test_can_properly_handle_include_umlauts(tmp_path):
     included_mjml = (
         '<mj-section>'
         '  <mj-column>'
@@ -30,9 +34,11 @@ def test_can_properly_handle_include_umlauts(fs):
         '  </mj-body>'
         '</mjml>'
     )
-    fs.create_file('footer.mjml', contents=included_mjml.encode('utf8'))
+    path_footer = tmp_path / 'footer.mjml'
+    path_footer.write_text(included_mjml, encoding='utf8')
 
-    result = mjml_to_html(StringIO(mjml))
+    with chdir(tmp_path):
+        result = mjml_to_html(StringIO(mjml))
     html = result.html
 
     assert ('äöüß' in html)
