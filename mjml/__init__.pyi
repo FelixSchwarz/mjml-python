@@ -23,7 +23,7 @@ if t.TYPE_CHECKING:
         @te.overload
         def get(self, key: t.Literal["errors"], default: t.Sequence[str], /) -> t.Sequence[str]: ...
 
-    FpOrJson = t.Union[t.Dict[str, t.Any], str, bytes, SupportsRead[str], SupportsRead[bytes]]
+    FpOrJson = t.Union[t.Mapping[str, t.Any], str, bytes, SupportsRead[str], SupportsRead[bytes]]
 
 def mjml_to_html(
     xml_fp_or_json: "FpOrJson",
