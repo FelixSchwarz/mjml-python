@@ -360,7 +360,7 @@ class MjSection(BodyComponent):
         })
         return f'''
           <!--[if mso | IE]>
-            <v:rect {vrect_attrs} />
+            <v:rect {vrect_attrs} >
             <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
             <v:fill {vfill_attrs} />
           <![endif]-->
