@@ -1,9 +1,10 @@
+import typing as t
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
-from typing import List, Optional
 
 from bs4 import BeautifulSoup
-from dotmap import DotMap
+
+from mjml.elements.head._head_base import HeadComponent
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
@@ -11,8 +12,17 @@ from .helpers import json_to_xml, mergeOutlookConditionnals, omit, skeleton_str 
 from .lib import merge_dicts
 
 
-def ignore_empty(values):
-    result = []
+if t.TYPE_CHECKING:
+    T = t.TypeVar("T")
+
+
+class ParseResult(t.NamedTuple):
+    html: str
+    errors: t.Sequence[str]
+
+
+def ignore_empty(values: t.Sequence[t.Optional["T"]]) -> t.Sequence["T"]:
+    result: t.List["T"] = []
     for value in values:
         if value:
             result.append(value)
@@ -20,7 +30,7 @@ def ignore_empty(values):
 
 
 def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
-                 custom_components: Optional[List]=None):
+                 custom_components: t.Optional[t.List]=None) -> ParseResult:
     register_core_components()
 
     if isinstance(xml_fp_or_json, dict):
@@ -34,7 +44,9 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         template_dir = Path(xml_fp.name).parent
 
     mjml_doc = BeautifulSoup(xml_fp, 'html.parser')
-    mjml_root = mjml_doc.mjml
+
+    if (mjml_root := mjml_doc.mjml) is None:
+        raise ValueError(f"could not parse '{xml_fp.name}'")
 
     skeleton_path = skeleton
     if skeleton_path:
@@ -53,7 +65,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     }
     # LATER: ability to override fonts via **options
 
-    globalDatas = DotMap({
+    globalDatas: t.Dict[str, t.Any] = {
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
         'classes'            : {},
@@ -69,12 +81,12 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         'preview'            : '',
         'style'              : [],
         'title'              : '',
-    })
+    }
 
     # "validationLevel" is not used but available upstream - makes it easier to
     # match the line of code with the upstream sources.
     validationLevel = 'skip' # noqa: F841
-    errors = []
+    errors: t.List[str] = []
     # LATER: optional validation
 
     mjBody = mjml_root('mj-body')[0]
@@ -83,7 +95,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         assert len(mjHead) == 1
         mjHead = mjHead[0]
 
-    def processing(node, context, parseMJML=None):
+    def processing(node: t.Optional[t.Any], context: t.Dict[str, t.Any],
+                   parseMJML: t.Optional[t.Callable[[t.Any], t.Any]]=None) -> t.Optional[str]:
         if node is None:
             return None
         # LATER: upstream passes "parseMJML=identity" for head components
@@ -95,16 +108,19 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         component = initComponent(name=node_tag, **initialDatas)
         if not component:
             return None
-        if hasattr(component, 'handler'):
+        if isinstance(component, HeadComponent):
             return component.handler()
+        # TODO typing: this check is redundant, delete?
         if hasattr(component, 'render'):
             return component.render()
         raise AssertionError('should not reach this')
 
-    def applyAttributes(mjml_element):
+    def applyAttributes(mjml_element: t.Any) -> t.Dict[str, t.Any]:
         if len(mjml_element) == 0:
             return {}
-        def parse(_mjml, parentMjClass='', *, template_dir):
+
+        # TODO typing: figure out proper annotations
+        def parse(_mjml, parentMjClass: str='', *, template_dir: str) -> t.Any:
             tagName = _mjml.name
             is_comment = not isinstance(tagName, str)
             if is_comment:
@@ -119,20 +135,24 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             content = _mjml.decode_contents()
 
             attributesClasses = {}
+
             for css_class in classes:
-                mjClassValues = globalDatas.classes.get(css_class)
+                mjClassValues = globalDatas.get("classes").get(css_class)
                 if mjClassValues:
                     attributesClasses.update(mjClassValues)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
-            def default_attr_classes(value):
-                return globalDatas.classesDefault.get(value, {}).get(tagName, {})
+
+            # TODO typing: figure out proper annotations
+            def default_attr_classes(value: t.Any) -> t.Any:
+                return globalDatas.get("classesDefault").get(value, {}).get(tagName, {})
+
             defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))
             nextParentMjClass = attributes.get('mj-class', parentMjClass)
 
             _attrs_omit = omit(attributes, 'mj-class')
             _returned_attributes = merge_dicts(
-                globalDatas.defaultAttributes.get(tagName, {}),
+                globalDatas.get("defaultAttributes").get(tagName, {}),
                 attributesClasses,
                 defaultAttributesForClasses,
                 _attrs_omit,
@@ -147,7 +167,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
                 'tagName': tagName,
                 'content': content,
                 'attributes': _returned_attributes,
-                'globalAttributes': globalDatas.defaultAttributes.get('mj-all', {}).copy(),
+                'globalAttributes': globalDatas.get("defaultAttributes").get('mj-all', {}).copy(),
                 'children': [], # will be set afterwards
             }
             _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass, template_dir=template_dir)
@@ -161,20 +181,20 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         return parse(mjml_element, template_dir=template_dir)
 
     def addHeadStyle(identifier, headStyle):
-        globalDatas.headStyle[identifier] = headStyle
+        globalDatas["headStyle"][identifier] = headStyle
 
     def addMediaQuery(className, parsedWidth, unit):
         width_str = f'{parsedWidth}{unit}'
         width_css = f'{{ width:{width_str} !important; max-width: {width_str}; }}'
-        globalDatas.mediaQueries[className] = width_css
+        globalDatas["mediaQueries"][className] = width_css
 
     def addComponentHeadSyle(headStyle):
-        globalDatas.componentsHeadStyle.append(headStyle)
+        globalDatas["componentsHeadStyle"].append(headStyle)
 
     def setBackgroundColor(color):
-        globalDatas.backgroundColor = color
+        globalDatas["backgroundColor"] = color
 
-    bodyHelpers = DotMap(
+    bodyHelpers = dict(
         addHeadStyle = addHeadStyle,
         addMediaQuery = addMediaQuery,
         addComponentHeadSyle = addComponentHeadSyle,
@@ -200,15 +220,15 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
             assert len(param_values) == 1, 'shortcut in implementation'
             current_attr_value[param_key] = param_values[0]
 
-    headHelpers = DotMap(
+    headHelpers = dict(
         add = _head_data_add,
     )
-    globalDatas.headRaw = processing(mjHead, headHelpers)
+    globalDatas["headRaw"] = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
 
-    if globalDatas.htmlAttributes:
+    if attrs := globalDatas.get("htmlAttributes"):
         contentSoup = BeautifulSoup(content, 'html.parser')
-        for selector, data in globalDatas.htmlAttributes.items():
+        for selector, data in attrs.items():
             for attrName, value in data.items():
                 for element in contentSoup.select(selector):
                     element[attrName] = value or ''
@@ -224,13 +244,13 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     # LATER: upstream has also beautify
     # LATER: upstream has also minify
 
-    if len(globalDatas.inlineStyle) > 0:
+    if len(globalDatas.get("inlineStyle")) > 0:
         try:
             import css_inline
         except ImportError:
             raise ImportError('CSS inlining is an optional feature. Run `pip install -e ".[css_inlining]"` to install the required dependencies.') # noqa: E501
 
-        extra_css = ''.join(globalDatas.inlineStyle)
+        extra_css = ''.join(globalDatas.get("inlineStyle"))
         inliner = css_inline.CSSInliner(
             extra_css=extra_css,
             inline_style_tags=False,
@@ -242,10 +262,10 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
 
     content = mergeOutlookConditionnals(content)
 
-    return DotMap({
-        'html': content,
-        'errors': errors,
-    })
+    return ParseResult(
+        html=content,
+        errors=errors,
+    )
 
 
 def _map_to_tuple(items, map_fn, filter_none=None):

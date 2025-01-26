@@ -63,7 +63,7 @@ class MjDivider(BodyComponent):
         parsedWidth, unit = widthParser(width)
 
         if unit == '%':
-            px = (parse_int(containerWidth) * parse_int(parsedWidth)) / 100 - paddingSize
+            px = (parse_int(containerWidth) * parsedWidth) / 100 - paddingSize
             return f'{px}px'
         elif unit == 'px':
             return width
