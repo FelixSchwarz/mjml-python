@@ -1,0 +1,28 @@
+name: Create Release Artifacts
+
+on:
+  - workflow_dispatch
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v4
+
+    - uses: astral-sh/setup-uv@v6
+
+    - name: Run tests without optional features
+      run: |
+        uv venv venv-test
+        . venv-test/bin/activate
+        uv build --wheel --sdist
+
+    - name: upload release artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: "release-artifacts"
+        path: dist/*
+        if-no-files-found: error
