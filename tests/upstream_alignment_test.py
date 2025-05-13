@@ -86,11 +86,8 @@ def test_accepts_also_plain_strings_as_input():
     assert_same_html(expected_html, actual_html, verbose=True)
 
 
+@pytest.mark.css_inlining
 def test_can_use_css_inlining():
-    try:
-        import css_inline  # noqa: F401 (unused-import)
-    except ImportError:
-        pytest.skip('"css_inline" not installed')
     test_id = 'css-inlining'
     expected_html = load_expected_html(test_id)
     with get_mjml_fp(test_id) as mjml_fp:

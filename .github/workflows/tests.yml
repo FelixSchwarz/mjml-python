@@ -24,12 +24,25 @@ jobs:
 
     - name: Run tests without optional features
       run: |
+        python -m venv venv-test
+        . venv-test/bin/activate
+        # Some versions of pip do not recognize the declared "extras" in `setup.cfg`.
+        # I don't know the exact problematic versions, so let's just upgrade pip.
+        # GOOD: pip 23.0.1 with setuptools 47.1.0 (Python 3.7)
+        # BAD:  pip 23.0.1 with setuptools 56.0.0 (Python 3.8)
+        # BAD:  pip 23.0.1 with setuptools 58.1.0 (Python 3.9)
+        # BAD:  pip 23.0.1 with setuptools 65.5.0 (Python 3.10)
+        # GOOD: pip 24.0 with setuptools 65.5.0 (Python 3.11)
+        if [ "${{ matrix.python-version }}" != "3.6" ]; then
+          pip install "pip >= 24"
+        fi
         pip install -e .[testing]
-        pytest
+        pytest -m "not css_inlining"
 
     - name: Test CSS inlining
       run: |
         if [ "${{ matrix.python-version }}" != "3.6" ]; then
+          . venv-test/bin/activate
           pip install -e .[css_inlining]
           pytest
         else
@@ -51,10 +64,7 @@ jobs:
 
     - name: Run tests without optional features
       run: |
+        python -m venv venv-test
+        . venv-test/bin/activate
         pip install -e .[testing]
-        pytest
-
-    - name: Test CSS inlining
-      run: |
-        pip install -e .[css_inlining]
-        pytest
+        pytest -m "not css_inlining"
