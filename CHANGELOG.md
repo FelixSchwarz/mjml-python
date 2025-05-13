@@ -1,4 +1,14 @@
 
+0.11.1 (2025-05-13)
+-------------------
+
+- fix incorrectly closed <v:rect> tag for Outlook (Bernhard Vallant)
+- fix order of <v:fill> and <v:textbox> tags for mj-section with background in outlook (Bernhard Vallant)
+- add typing stubs for public interface (Dan Lindholm)
+- declare support for Python 3.13
+- accept also `css_inline >= 0.14`
+
+
 0.11.0 (2024-02-22)
 -------------------
 
