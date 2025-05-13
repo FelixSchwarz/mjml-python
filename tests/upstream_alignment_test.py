@@ -156,5 +156,5 @@ def test_keep_whitespace_before_tag():
     body_actual = BeautifulSoup(result.html, 'html.parser').body
     actual_text = body_actual.get_text().strip()
     assert (expected_text == actual_text)
-    actual_html = (body_actual.select('.mj-column-per-100 div')[0]).renderContents()
+    actual_html = (body_actual.select('.mj-column-per-100 div')[0]).encode_contents()
     assert (b'foo <b>bar</b>.' == actual_html)
