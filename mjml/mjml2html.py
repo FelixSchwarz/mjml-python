@@ -7,7 +7,7 @@ from dotmap import DotMap
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
-from .helpers import json_to_xml, mergeOutlookConditionnals, omit, skeleton_str as default_skeleton
+from .helpers import json_to_xml, mergeOutlookConditionals, omit, skeleton_str as default_skeleton
 from .lib import merge_dicts
 
 
@@ -240,7 +240,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         )
         content = inliner.inline(content)
 
-    content = mergeOutlookConditionnals(content)
+    content = mergeOutlookConditionals(content)
 
     return DotMap({
         'html': content,
