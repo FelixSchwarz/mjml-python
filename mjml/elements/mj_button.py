@@ -124,7 +124,7 @@ class MjButton(BodyComponent):
         def _inner_padding(d):
             return self.getShorthandAttrValue('inner-padding', d, attr_with_direction=False)
         innerPaddings = _inner_padding('left') + _inner_padding('right')
-        borders = self.getBoxWidths().borders
+        borders = self.getBoxWidths().get("borders")
         width_int = parsedWidth - innerPaddings - borders
         return f'{width_int}px'
 
