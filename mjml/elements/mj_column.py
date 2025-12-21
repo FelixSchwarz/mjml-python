@@ -116,7 +116,13 @@ class MjColumn(BodyComponent):
         parsedWidth, unit = widthParser(self.getParsedWidth(True), parseFloatToInt=False)
         if unit == '%':
             px_width = (parse_float(containerWidth) * parsedWidth) / 100
+            # we want to render the pixel width as string without decimal digits if possible
+            if px_width == int(px_width):
+                px_width = int(px_width)
             return f'{px_width}px'
+        # we want to render the pixel width as string without decimal digits if possible
+        if parsedWidth == int(parsedWidth):
+            parsedWidth = int(parsedWidth)
         return f'{parsedWidth}px'
 
 

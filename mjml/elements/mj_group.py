@@ -84,6 +84,9 @@ class MjGroup(BodyComponent):
         else:
             assert unit == 'px'
             width_px = parsedWidth
+        # Output integer when the value is a whole number (e.g., "600px" not "600.0px")
+        if width_px == int(width_px):
+            width_px = int(width_px)
         return f'{width_px}px'
 
     def getColumnClass(self):
@@ -167,4 +170,4 @@ class MjGroup(BodyComponent):
               </tr>
               </table>
             <![endif]-->
-        </div>''' # noqa: line-too-long
+        </div>''' # noqa: E501
