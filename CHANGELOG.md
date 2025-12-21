@@ -1,4 +1,11 @@
 
+0.12.0 (2025-12-..)
+-------------------
+
+- support Python 3.14, drop support for Python 3.6, 3.7 and 3.8
+- various fixes to match HTML generated the JS mjml, found by htmlcompare 0.4
+
+
 0.11.1 (2025-05-13)
 -------------------
 
