@@ -407,8 +407,10 @@ class MjSection(BodyComponent):
           cellpadding = '0',
           cellspacing = '0',
           class_ = suffixCssClasses(self.get_attr('css-class'), 'outlook'),
+          role = 'presentation',
           style = {'width': str(containerWidth)},
           width = containerWidth_int,
+          bgcolor = self.get_attr('background-color') or None,
         )
         return f'''
             <!--[if mso | IE]>
