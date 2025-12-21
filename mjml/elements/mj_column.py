@@ -48,7 +48,7 @@ class MjColumn(BodyComponent):
             # not defined upstream but used?
             'mobileWidth'     : '',
             # not declared but used by MjGroup
-            'align'           : '',
+            'align'           : None,
         }
 
     def get_styles(self):
