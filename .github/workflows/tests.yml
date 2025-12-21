@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
+        python-version: [3.9, "3.10", "3.11", "3.12", "3.13", "3.14"]
     container:
         image: python:${{ matrix.python-version }}
 
@@ -39,21 +39,15 @@ jobs:
         # BAD:  pip 23.0.1 with setuptools 58.1.0 (Python 3.9)
         # BAD:  pip 23.0.1 with setuptools 65.5.0 (Python 3.10)
         # GOOD: pip 24.0 with setuptools 65.5.0 (Python 3.11)
-        if [ "${{ matrix.python-version }}" != "3.6" ]; then
-          pip install "pip >= 24"
-        fi
+        pip install "pip >= 24"
         pip install -e .[testing]
         pytest -m "not css_inlining"
 
     - name: Test CSS inlining
       run: |
-        if [ "${{ matrix.python-version }}" != "3.6" ]; then
-          . venv-test/bin/activate
-          pip install -e .[css_inlining]
-          pytest
-        else
-          echo "Skipping CSS inlining tests for Python 3.6"
-        fi
+        . venv-test/bin/activate
+        pip install -e .[css_inlining]
+        pytest
 
 
   tests_pypy:
