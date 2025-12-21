@@ -136,7 +136,11 @@ class MjImage(BodyComponent):
                 rel    = this.getAttribute('rel'),
                 name   = this.getAttribute('name'),
             )
-            return f'<a {a_attrs} >{img}</a>'
+            return f'''
+                <a {a_attrs}>
+                  {img}
+                </a>
+            '''
         return img
 
     def headStyle(self, breakpoint):

@@ -227,7 +227,11 @@ class MjSocialElement(BodyComponent):
                     rel    = self.getAttribute('rel'),
                     target = self.getAttribute('target'),
                 )
-                return f'<a {link_attrs}>{img}</a>'
+                return f'''
+                    <a {link_attrs}>
+                      {img}
+                    </a>
+                '''
             return img
 
         def get_text(content):
@@ -238,9 +242,17 @@ class MjSocialElement(BodyComponent):
                     rel    = self.getAttribute('rel'),
                     target = self.getAttribute('target'),
                 )
-                return f'<a {link_attrs}>{content}</a>'
+                return f'''
+                    <a {link_attrs}>
+                      {content}
+                    </a>
+                '''
 
-            return f'<span {self.html_attrs(style="text")}>{content}</span>'
+            return f'''
+                <span {self.html_attrs(style="text")}>
+                  {content}
+                </span>
+            '''
 
         content_html = ''
         content = self.getContent()
