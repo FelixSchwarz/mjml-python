@@ -25,5 +25,5 @@ def msoConditionalTag(content, negation=False):
     if negation:
         start, end = startMsoNegationConditionalTag, endNegationConditionalTag
     else:
-        start, end = startConditionalTag, endConditionalTag
+        start, end = startMsoConditionalTag, endConditionalTag
     return start + content + end
