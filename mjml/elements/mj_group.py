@@ -129,7 +129,7 @@ class MjGroup(BodyComponent):
         container_attrs = self.html_attrs(class_=classesName, style='div')
         table_bgcolor = self.get_attr('background-color')
         table_attrs = self.html_attrs(
-            bgcolor     = table_bgcolor if (table_bgcolor != 'none') else None,
+            bgcolor     = table_bgcolor if (table_bgcolor and table_bgcolor != 'none') else None,
             border      = '0',
             cellpadding = '0',
             cellspacing = '0',
