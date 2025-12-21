@@ -1,7 +1,6 @@
 
 import random
 import string
-from itertools import repeat
 
 from ..helpers import msoConditionalTag, widthParser
 from ._base import BodyComponent
@@ -47,7 +46,7 @@ class MjCarousel(BodyComponent):
             'tb-border'               : '2px solid transparent',
             'tb-border-radius'        : '6px',
             'tb-hover-border-color'   : '#fead0d',
-            'tb-selected-border-color': '#ccc',
+            'tb-selected-border-color': '#cccccc',
         }
 
     carouselId = ''.join(random.choices(string.digits, k=16))
@@ -61,9 +60,10 @@ class MjCarousel(BodyComponent):
 
         def buildCssSelectors(parent, repeatCount, sibling):
             def _selector_str(i):
-                return f'{parent(i)} {repeat("+ * ", repeatCount(i))}+ {sibling(i)}'
+                repeated = '+*' * repeatCount(i)
+                return f'{parent(i)}{repeated}+{sibling(i)}'
             _selectors = [_selector_str(i) for i in range(length)]
-            return ','.join(_selectors)
+            return ', '.join(_selectors)
 
         carouselCss = f'''
             .mj-carousel {{
@@ -154,9 +154,10 @@ class MjCarousel(BodyComponent):
             }}
         ''' # noqa: E501
 
+        _sub_selector = '+*' * (length - 1)
         fallback = f'''
-            .mj-carousel noinput {{ display:block !important; }}
-            .mj-carousel noinput .mj-carousel-image-1 {{ display: block !important;  }}
+            .mj-carousel noinput {{ display: block !important; }}
+            .mj-carousel noinput .mj-carousel-image-1 {{ display: block !important; }}
             .mj-carousel noinput .mj-carousel-arrows,
             .mj-carousel noinput .mj-carousel-thumbnails {{ display: none !important; }}
 
@@ -169,15 +170,11 @@ class MjCarousel(BodyComponent):
                     display: none !important;
                 }}
 
-                {buildCssSelectors(
-                    lambda i: f'.mj-carousel-{carouselId}-radio-1:checked',
-                    lambda i: length - 1,
-                    lambda i: f'.mj-carousel-content .mj-carousel-{carouselId}-thumbnail-1'
-                )} {{
+                .mj-carousel-{carouselId}-radio-1:checked{_sub_selector}+.mj-carousel-content .mj-carousel-{carouselId}-thumbnail-1 {{
                     border-color: transparent;
                 }}
             }}
-        '''
+        ''' # noqa: E501
 
         return f'{carouselCss}\n{fallback}'
 
