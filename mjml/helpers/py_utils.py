@@ -53,6 +53,9 @@ def is_empty(v):
         return True
     elif hasattr(v, 'strip'):
         return not bool(v.strip())
+    elif isinstance(v, (int, float)):
+        # Numeric zero is a valid CSS value (e.g. line-height: 0)
+        return False
     return not bool(v)
 
 def is_not_empty(v):
