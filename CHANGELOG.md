@@ -3,6 +3,7 @@
 -------------------
 
 - support Python 3.14, drop support for Python 3.6, 3.7 and 3.8
+- correctly render fractional width for mj-column (reported by @SinnySupernova)
 - various fixes to match HTML generated the JS mjml, found by htmlcompare 0.4
 
 

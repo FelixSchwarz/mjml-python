@@ -1,6 +1,7 @@
 
 import re
 from decimal import Decimal
+from typing import Union
 
 
 __all__ = [
@@ -38,9 +39,24 @@ def parse_percentage(value_str):
     match = re.search(r'^(\d+(\.\d+)?)%$', value_str)
     return Decimal(match.group(1))
 
-def strip_unit(value_str):
-    match = re.search(r'^(\d+).*', value_str)
-    return int(match.group(1))
+def strip_unit(value_str: Union[str, int, float]) -> Union[int, float]:
+    """
+    Extract numeric value from a CSS value string like "600px" or "33.33%".
+
+    Mimics JavaScript parseInt() behavior: returns an integer when the value
+    is a whole number, otherwise returns a float.
+
+    Examples:
+        strip_unit("600px") → 600
+        strip_unit("33.33%") → 33.33
+        strip_unit("600.0px") → 600
+    """
+    match = re.search(r'^(-?\d+(?:\.\d+)?)', str(value_str))
+    if not match:
+        return 0
+    num = float(match.group(1))
+    # Return int for whole numbers (like JS parseInt for "600px")
+    return int(num) if num == int(num) else num
 
 def is_nil(v):
     return (v is None)

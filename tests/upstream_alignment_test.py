@@ -23,6 +23,7 @@ TEST_IDS = (
     'mj-attributes',
     'mj-html-attributes',
     'mj-column-with-attributes',
+    'mj-column-with-fractional-width',
     'mj-group',
     'mj-hero-fixed',
     'mj-hero-fluid',
