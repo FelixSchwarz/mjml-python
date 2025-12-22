@@ -107,6 +107,6 @@ skeleton_tmpl_str_raw = '''\
         {{ preview_str }}
         {{ content }}
       </body>
-    </html>''' # noqa: line-too-long
+    </html>''' # noqa: E501
 
 skeleton_tmpl_str = textwrap.dedent(skeleton_tmpl_str_raw)

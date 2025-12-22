@@ -67,7 +67,7 @@ class MjText(BodyComponent):
 
         start_conditional = f'''
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td height="{height}" style="vertical-align:top;height:{height};">
-        ''' # noqa: line-too-long
+        ''' # noqa: E501
         end_conditional = '</td></tr></table>'
         return f'''{start_conditional}{self._render_content()}{end_conditional}'''
 

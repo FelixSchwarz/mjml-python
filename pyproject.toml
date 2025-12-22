@@ -6,7 +6,10 @@ requires = [
 
 [tool.ruff]
 line-length = 100
+src = ["mjml", "tests"]
 
+
+[tool.ruff.lint]
 ignore = [
     # F403 "`from pythonic_testcase import *` used; unable to detect undefined names
     # F405 "… may be undefined, or defined from star imports: …"
@@ -33,9 +36,8 @@ select = [
     # replaces basically "yesqa"
     "RUF100",
 ]
-src = ["mjml", "tests"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 lines-after-imports = 2
 known-first-party = ["mjml"]
 combine-as-imports = true
