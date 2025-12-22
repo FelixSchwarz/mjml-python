@@ -84,6 +84,25 @@ class MjHero(BodyComponent):
         )
         width = backgroundWidth or containerWidth
 
+        hero_style = {
+            'background'         : self.getBackground(),
+            'background-position': self.get_attr('background-position'),
+            'background-repeat'  : 'no-repeat',
+            'border-radius'      : self.get_attr('border-radius'),
+            'padding'            : self.get_attr('padding'),
+            'padding-top'        : self.get_attr('padding-top'),
+            'padding-left'       : self.get_attr('padding-left'),
+            'padding-right'      : self.get_attr('padding-right'),
+            'padding-bottom'     : self.get_attr('padding-bottom'),
+            'vertical-align'     : self.get_attr('vertical-align'),
+        }
+        if self.get_attr('mode') == 'fixed-height':
+            height_attr = parse_int(self.get_attr('height'))
+            padding_top = self.getShorthandAttrValue('padding', 'top')
+            padding_bottom = self.getShorthandAttrValue('padding', 'bottom')
+            height = height_attr - padding_top - padding_bottom
+            hero_style['height'] = f'{height}px'
+
         return {
             'div'                : {
                 'margin'   : '0 auto',
@@ -100,18 +119,7 @@ class MjHero(BodyComponent):
                 'padding-bottom'        : f'{backgroundRatio}%',
                 'mso-padding-bottom-alt': '0',
             },
-            'hero'               : {
-                'background'         : self.getBackground(),
-                'background-position': self.get_attr('background-position'),
-                'background-repeat'  : 'no-repeat',
-                'border-radius'      : self.get_attr('border-radius'),
-                'padding'            : self.get_attr('padding'),
-                'padding-top'        : self.get_attr('padding-top'),
-                'padding-left'       : self.get_attr('padding-left'),
-                'padding-right'      : self.get_attr('padding-right'),
-                'padding-bottom'     : self.get_attr('padding-bottom'),
-                'vertical-align'     : self.get_attr('vertical-align'),
-            },
+            'hero'               : hero_style,
             'outlook-table'      : {
                 'width': containerWidth,
             },
@@ -269,8 +277,8 @@ class MjHero(BodyComponent):
         else:
             height_attr = parse_int(self.getAttribute('height'))
             padding_top = self.getShorthandAttrValue('padding', 'top')
-            paddig_bottom = self.getShorthandAttrValue('padding', 'bottom')
-            height = height_attr - padding_top - paddig_bottom
+            padding_bottom = self.getShorthandAttrValue('padding', 'bottom')
+            height = height_attr - padding_top - padding_bottom
             return f'''
                 <td {self.html_attrs(**commonAttributes, height=height)}>
                     {self.renderContent()}

@@ -1,7 +1,7 @@
 
 import math
 
-from ..helpers import parse_int, strip_unit, widthParser
+from ..helpers import makeLowerBreakpoint, parse_int, strip_unit, widthParser
 from ._base import BodyComponent
 
 
@@ -146,7 +146,7 @@ class MjImage(BodyComponent):
     def headStyle(self, breakpoint):
         # double curly braces used to escape "{" and "}" in f-strings
         return f'''
-            @media only screen and (max-width:{breakpoint}) {{
+            @media only screen and (max-width:{makeLowerBreakpoint(breakpoint)}) {{
               table.mj-full-width-mobile {{ width: 100% !important; }}
               td.mj-full-width-mobile {{ width: auto !important; }}
             }}'''

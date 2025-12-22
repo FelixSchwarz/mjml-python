@@ -2,6 +2,7 @@
 from .conditional_tag import *
 from .fonts import *
 from .json_to_xml import *
+from .make_lower_breakpoint import *
 from .media_queries import *
 from .mergeOutlookConditionals import *
 from .preview import *

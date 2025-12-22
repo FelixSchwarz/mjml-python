@@ -1,7 +1,7 @@
 import random
 import string
 
-from ..helpers import conditionalTag, msoConditionalTag
+from ..helpers import conditionalTag, makeLowerBreakpoint, msoConditionalTag
 from ._base import BodyComponent
 
 
@@ -60,7 +60,7 @@ class MjNavbar(BodyComponent):
         # double curly braces used to escape "{" and "}" in f-strings
         return f'''
             noinput.mj-menu-checkbox {{ display:block!important; max-height:none!important; visibility:visible!important; }}
-            @media only screen and (max-width:{breakpoint}) {{
+            @media only screen and (max-width:{makeLowerBreakpoint(breakpoint)}) {{
               .mj-menu-checkbox[type="checkbox"] ~ .mj-inline-links {{ display:none!important; }}
               .mj-menu-checkbox[type="checkbox"]:checked ~ .mj-inline-links,
               .mj-menu-checkbox[type="checkbox"] ~ .mj-menu-trigger {{ display:block!important; max-width:none!important; max-height:none!important; font-size:inherit!important; }}
