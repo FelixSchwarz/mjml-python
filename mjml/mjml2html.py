@@ -53,6 +53,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     }
     # LATER: ability to override fonts via **options
 
+    mjml_lang = mjml_root.attrs.get('lang', 'und')
     globalDatas = DotMap({
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
@@ -65,6 +66,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         'headStyle'          : {},
         'componentsHeadStyle': [],
         'headRaw'            : [],
+        'lang'               : mjml_lang,
         'mediaQueries'       : {},
         'preview'            : '',
         'style'              : [],
@@ -180,6 +182,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         addComponentHeadSyle = addComponentHeadSyle,
         setBackgroundColor = setBackgroundColor,
         backgroundColor = lambda node, context: processing(node, context, applyAttributes),
+        lang = mjml_lang,
     )
 
     def _head_data_add(attr, *params):

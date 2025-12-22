@@ -51,6 +51,7 @@ TEST_IDS = (
     'mj-spacer',
     'mj-text-escaped-html', # this test is security-critical
     'mj-wrapper',
+    'mjml-lang-attribute',
     'missing-whitespace-before-tag',
 )
 

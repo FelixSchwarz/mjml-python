@@ -38,6 +38,7 @@ class MjBody(BodyComponent):
         setBackgroundColor = self.context['setBackgroundColor']
         setBackgroundColor(self.get_attr('background-color'))
 
-        html_attrs = self.html_attrs(class_=self.get_attr('css-class'), style='div')
+        lang = self.context.get('lang')
+        html_attrs = self.html_attrs(class_=self.get_attr('css-class'), style='div', lang=lang)
         children_str = self.renderChildren()
         return f'<div {html_attrs}>{children_str}</div>'
