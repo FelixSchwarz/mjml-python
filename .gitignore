@@ -2,6 +2,8 @@
 /dist
 /*.sh
 /venv*
+/.venv
 /.project
 *.pyc
 /.pytest_cache/
+/node_modules

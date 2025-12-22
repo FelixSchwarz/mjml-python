@@ -25,6 +25,10 @@ from pathlib import Path
 
 Job = namedtuple('Job', ('mjml_path', 'expected_path', 'mjml_bin'))
 
+_THIS_DIR = Path(__file__).parent
+SCRIPT_GENERATE_CUSTOM_COMPONENT = _THIS_DIR / 'create-expected-html-for-custom-component.js'
+
+
 def job_for_file(mjml_path, mjml_js):
     expected_path = mjml_path.parent / (mjml_path.stem + '-expected.html')
     return Job(
@@ -55,10 +59,17 @@ def _gather_jobs(source_path, mjml_js):
 
 def _update_expected_html(job):
     mjml_cmd = str(job.mjml_bin)
-    cmd = [mjml_cmd, job.mjml_path, '-o', job.expected_path]
+    mjml_basename = os.path.basename(job.mjml_path)
+
+    # Special case: To generate the custom components HTML, we need to insert
+    # a custom JS module which is done by the nodejs helper script.
+    if 'custom' in mjml_basename:
+        cmd = ['node', str(SCRIPT_GENERATE_CUSTOM_COMPONENT), job.mjml_path, job.expected_path]
+    else:
+        cmd = [mjml_cmd, job.mjml_path, '-o', job.expected_path]
     subprocess.run(cmd)
 
-def detect_mjml_js():
+def detect_mjml_js() -> str:
     if 'MJML' in os.environ:
         return os.environ['MJML']
     sys.stderr.write('unable to detect mjml executable, use env variable MJML\n')

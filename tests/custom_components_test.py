@@ -32,8 +32,8 @@ class MjTextOverride(MjText):
 
 
 def test_custom_components():
-    expected_html = load_expected_html('_custom')
-    with get_mjml_fp('_custom') as mjml_fp:
+    expected_html = load_expected_html('custom-component')
+    with get_mjml_fp('custom-component') as mjml_fp:
         result_list = mjml_to_html(mjml_fp, custom_components=[MjTextCustom, MjTextOverride])
 
     assert not result_list.errors

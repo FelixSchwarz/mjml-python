@@ -5,7 +5,9 @@ repos:
   rev: v5.0.0
   hooks:
     - id: trailing-whitespace
+      exclude: ^tests/testdata/.*\.html$
     - id: end-of-file-fixer
+      exclude: ^tests/testdata/.*\.html$
     - id: debug-statements
 
 - repo: https://github.com/charliermarsh/ruff-pre-commit
