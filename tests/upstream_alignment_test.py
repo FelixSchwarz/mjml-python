@@ -50,6 +50,7 @@ TEST_IDS = (
     'mj-spacer',
     'mj-text-escaped-html', # this test is security-critical
     'mj-wrapper',
+    'missing-whitespace-before-tag',
 )
 
 @pytest.mark.parametrize('test_id', TEST_IDS)
@@ -138,20 +139,3 @@ def test_mj_carousel():
     actual_carousel_id = _replace_random_radio_class(actual_soup)
     actual_html = str(actual_soup).replace(actual_carousel_id, expected_carousel_id)
     assert_same_html(str(expected_soup), actual_html, verbose=True)
-
-
-# htmlcompare is currently unable to detect these kind of
-# whitespace differences.
-def test_keep_whitespace_before_tag():
-    test_id = 'missing-whitespace-before-tag'
-    expected_html = load_expected_html(test_id)
-    with get_mjml_fp(test_id) as mjml_fp:
-        result = mjml_to_html(mjml_fp)
-
-    assert not result.errors
-    expected_text = BeautifulSoup(expected_html, 'html.parser').body.get_text().strip()
-    body_actual = BeautifulSoup(result.html, 'html.parser').body
-    actual_text = body_actual.get_text().strip()
-    assert (expected_text == actual_text)
-    actual_html = (body_actual.select('.mj-column-per-100 div')[0]).encode_contents()
-    assert (b'foo <b>bar</b>.' == actual_html)
