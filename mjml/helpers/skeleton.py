@@ -14,7 +14,7 @@ __all__ = ['skeleton_str']
 # js: skeleton(...)
 def skeleton_str(*,
     inlineStyle,
-    title='', content='', backgroundColor='', breakpoint='480px', lang=None,
+    title='', content='', backgroundColor='', breakpoint='480px', lang=None, dir_=None,
     fonts=None, mediaQueries=None,
     headStyle=None, componentsHeadStyle=(), style=(), headRaw=(),
     classes=None,
@@ -52,6 +52,7 @@ def skeleton_str(*,
         'title'          : title,
         'content'        : content,
         'langAttribute'  : f'lang="{lang}" ' if lang else '',
+        'dirAttribute'   : f'dir="{dir_}" ' if dir_ else '',
         'backgroundColor': f'background-color:{backgroundColor};' if backgroundColor else '',
 
         'font_tags_str'  : buildFontsTags(content, inlineStyle, fonts=fonts),
@@ -68,7 +69,7 @@ def skeleton_str(*,
 
 skeleton_tmpl_str_raw = '''\
     <!doctype html>
-    <html {{ langAttribute }}xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+    <html {{ langAttribute }}{{ dirAttribute }}xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
       <head>
         <title>
           {{ title }}

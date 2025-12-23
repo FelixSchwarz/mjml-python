@@ -1,0 +1,11 @@
+<mjml dir="rtl">
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text font-family="Arial, sans-serif">
+          Hello World!
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
