@@ -184,6 +184,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         addComponentHeadSyle = addComponentHeadSyle,
         setBackgroundColor = setBackgroundColor,
         backgroundColor = lambda node, context: processing(node, context, applyAttributes),
+        globalData = globalDatas,
         lang = mjml_lang,
         dir_ = mjml_dir,
     )
