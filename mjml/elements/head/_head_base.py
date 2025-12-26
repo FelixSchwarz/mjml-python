@@ -1,4 +1,4 @@
-import typing as t
+from typing import Any, Optional
 
 from mjml.core import Component, initComponent
 
@@ -7,9 +7,8 @@ __all__ = ['HeadComponent']
 
 
 class HeadComponent(Component):
-    # TODO typing: figure out proper type annotations
-    def handlerChildren(self):
-        def handle_children(children: t.Dict[str, t.Any]) -> t.Optional[str]:
+    def handlerChildren(self) -> tuple:
+        def handle_children(children: dict[str, Any]) -> Optional[str]:
             tagName = children['tagName']
             component = initComponent(
                 name = tagName,

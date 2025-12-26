@@ -1,6 +1,7 @@
-import typing as t
 
-import typing_extensions as te
+from typing import ClassVar, Optional
+
+from typing_extensions import override
 
 from ._head_base import HeadComponent
 
@@ -8,9 +9,8 @@ from ._head_base import HeadComponent
 __all__ = ['MjHead']
 
 class MjHead(HeadComponent):
-    component_name: t.ClassVar[str] = 'mj-head'
+    component_name: ClassVar[str] = 'mj-head'
 
-    @te.override
-    def handler(self) -> t.Optional[str]:
-        # TODO typing: fix
+    @override
+    def handler(self) -> Optional[str]:
         return self.handlerChildren()

@@ -1,8 +1,7 @@
-import typing as t
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
 
 from bs4 import BeautifulSoup
 from dotmap import DotMap
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
     from _typeshed import StrPath, SupportsRead
 
     from mjml.core.api import Component
-    T = t.TypeVar("T")
+    T = TypeVar("T")
 
 
 class ParseResult(NamedTuple):
@@ -72,7 +71,7 @@ def mjml_to_html(
 
     mjml_lang = mjml_root.attrs.get('lang', 'und')
     mjml_dir = mjml_root.attrs.get('dir', 'auto')
-    globalDatas: Mapping[str, t.Any] = DotMap({
+    globalDatas: Mapping[str, Any] = DotMap({
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
         'classes'            : {},
@@ -95,7 +94,7 @@ def mjml_to_html(
     # "validationLevel" is not used but available upstream - makes it easier to
     # match the line of code with the upstream sources.
     validationLevel = 'skip' # noqa: F841
-    errors: t.List[str] = []
+    errors: list[str] = []
     # LATER: optional validation
 
     mjBody = _find_child(mjml_root, 'mj-body')
@@ -103,8 +102,8 @@ def mjml_to_html(
         raise ValueError('Did not find <mj-body>!')
     mjHead = _find_child(mjml_root, 'mj-head')
 
-    def processing(node: t.Optional[t.Any], context: t.Dict[str, t.Any],
-                   parseMJML: t.Optional[t.Callable[[t.Any], t.Any]]=None) -> t.Optional[str]:
+    def processing(node: Optional[Any], context: dict[str, Any],
+                   parseMJML: Optional[Callable[[Any], Any]]=None) -> Optional[str]:
         if node is None:
             return None
         # LATER: upstream passes "parseMJML=identity" for head components
@@ -118,17 +117,15 @@ def mjml_to_html(
             return None
         if isinstance(component, HeadComponent):
             return component.handler()
-        # TODO typing: this check is redundant, delete?
-        if hasattr(component, 'render'):
-            return component.render()
-        raise AssertionError('should not reach this')
+        elif not hasattr(component, 'render'):
+            raise AssertionError('component has no render() method')
+        return component.render()
 
-    def applyAttributes(mjml_element: t.Any) -> t.Dict[str, t.Any]:
+    def applyAttributes(mjml_element: Any) -> dict[str, Any]:
         if len(mjml_element) == 0:
             return {}
 
-        # TODO typing: figure out proper annotations
-        def parse(_mjml, parentMjClass: str='', *, template_dir: str) -> t.Any:
+        def parse(_mjml, parentMjClass: str='', *, template_dir: str) -> Any:
             tagName = _mjml.name
             is_comment = not isinstance(tagName, str)
             if is_comment:
@@ -151,8 +148,7 @@ def mjml_to_html(
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
 
-            # TODO typing: figure out proper annotations
-            def default_attr_classes(value: t.Any) -> t.Any:
+            def default_attr_classes(value: Any) -> Any:
                 return globalDatas.get("classesDefault").get(value, {}).get(tagName, {})
 
             defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))

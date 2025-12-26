@@ -1,6 +1,6 @@
-import typing as t
+from typing import ClassVar
 
-import typing_extensions as te
+from typing_extensions import override
 
 from ._head_base import HeadComponent
 
@@ -8,9 +8,9 @@ from ._head_base import HeadComponent
 __all__ = ['MjTitle']
 
 class MjTitle(HeadComponent):
-    component_name: t.ClassVar[str] = 'mj-title'
+    component_name: ClassVar[str] = 'mj-title'
 
-    @te.override
+    @override
     def handler(self) -> None:
         add = self.context['add']
         add('title', self.getContent())

@@ -1,5 +1,6 @@
 import itertools
-import typing as t
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional
 
 from ..core import Component, initComponent
 from ..core.registry import components
@@ -7,8 +8,8 @@ from ..helpers import *
 from ..lib import merge_dicts
 
 
-if t.TYPE_CHECKING:
-    from mjml._types import _Direction
+if TYPE_CHECKING:
+    from mjml._types import Direction
 
 
 __all__ = [
@@ -21,7 +22,7 @@ class BodyComponent(Component):
         raise NotImplementedError(f'{self.__class__.__name__} should override ".render()"')
 
     def getShorthandAttrValue(self,
-                              attribute: str, direction: "_Direction",
+                              attribute: str, direction: "Direction",
                               attr_with_direction: bool=True) -> int:
         if attr_with_direction:
             mjAttributeDirection = self.getAttribute(f'{attribute}-{direction}')
@@ -35,12 +36,12 @@ class BodyComponent(Component):
             return 0
         return shorthandParser(mjAttribute, direction)
 
-    def getShorthandBorderValue(self, direction: "_Direction") -> int:
+    def getShorthandBorderValue(self, direction: "Direction") -> int:
         borderDirection = direction and self.getAttribute(f'border-{direction}')
         border = self.getAttribute('border')
         return borderParser(borderDirection or border or '0')
 
-    def getBoxWidths(self) -> t.Dict[str, t.Any]:
+    def getBoxWidths(self) -> dict[str, Any]:
         containerWidth = self.context['containerWidth']
         parsedWidth = strip_unit(containerWidth)
         get_padding = lambda d: self.getShorthandAttrValue('padding', d)
@@ -55,8 +56,8 @@ class BodyComponent(Component):
         }
 
     # js: htmlAttributes(attributes)
-    def html_attrs(self, **attrs: t.Any) -> str:
-        def _to_str(key: str, value: t.Any) -> t.Optional[str]:
+    def html_attrs(self, **attrs: Any) -> str:
+        def _to_str(key: str, value: Any) -> Optional[str]:
             if key == 'style':
                 value = self.styles(value)
             elif key in ['class_', 'for_']:
@@ -66,23 +67,22 @@ class BodyComponent(Component):
             if value is None:
                 return None
             return f'{key}="{value}"'
-        serialized_attrs = itertools.starmap(_to_str, attrs.items())
+        serialized_attrs = [_to_str(k, v) for k, v in attrs.items()]
         return ' '.join(filter(None, serialized_attrs))
 
     # js: getStyles()
-    def get_styles(self) -> t.Dict[str, t.Any]:
+    def get_styles(self) -> dict[str, Any]:
         return {}
 
     # js: styles(styles)
-    def styles(self, key: t.Optional[t.Any]=None) -> str:
-        _styles: t.Optional[t.Dict[str, t.Any]] = None
+    def styles(self, key: Optional[str]=None) -> str:
+        _styles: Optional[dict[str, Any]] = None
 
         if key and isinstance(key, str):
             _styles_dict = self.get_styles()
             keys = key.split('.')
             _styles = _styles_dict.get(keys[0])
             if len(keys) > 1:
-                # TODO typing: fix
                 if not _styles:
                     raise RuntimeError()
                 _styles = _styles.get(keys[1])
@@ -95,16 +95,15 @@ class BodyComponent(Component):
         if not _styles:
             _styles = {}
 
-        def serializer(k: str, v: t.Any) -> t.Optional[str]:
+        def serializer(k: str, v: Any) -> Optional[str]:
             return f'{k}:{v}' if is_not_empty(v) else None
 
         style_attr_strs = filter(None, itertools.starmap(serializer, _styles.items()))
         style_str = ';'.join(style_attr_strs)
         return style_str
 
-    # TODO typing: finish rest of type annotations
     def renderChildren(self, childrens=None, props=None,
-                       renderer: t.Optional[t.Callable[[Component], str]]=None,
+                       renderer: Optional[Callable[[Component], str]]=None,
                        attributes=None, rawXML=False) -> str:
         if not props:
             props = {}

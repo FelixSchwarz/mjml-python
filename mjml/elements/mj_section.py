@@ -1,7 +1,7 @@
 import re
-import typing as t
 from collections import namedtuple
 from decimal import Decimal
+from typing import Any
 
 from ..helpers import parse_percentage, strip_unit, suffixCssClasses
 from ..lib import merge_dicts
@@ -17,7 +17,7 @@ class MjSection(BodyComponent):
     component_name = 'mj-section'
 
     @classmethod
-    def allowed_attrs(cls) -> t.Dict[str, str]:
+    def allowed_attrs(cls) -> dict[str, str]:
         return {
             'background-color' : 'color',
             'background-url'   : 'string',
@@ -188,7 +188,7 @@ class MjSection(BodyComponent):
             self.renderAfter()
         ])
 
-    def getBackgroundPosition(self) -> t.Dict[str, t.Any]:
+    def getBackgroundPosition(self) -> dict[str, Any]:
         pos = self.parseBackgroundPosition()
         return {
             'posX': self.getAttribute('background-position-x') or pos.x,

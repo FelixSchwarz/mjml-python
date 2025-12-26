@@ -1,16 +1,16 @@
 import re
-import typing as t
+from typing import TYPE_CHECKING
 
 from .py_utils import parse_int
 
 
-if t.TYPE_CHECKING:
-    from mjml._types import _Direction
+if TYPE_CHECKING:
+    from mjml._types import Direction
 
 
 __all__ = ['shorthandParser', 'borderParser']
 
-def shorthandParser(cssValue: str, direction: "_Direction") -> int:
+def shorthandParser(cssValue: str, direction: "Direction") -> int:
     splittedCssValue = cssValue.split(' ')
 
     top    = 0

@@ -1,7 +1,6 @@
 
-import typing as t
 from collections.abc import Mapping
-from typing import Union
+from typing import Any, ClassVar, Optional, Union
 
 from ..lib import merge_dicts
 from .registry import components
@@ -9,8 +8,10 @@ from .registry import components
 
 __all__ = ['initComponent', 'Component']
 
-def initComponent(name: t.Optional[str],
-                  **initialDatas: t.Any) -> t.Optional["Component"]:
+def initComponent(
+    name: Optional[str],
+    **initialDatas: Any,
+) -> Optional["Component"]:
     if name is None:
         return None
     component_cls = components[name]
@@ -27,19 +28,18 @@ def initComponent(name: t.Optional[str],
 
 
 class Component:
-    component_name: t.ClassVar[str]
+    component_name: ClassVar[str]
 
     # LATER: not sure upstream also passes tagName, makes code easier for us
     def __init__(self, *, attributes=None, children=(), content: str='',
-                 context: t.Optional[t.Dict[str, t.Any]]=None,
-                 props: t.Optional[t.Dict[str, t.Any]]=None,
-                 globalAttributes: t.Optional[t.Dict[str, t.Any]]=None,
-                 headStyle: t.Optional[t.Any]=None,
-                 tagName: t.Optional[str]=None) -> None:
+                 context: Optional[Mapping[str, Any]],
+                 props: Optional[dict[str, Any]]=None,
+                 globalAttributes: Optional[dict[str, Any]]=None,
+                 headStyle: Optional[Any]=None,
+                 tagName: Optional[str]=None) -> None:
         self.children = list(children)
         self.content = content
-        # TODO typing: verify that this is the intent
-        self.context = context or dict()
+        self.context = context
         self.tagName = tagName
 
         self.props = merge_dicts(props or {}, {'children': children, 'content': content})
@@ -67,7 +67,7 @@ class Component:
 
     # js: static defaultAttributes
     @classmethod
-    def default_attrs(cls) -> t.Dict[str, t.Any]:
+    def default_attrs(cls) -> dict[str, Any]:
         return {}
 
     # js: static allowedAttributes
@@ -84,11 +84,11 @@ class Component:
             return ''
         return self.content.strip()
 
-    def getChildContext(self) -> t.Dict[str, t.Any]:
+    def getChildContext(self) -> dict[str, Any]:
         return self.context
 
     # js: getAttribute(name)
-    def get_attr(self, name: str, *, missing_ok: bool=False) -> t.Optional[t.Any]:
+    def get_attr(self, name: str, *, missing_ok: bool=False) -> Optional[Any]:
         is_allowed_attr = name in self.allowed_attrs()
         is_default_attr = name in self.default_attrs()
         if not missing_ok and (not is_allowed_attr) and (not is_default_attr):
@@ -96,7 +96,7 @@ class Component:
         return self.attrs.get(name)
     getAttribute = get_attr
 
-    def handler(self) -> t.Optional[str]:
+    def handler(self) -> Optional[str]:
         return None
 
     def render(self) -> str:

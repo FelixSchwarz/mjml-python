@@ -1,4 +1,4 @@
-import typing as t
+from typing import Literal
 
 
-_Direction = t.Literal["top", "bottom", "left", "right"]
+Direction = Literal["top", "bottom", "left", "right"]

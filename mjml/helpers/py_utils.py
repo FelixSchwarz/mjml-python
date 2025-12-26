@@ -1,7 +1,7 @@
 import re
-import typing as t
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Union
+from typing import Any, Optional, Union
 
 
 __all__ = [
@@ -17,8 +17,7 @@ __all__ = [
 ]
 
 
-# TODO typing: figure out types
-def omit(attributes, keys):
+def omit(attributes, keys: Union[str, Sequence[str]]) -> dict:
     if isinstance(keys, str):
         keys = (keys, )
     _attrs = dict(attributes)
@@ -63,13 +62,13 @@ def strip_unit(value_str: Union[str, int, float]) -> Union[int, float]:
     # Return int for whole numbers (like JS parseInt for "600px")
     return int(num) if num == int(num) else num
 
-def is_nil(v: t.Optional[t.Any]) -> bool:
+def is_nil(v: Optional[Any]) -> bool:
     return (v is None)
 
-def is_not_nil(v: t.Optional[t.Any]) -> bool:
+def is_not_nil(v: Optional[Any]) -> bool:
     return not is_nil(v)
 
-def is_empty(v: t.Optional[t.Sequence[t.Any]]) -> bool:
+def is_empty(v: Optional[Sequence[Any]]) -> bool:
     if v is None:
         return True
     elif hasattr(v, 'strip'):
@@ -79,5 +78,5 @@ def is_empty(v: t.Optional[t.Sequence[t.Any]]) -> bool:
         return False
     return not bool(v)
 
-def is_not_empty(v: t.Optional[t.Sequence[t.Any]]) -> bool:
+def is_not_empty(v: Optional[Sequence[Any]]) -> bool:
     return not is_empty(v)

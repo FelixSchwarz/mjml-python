@@ -1,17 +1,18 @@
 # -*- coding: UTF-8 -*-
 # Copyright 2015 Felix Schwarz
 # The source code in this file is licensed under the MIT license.
-import typing as t
+
+from typing import Any
 
 
 __all__ = ["merge_dicts"]
 
-def merge_dicts(*sources: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+def merge_dicts(*sources: dict[str, Any]) -> dict[str, Any]:
     # initial code from
     #    Robin Bryce, Tue, 19 Dec 2006
     #    PSF license
     #    http://code.activestate.com/recipes/499335-recursively-update-a-dictionary-without-hitting-py/
-    result: t.Dict[str, t.Any] = {}
+    result: dict[str, Any] = {}
     for source in sources:
         stack = [(source, result)]
         while stack:

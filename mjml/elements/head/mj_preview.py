@@ -1,6 +1,6 @@
-import typing as t
+from typing import ClassVar
 
-import typing_extensions as te
+from typing_extensions import override
 
 from ._head_base import HeadComponent
 
@@ -9,9 +9,9 @@ __all__ = ['MjPreview']
 
 
 class MjPreview(HeadComponent):
-    component_name: t.ClassVar[str] = 'mj-preview'
+    component_name: ClassVar[str] = 'mj-preview'
 
-    @te.override
+    @override
     def handler(self) -> None:
         add = self.context['add']
         add('preview', self.getContent())
