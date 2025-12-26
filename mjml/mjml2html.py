@@ -92,11 +92,10 @@ def mjml_to_html(
     errors = []
     # LATER: optional validation
 
-    mjBody = mjml_root('mj-body')[0]
-    mjHead = mjml_root('mj-head')
-    if mjHead:
-        assert len(mjHead) == 1
-        mjHead = mjHead[0]
+    mjBody = _find_child(mjml_root, 'mj-body')
+    if not mjBody:
+        raise ValueError('Did not find <mj-body>!')
+    mjHead = _find_child(mjml_root, 'mj-head')
 
     def processing(node, context, parseMJML=None) -> Union[str, None]:
         if node is None:
@@ -266,6 +265,14 @@ def mjml_to_html(
         html=content,
         errors=errors,
     )
+
+
+def _find_child(parent, tagName: str) -> Optional[Any]:
+    # upstream uses lodash's find() which only searches direct children
+    for child in parent.children:
+        if getattr(child, 'name', None) == tagName:
+            return child
+    return None
 
 
 def ignore_empty(values):
