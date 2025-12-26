@@ -9,13 +9,6 @@ __all__ = ['MjWrapper']
 class MjWrapper(MjSection):
     component_name = 'mj-wrapper'
 
-    def getChildContext(self):
-        # Unlike MjSection, MjWrapper should pass the original containerWidth
-        # to its children (sections), not the box width after padding/border.
-        return {
-            **self.context,
-        }
-
     def renderWrappedChildren(self):
         children = self.props['children']
         containerWidth = self.context.get('containerWidth')
