@@ -133,8 +133,16 @@ class MjCarousel(BodyComponent):
                 border-color: {self.getAttribute('tb-selected-border-color')} !important;
             }}
 
-            .mj-carousel-image img + div,
-            .mj-carousel-thumbnail img + div {{
+            {buildCssSelectors(
+                lambda i: f'.mj-carousel-{carouselId}-radio-{i + 1}:checked',
+                lambda i: length - i - 1,
+                lambda i: f'.mj-carousel-content .mj-carousel-{carouselId}-thumbnail'
+            )} {{
+                display: inline-block !important;
+            }}
+
+            .mj-carousel-image img+div,
+            .mj-carousel-thumbnail img+div {{
                 display: none !important;
             }}
 

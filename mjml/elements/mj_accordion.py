@@ -99,6 +99,12 @@ class MjAccordion(BodyComponent):
             },
         }
 
+    def getChildContext(self):
+        return {
+            **self.context,
+            'accordionFontFamily': self.get_attr('font-family'),
+        }
+
     def render(self):
         children = self.props['children']
         children_attrs = {

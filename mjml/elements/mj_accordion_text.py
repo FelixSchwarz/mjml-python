@@ -1,5 +1,6 @@
 
-from ._base import BodyComponent
+from mjml.elements._accordion_helpers import resolve_accordion_font_family
+from mjml.elements._base import BodyComponent
 
 
 __all__ = ['MjAccordionText']
@@ -33,13 +34,16 @@ class MjAccordionText(BodyComponent):
             'padding'    : '16px',
         }
 
+    def resolveFontFamily(self):
+        return resolve_accordion_font_family(self.props, self.context, self.get_attr('font-family'))
+
     # js: getStyles()
     def get_styles(self):
         return {
             'td'   : {
                 'background'    : self.get_attr('background-color'),
                 'font-size'     : self.get_attr('font-size'),
-                'font-family'   : self.get_attr('font-family'),
+                'font-family'   : self.resolveFontFamily(),
                 'font-weight'   : self.get_attr('font-weight'),
                 'letter-spacing': self.get_attr('letter-spacing'),
                 'line-height'   : self.get_attr('line-height'),

@@ -176,6 +176,7 @@ class MjSocialElement(BodyComponent):
             'tdText': {
                 'vertical-align': 'middle',
                 'padding'       : self.getAttribute('text-padding'),
+                'text-align'    : self.getAttribute('align'),
             },
             'text'  : {
                 'color'          : self.getAttribute('color'),
@@ -204,16 +205,13 @@ class MjSocialElement(BodyComponent):
     def render(self):
         attributes = self.getSocialAttributes()
         iconSize = attributes['icon-size']
-        iconHeight = attributes['icon-height']
         hasLink = bool(self.getAttribute('href'))
 
         def get_img():
-            height, _ = widthParser(iconHeight or iconSize)
             width, _ = widthParser(iconSize)
             img_attrs = self.html_attrs(
                 alt    = self.getAttribute('alt'),
                 title  = self.getAttribute('title'),
-                height = height,
                 src    = attributes['src'],
                 style  = 'img',
                 width  = width,
