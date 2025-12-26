@@ -20,7 +20,7 @@ def skeleton_str(*,
     classes=None,
     preview = None,
     defaultAttributes=None
-    ):
+    ) -> str:
 
     apply_breakpoints = lambda values: tuple(map(lambda v: v(breakpoint), values))
     components_head_style_strs = apply_breakpoints(componentsHeadStyle)
@@ -64,7 +64,7 @@ def skeleton_str(*,
     }
 
     skeleton_tmpl = Template(skeleton_tmpl_str)
-    return skeleton_tmpl.render(tmpl_vars)
+    return str(skeleton_tmpl.render(tmpl_vars))
 
 
 skeleton_tmpl_str_raw = '''\

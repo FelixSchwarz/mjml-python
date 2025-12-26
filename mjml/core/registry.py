@@ -1,9 +1,13 @@
 
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from mjml.core.api import Component
+
 
 __all__ = ['components', 'register_components', 'register_core_components']
-
-from typing import List, Type
-
 
 components = {}
 
@@ -82,6 +86,6 @@ def register_core_components():
     return components
 
 
-def register_components(source: List[Type]):
+def register_components(source: Sequence[type["Component"]]):
     for component in source:
         components[component.component_name] = component

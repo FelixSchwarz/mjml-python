@@ -1,4 +1,7 @@
 
+from collections.abc import Mapping
+from typing import Union
+
 from dotmap import DotMap
 
 from ..lib import merge_dicts
@@ -24,6 +27,8 @@ def initComponent(name, **initialDatas):
 
 
 class Component:
+    component_name: str
+
     # LATER: not sure upstream also passes tagName, makes code easier for us
     def __init__(self, *, attributes=None, children=(), content='', context=None,
                  props=None, globalAttributes=None, headStyle=None, tagName=None):
@@ -62,8 +67,8 @@ class Component:
 
     # js: static allowedAttributes
     @classmethod
-    def allowed_attrs(cls):
-        return ()
+    def allowed_attrs(cls) -> Mapping[str, Union[str, None]]:
+        return {}
 
     def getContent(self):
         # Actually "self.content" should not be None but sometimes it is
@@ -86,5 +91,5 @@ class Component:
         return self.attrs.get(name)
     getAttribute = get_attr
 
-    def render(self):
+    def render(self) -> str:
         return ''

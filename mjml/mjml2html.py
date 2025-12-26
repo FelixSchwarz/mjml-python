@@ -1,6 +1,7 @@
+from collections.abc import Mapping, Sequence
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
-from typing import List, Optional
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
 
 from bs4 import BeautifulSoup
 from dotmap import DotMap
@@ -11,16 +12,26 @@ from .helpers import json_to_xml, mergeOutlookConditionals, omit, skeleton_str a
 from .lib import merge_dicts
 
 
-def ignore_empty(values):
-    result = []
-    for value in values:
-        if value:
-            result.append(value)
-    return tuple(result)
+if TYPE_CHECKING:
+    from _typeshed import StrPath, SupportsRead
+
+    from mjml.core.api import Component
 
 
-def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
-                 custom_components: Optional[List]=None):
+class MJMLOutput(NamedTuple):
+    html: str
+    errors: Sequence[str]
+
+
+FpOrJson = Union[Mapping[str, Any], str, bytes, "SupportsRead[str]", "SupportsRead[bytes]"]
+
+
+def mjml_to_html(
+    xml_fp_or_json: FpOrJson,
+    skeleton: Optional[str] = None,
+    template_dir: Optional["StrPath"] = None,
+    custom_components: Optional[Sequence[type["Component"]]] = None,
+) -> MJMLOutput:
     register_core_components()
 
     if isinstance(xml_fp_or_json, dict):
@@ -39,7 +50,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     skeleton_path = skeleton
     if skeleton_path:
         raise NotImplementedError('not yet implemented')
-    skeleton = default_skeleton
+    skeleton_func = default_skeleton
 
     if custom_components:
         register_components(custom_components)
@@ -87,7 +98,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
         assert len(mjHead) == 1
         mjHead = mjHead[0]
 
-    def processing(node, context, parseMJML=None):
+    def processing(node, context, parseMJML=None) -> Union[str, None]:
         if node is None:
             return None
         # LATER: upstream passes "parseMJML=identity" for head components
@@ -212,6 +223,8 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
     )
     globalDatas.headRaw = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
+    if content is None:
+        raise ValueError('No <mj-body> content generated!')
 
     if globalDatas.htmlAttributes:
         contentSoup = BeautifulSoup(content, 'html.parser')
@@ -222,7 +235,7 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
 
         content = contentSoup.decode_contents()
 
-    content = skeleton(
+    content = skeleton_func(
         content=content,
         # upstream just passes this extra key to skeleton() as JavaScript
         # won't complain about additional parameters.
@@ -249,10 +262,18 @@ def mjml_to_html(xml_fp_or_json, skeleton=None, template_dir=None,
 
     content = mergeOutlookConditionals(content)
 
-    return DotMap({
-        'html': content,
-        'errors': errors,
-    })
+    return MJMLOutput(
+        html=content,
+        errors=errors,
+    )
+
+
+def ignore_empty(values):
+    result = []
+    for value in values:
+        if value:
+            result.append(value)
+    return tuple(result)
 
 
 def _map_to_tuple(items, map_fn, filter_none=None):
