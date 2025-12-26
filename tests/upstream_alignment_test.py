@@ -1,11 +1,21 @@
+import random
 from json import load as json_load
 
 import pytest
-from bs4 import BeautifulSoup
 from htmlcompare import assert_same_html
 
 from mjml import mjml_to_html
 from mjml.testing_helpers import get_mjml_fp, load_expected_html
+
+
+@pytest.fixture
+def fixed_random_seed():
+    state = random.getstate()
+    random.seed(42)
+    try:
+        yield
+    finally:
+        random.setstate(state)
 
 
 TEST_IDS = (
@@ -21,6 +31,7 @@ TEST_IDS = (
     'mj-style',
     'mj-accordion',
     'mj-attributes',
+    'mj-carousel',
     'mj-html-attributes',
     'mj-column-with-attributes',
     'mj-column-with-fractional-width',
@@ -42,6 +53,7 @@ TEST_IDS = (
     'mj-font-multiple',
     'mj-font-unused',
     'mj-include-body',
+    'mj-navbar',
     'mj-preview',
     'mj-raw',
     'mj-raw-with-tags',
@@ -57,7 +69,7 @@ TEST_IDS = (
 )
 
 @pytest.mark.parametrize('test_id', TEST_IDS)
-def test_ensure_same_html_as_upstream(test_id):
+def test_ensure_same_html_as_upstream(test_id, fixed_random_seed):
     expected_html = load_expected_html(test_id)
     with get_mjml_fp(test_id) as mjml_fp:
         result = mjml_to_html(mjml_fp)
@@ -100,45 +112,3 @@ def test_can_use_css_inlining():
 
     assert not result.errors
     assert_same_html(expected_html, result.html, verbose=True)
-
-
-# The dynamically generated menu key prevents us from just using
-# test_ensure_same_html to test mj-navbar
-def test_mj_navbar():
-    test_id = 'mj-navbar'
-    expected_html = load_expected_html(test_id)
-    with get_mjml_fp(test_id) as mjml_fp:
-        result = mjml_to_html(mjml_fp)
-
-    assert not result.errors
-    expected_soup = BeautifulSoup(expected_html, 'html.parser')
-    actual_soup = BeautifulSoup(result.html, 'html.parser')
-
-    # This key is randomly generated, so we need to manually replace it.
-    menuKey = actual_soup.find(attrs={'class': 'mj-menu-checkbox'})['id']
-    expected_soup.find(attrs={'class': 'mj-menu-checkbox'})['id'] = menuKey
-    expected_soup.find(attrs={'class': 'mj-menu-label'})['for'] = menuKey
-
-    assert_same_html(str(expected_soup), str(actual_soup), verbose=True)
-
-
-# The dynamically generated carousel ID prevents us from just using
-# test_ensure_same_html to test mj-carousel
-def test_mj_carousel():
-    test_id = 'mj-carousel'
-    expected_html = load_expected_html(test_id)
-    with get_mjml_fp(test_id) as mjml_fp:
-        result = mjml_to_html(mjml_fp)
-
-    assert not result.errors
-    expected_soup = BeautifulSoup(expected_html, 'html.parser')
-    actual_soup = BeautifulSoup(result.html, 'html.parser')
-
-    # This ID is randomly generated, so we need to manually replace it.
-    def _replace_random_radio_class(soup):
-        _mj_cr_str = 'mj-carousel-radio'
-        return soup.find(attrs={'class': _mj_cr_str})['name'].replace(f'{_mj_cr_str}-', '')
-    expected_carousel_id = _replace_random_radio_class(expected_soup)
-    actual_carousel_id = _replace_random_radio_class(actual_soup)
-    actual_html = str(actual_soup).replace(actual_carousel_id, expected_carousel_id)
-    assert_same_html(str(expected_soup), actual_html, verbose=True)

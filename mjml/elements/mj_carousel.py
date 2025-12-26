@@ -49,7 +49,12 @@ class MjCarousel(BodyComponent):
             'tb-selected-border-color': '#cccccc',
         }
 
-    carouselId = ''.join(random.choices(string.digits, k=16))
+    @property
+    def carouselId(self):
+        if not self._carousel_id:
+            self._carousel_id = ''.join(random.choices(string.digits + 'abcdef', k=16))
+        return self._carousel_id
+    _carousel_id: str = ''
 
     def componentHeadStyle(self, breakpoint):
         length = len(self.props['children'])
@@ -263,19 +268,10 @@ class MjCarousel(BodyComponent):
             style='controls.img',
             width=iconWidth
         )
-        content = ''.join(map(
-            lambda i: f'''
-                <label
-                    {self.html_attrs(
-                        for_=f'mj-carousel-{self.carouselId}-radio-{i}',
-                        class_=f'mj-carousel-{direction} mj-carousel-{direction}-{i}',
-                    )}
-                >
-                    <img {img_attrs} />
-                </label>
-            ''',
-            range(1, len(self.props['children']) + 1)
-        ))
+        def _label_html(i: int) -> str:
+            return f'<label {self.html_attrs(for_=f"mj-carousel-{self.carouselId}-radio-{i}", class_=f"mj-carousel-{direction} mj-carousel-{direction}-{i}")}><img {img_attrs} /></label>'  # noqa: E501
+        _num_children = len(self.props['children'])
+        content = ''.join([_label_html(i + 1) for i in range(_num_children)])
 
         td_attrs = self.html_attrs(
             class_=f'mj-carousel-{self.carouselId}-icons-cell',
@@ -285,13 +281,7 @@ class MjCarousel(BodyComponent):
             class_=f'mj-carousel-{direction}-icons',
             style='controls.div',
         )
-        return f'''
-            <td {td_attrs}>
-                <div {div_attrs}>
-                    {content}
-                </div>
-            </td>
-        '''
+        return f'<td {td_attrs}><div {div_attrs}>{content}</div></td>'
 
     def generateImages(self):
         return f'''

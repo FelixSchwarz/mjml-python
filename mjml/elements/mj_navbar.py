@@ -110,7 +110,7 @@ class MjNavbar(BodyComponent):
         }
 
     def renderHamburger(self):
-        key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        key = ''.join(random.choices(string.digits + 'abcdef', k=16))
         checkbox_html = f'<input type="checkbox" id="{key}" class="mj-menu-checkbox" style="display:none !important; max-height:0; visibility:hidden;" />' # noqa: E501
         input_tag = msoConditionalTag(checkbox_html, True)
         div_attrs = self.html_attrs(class_='mj-menu-trigger', style='trigger')

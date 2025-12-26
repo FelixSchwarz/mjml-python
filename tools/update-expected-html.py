@@ -16,6 +16,8 @@ options:
 
 import argparse
 import os
+import random
+import re
 import subprocess
 import sys
 from collections import namedtuple
@@ -29,7 +31,7 @@ _THIS_DIR = Path(__file__).parent
 SCRIPT_GENERATE_CUSTOM_COMPONENT = _THIS_DIR / 'create-expected-html-for-custom-component.js'
 
 
-def job_for_file(mjml_path, mjml_js):
+def job_for_file(mjml_path: Path, mjml_js: str) -> Job:
     expected_path = mjml_path.parent / (mjml_path.stem + '-expected.html')
     return Job(
         str(mjml_path.resolve()),
@@ -68,6 +70,46 @@ def _update_expected_html(job):
     else:
         cmd = [mjml_cmd, job.mjml_path, '-o', job.expected_path]
     subprocess.run(cmd)
+
+    _replace_random_ids_if_needed(job, mjml_basename)
+
+
+def _generate_deterministic_ids(count: int) -> list[str]:
+    state = random.getstate()
+    random.seed(42)
+    ids = []
+    for _ in range(count):
+        ids.append(''.join(random.choices('0123456789abcdef', k=16)))
+    random.setstate(state)
+    return ids
+
+
+def _replace_random_ids_if_needed(job: Job, mjml_basename: str) -> None:
+    if mjml_basename not in ('mj-navbar.mjml', 'mj-carousel.mjml'):
+        return
+    expected_path = Path(job.expected_path)
+
+    html = expected_path.read_text(encoding='utf-8')
+
+    _patterns = {
+        'mj-navbar.mjml': r'id="([a-f0-9]{16})" class="mj-menu-checkbox"',
+        'mj-carousel.mjml': r'mj-carousel-radio-([a-f0-9]{16})',
+    }
+    pattern = _patterns[mjml_basename]
+    id_matches = re.findall(pattern, html)
+    unique_ids = list(dict.fromkeys(id_matches))  # preserve order, remove duplicates
+    deterministic_ids = _generate_deterministic_ids(len(unique_ids))
+    id_mapping = dict(zip(unique_ids, deterministic_ids))
+    if mjml_basename == 'mj-navbar.mjml':
+        for upstream_id, deterministic_id in id_mapping.items():
+            html = html.replace(f'id="{upstream_id}"', f'id="{deterministic_id}"')
+            html = html.replace(f'for="{upstream_id}"', f'for="{deterministic_id}"')
+    elif mjml_basename == 'mj-carousel.mjml':
+        for upstream_id, deterministic_id in id_mapping.items():
+            html = html.replace(upstream_id, deterministic_id)
+
+    expected_path.write_text(html, encoding='utf-8')
+
 
 def detect_mjml_js() -> str:
     if 'MJML' in os.environ:
