@@ -96,11 +96,18 @@ def main(argv=sys.argv):
     if not jobs:
         sys.stderr.write('no mjml files found...\n')
     if args.single_process:
+        num_processes = 1
+    else:
+        num_cpus = os.cpu_count() or 1
+        num_processes = max(len(jobs) // 2, num_cpus)
+
+    if num_processes == 1:
         for job in jobs:
             _update_expected_html(job)
     else:
-        with Pool() as p:
+        with Pool(num_processes) as p:
             p.map(_update_expected_html, jobs)
+
 
 if __name__ == '__main__':
     main()
