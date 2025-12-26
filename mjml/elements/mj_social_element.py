@@ -142,6 +142,7 @@ class MjSocialElement(BodyComponent):
             'target'         : '_blank',
             'text-decoration': 'none',
             'vertical-align' : 'middle',
+            'alt'           : '',
         }
 
     # js: getStyles()

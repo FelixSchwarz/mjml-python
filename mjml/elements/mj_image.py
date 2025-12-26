@@ -55,6 +55,8 @@ class MjImage(BodyComponent):
             'target'           : '_blank',
             'font-size'        : '13px',
 
+            'alt'              : '',
+
             # other attrs
             # upstream does not declare these (but uses them in getStyles)
             # CHECK LATER: should these be "border-*"?

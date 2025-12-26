@@ -28,6 +28,7 @@ class MjCarouselImage(BodyComponent):
     @classmethod
     def default_attrs(cls):
         return {
+            'alt'   : '',
             'target': '_blank',
         }
 
