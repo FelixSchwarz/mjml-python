@@ -3,7 +3,7 @@ from io import BytesIO, StringIO
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from dotmap import DotMap
 
 from mjml.elements.head._head_base import HeadComponent
@@ -34,6 +34,7 @@ def mjml_to_html(
     skeleton: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
     custom_components: Optional[Sequence[type["Component"]]] = None,
+    keep_comments: bool = True,
 ) -> ParseResult:
     register_core_components()
 
@@ -127,10 +128,18 @@ def mjml_to_html(
 
         def parse(_mjml, parentMjClass: str='', *, template_dir: str) -> Any:
             tagName = _mjml.name
-            is_comment = not isinstance(tagName, str)
-            if is_comment:
-                # XML comment: <cyfunction Comment at 0x…>
-                # (this needs to be extended when "keepComments" should be implemented)
+            if isinstance(_mjml, Comment) and keep_comments:
+                comment_text = str(_mjml)
+                return {
+                    'tagName': 'mj-raw',
+                    'content': f'<!--{comment_text}-->',
+                    'attributes': {},
+                    'globalAttributes': {},
+                    'children': [],
+                }
+            is_tag = isinstance(tagName, str)
+            if not is_tag:
+                # could be NavigableString (text/whitespace), etc.
                 return None
             attributes = _mjml.attrs
             children = [child for child in _mjml]

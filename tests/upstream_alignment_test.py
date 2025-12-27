@@ -67,6 +67,7 @@ TEST_IDS = (
     'mjml-lang-attribute',
     'mjml-dir-attribute',
     'missing-whitespace-before-tag',
+    'mjml-comment-merging',
 )
 
 @pytest.mark.parametrize('test_id', TEST_IDS)

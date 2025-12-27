@@ -1,0 +1,29 @@
+<mjml>
+<!--
+This file ensures comments can be kept.
+If our implementation drops the comments and the reference implementation does
+not, some conditional comments will be merged, triggering a failed test.
+
+In order to trigger that behavior we need two sections each with a comment
+preceding it.
+-->
+<mj-body>
+
+<!-- Comment 1 -->
+<mj-section>
+  <mj-group>
+    <mj-column>
+      <mj-text>lorem</mj-text>
+    </mj-column>
+  </mj-group>
+</mj-section>
+
+<!-- Comment 2 -->
+<mj-section>
+    <mj-column>
+      <mj-text>ipsum</mj-text>
+    </mj-column>
+</mj-section>
+
+</mj-body>
+</mjml>
