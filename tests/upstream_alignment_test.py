@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import random
 from json import load as json_load
+from typing import TYPE_CHECKING
 
 import pytest
 from htmlcompare import assert_same_html
 
 from mjml import mjml_to_html
 from mjml.testing_helpers import get_mjml_fp, load_expected_html
+
+
+if TYPE_CHECKING:
+    from mjml import ParseResult
 
 
 @pytest.fixture
@@ -69,48 +76,51 @@ TEST_IDS = (
     'missing-whitespace-before-tag',
     'mjml-comment-merging',
 )
-
 @pytest.mark.parametrize('test_id', TEST_IDS)
 def test_ensure_same_html_as_upstream(test_id, fixed_random_seed):
-    expected_html = load_expected_html(test_id)
-    with get_mjml_fp(test_id) as mjml_fp:
-        result = mjml_to_html(mjml_fp)
+    result = _render_html(test_id)
 
     assert not result.errors
-    actual_html = result.html
-    assert_same_html(expected_html, actual_html, verbose=True)
+    _assert_same_html(result.html, test_id)
 
 
 def test_ensure_same_html_from_json():
     test_id = 'hello-world'
-    expected_html = load_expected_html(test_id)
     with get_mjml_fp(test_id, json=True) as mjml_json_fp:
-        result = mjml_to_html(json_load(mjml_json_fp))
+        mjml_json = json_load(mjml_json_fp)
+
+    result = mjml_to_html(mjml_json)
 
     assert not result.errors
-    actual_html = result.html
-    assert_same_html(expected_html, actual_html, verbose=True)
+    _assert_same_html(result.html, test_id)
 
 
 def test_accepts_also_plain_strings_as_input():
     test_id = 'hello-world'
-    expected_html = load_expected_html(test_id)
     with get_mjml_fp(test_id) as mjml_fp:
         mjml_str = mjml_fp.read().decode('utf8')
-        result = mjml_to_html(mjml_str)
+
+    result = mjml_to_html(mjml_str)
 
     assert not result.errors
-    actual_html = result.html
-    assert_same_html(expected_html, actual_html, verbose=True)
+    _assert_same_html(result.html, test_id)
 
 
 @pytest.mark.css_inlining
 def test_can_use_css_inlining():
     test_id = 'css-inlining'
-    expected_html = load_expected_html(test_id)
-    with get_mjml_fp(test_id) as mjml_fp:
-        mjml_str = mjml_fp.read().decode('utf8')
-        result = mjml_to_html(mjml_str)
+
+    result = _render_html(test_id)
 
     assert not result.errors
-    assert_same_html(expected_html, result.html, verbose=True)
+    _assert_same_html(result.html, test_id)
+
+
+def _render_html(test_id: str) -> ParseResult:
+    with get_mjml_fp(test_id) as mjml_fp:
+        return mjml_to_html(mjml_fp)
+
+
+def _assert_same_html(actual_html: str, test_id: str):
+    expected_html = load_expected_html(test_id)
+    assert_same_html(expected_html, actual_html, verbose=True)
