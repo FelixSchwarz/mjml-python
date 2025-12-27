@@ -1,12 +1,12 @@
 
-0.12.0 (2025-12-..)
+0.12.0 (2025-12-27)
 -------------------
 
 - support Python 3.14, drop support for Python 3.6, 3.7 and 3.8
 - generated HTML should match mjml 4.18.0
 - comments in mjml will be present in the generated html by default now to match the reference implementation
 - various fixes to match HTML generated the JS mjml, found by htmlcompare 0.4
-- type hints contributed by @xoudini
+- added type hints (contributed by @xoudini)
 - correctly render fractional width for mj-column (reported by @SinnySupernova)
 
 
