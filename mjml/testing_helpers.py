@@ -1,14 +1,15 @@
 
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Union
 
 
 __all__ = ['get_mjml_fp', 'load_expected_html']
 
 TESTDATA_DIR = Path(__file__).parent / '..' / 'tests' / 'testdata'
 
-def load_expected_html(test_id):
-    html_filename = f'{test_id}-expected.html'
+def load_expected_html(test_id, suffix: Union[str, None] = None) -> bytes:
+    html_filename = f'{test_id}-expected{suffix or ""}.html'
     with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
         expected_html = html_fp.read()
     return expected_html

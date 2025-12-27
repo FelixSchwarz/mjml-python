@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from json import load as json_load
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import pytest
 from htmlcompare import assert_same_html
@@ -84,6 +84,15 @@ def test_ensure_same_html_as_upstream(test_id, fixed_random_seed):
     _assert_same_html(result.html, test_id)
 
 
+def test_can_omit_comments():
+    test_id = 'mjml-comment-merging'
+
+    result = _render_html(test_id, keep_comments=False)
+
+    assert not result.errors
+    _assert_same_html(result.html, test_id, suffix='.keep-comments=false')
+
+
 def test_ensure_same_html_from_json():
     test_id = 'hello-world'
     with get_mjml_fp(test_id, json=True) as mjml_json_fp:
@@ -116,11 +125,11 @@ def test_can_use_css_inlining():
     _assert_same_html(result.html, test_id)
 
 
-def _render_html(test_id: str) -> ParseResult:
+def _render_html(test_id: str, keep_comments: bool = True) -> ParseResult:
     with get_mjml_fp(test_id) as mjml_fp:
-        return mjml_to_html(mjml_fp)
+        return mjml_to_html(mjml_fp, keep_comments=keep_comments)
 
 
-def _assert_same_html(actual_html: str, test_id: str):
-    expected_html = load_expected_html(test_id)
+def _assert_same_html(actual_html: str, test_id: str, suffix: Union[str, None] = None) -> None:
+    expected_html = load_expected_html(test_id, suffix=suffix)
     assert_same_html(expected_html, actual_html, verbose=True)

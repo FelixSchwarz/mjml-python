@@ -20,23 +20,37 @@ import random
 import re
 import subprocess
 import sys
-from collections import namedtuple
+from collections.abc import Iterator
 from multiprocessing import Pool
 from pathlib import Path
+from typing import NamedTuple
 
 
-Job = namedtuple('Job', ('mjml_path', 'expected_path', 'mjml_bin'))
+class Job(NamedTuple):
+    mjml_path: str
+    expected_path: str
+    mjml_bin: str
+    keep_comments: bool
+
 
 _THIS_DIR = Path(__file__).parent
 SCRIPT_GENERATE_CUSTOM_COMPONENT = _THIS_DIR / 'create-expected-html-for-custom-component.js'
 
 
-def job_for_file(mjml_path: Path, mjml_js: str) -> Job:
-    expected_path = mjml_path.parent / (mjml_path.stem + '-expected.html')
+def jobs_for_file(mjml_path: Path, mjml_js: str) -> Iterator[Job]:
+    yield _job_for_file(mjml_path, mjml_js, keep_comments=True)
+    test_id = mjml_path.stem
+    if test_id == 'mjml-comment-merging':
+        yield _job_for_file(mjml_path, mjml_js, keep_comments=False)
+
+def _job_for_file(mjml_path: Path, mjml_js: str, *, keep_comments: bool) -> Job:
+    suffix = '.keep-comments=false' if not keep_comments else ''
+    expected_path = mjml_path.parent / (mjml_path.stem + f'-expected{suffix}.html')
     return Job(
         str(mjml_path.resolve()),
         str(expected_path.resolve()),
         mjml_bin = mjml_js,
+        keep_comments=keep_comments,
     )
 
 def _gather_data_files_in_directory(source_dir):
@@ -46,18 +60,16 @@ def _gather_data_files_in_directory(source_dir):
             continue
         yield mjml_path
 
-def _gather_jobs(source_path, mjml_js):
+def _gather_jobs(source_path, mjml_js: str) -> Iterator[Job]:
     if isinstance(source_path, str):
         source_path = Path(source_path)
 
     if source_path.is_dir():
         for mjml_path in _gather_data_files_in_directory(source_path):
-            job = job_for_file(mjml_path, mjml_js)
-            yield job
+            yield from jobs_for_file(mjml_path, mjml_js)
     else:
         assert source_path.suffix == '.mjml'
-        job = job_for_file(source_path, mjml_js)
-        yield job
+        yield from jobs_for_file(source_path, mjml_js)
 
 def _update_expected_html(job):
     mjml_cmd = str(job.mjml_bin)
@@ -69,6 +81,8 @@ def _update_expected_html(job):
         cmd = ['node', str(SCRIPT_GENERATE_CUSTOM_COMPONENT), job.mjml_path, job.expected_path]
     else:
         cmd = [mjml_cmd, job.mjml_path, '-o', job.expected_path]
+        if not job.keep_comments:
+            cmd.insert(2, '--config.keepComments=false')
     subprocess.run(cmd)
 
     _replace_random_ids_if_needed(job, mjml_basename)
