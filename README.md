@@ -1,60 +1,124 @@
 # mjml-python
 
-This is an unofficial Python port of [mjml v4](https://github.com/mjmlio/mjml). It is implemented in pure Python and does not require JavaScript/NodeJS. mjml is a markup language created by [Mailjet](https://www.mailjet.com/) and designed to reduce the pain of coding a responsive email.
+A pure Python implementation of [MJML v4](https://github.com/mjmlio/mjml), the email markup language created by [Mailjet](https://www.mailjet.com/). Build responsive HTML emails without requiring JavaScript, Node.js or Rust.
 
-### Installation
+All standard MJML components are supported, and the rendered output closely follows the upstream JavaScript implementation.
+
+
+## Installation
 
 ```sh
 pip install mjml
 ```
 
-### Usage
+For optional CSS inlining support:
+
+```sh
+pip install mjml[css_inlining]
+```
+
+
+## Usage
+
+### Python API
 
 ```py
 from mjml import mjml_to_html
-with open('foo.mjml', 'rb') as mjml_fp:
-    result = mjml_to_html(mjml_fp)
+
+# From a file
+with open('my_email.mjml', 'rb') as fp:
+    result = mjml_to_html(fp)
+
+# From a string
+result = mjml_to_html('<mjml><mj-body>...</mj-body></mjml>')
+
 assert not result.errors
 html: str = result.html
 ```
 
-Alternatively you can run the code from the CLI:
+The `mjml_to_html()` function accepts several optional parameters:
+
+- `template_dir` - base directory for resolving `<mj-include>` paths
+- `keep_comments` - preserve HTML comments in output (default: `True`)
+- `custom_components` - list of custom component classes to register
+
+### CLI
 
 ```sh
-$ mjml foo.mjml
+# Convert and print to stdout
+$ mjml my_email.mjml
+
+# Convert and write to file
+$ mjml my_email.mjml -o output.html
+
+# Read from stdin
+$ cat my_email.mjml | mjml -
+```
+
+CLI options:
+
+- `--template-dir=<path>` - base directory for `<mj-include>` (default: directory of the input file)
+- `--config.keepComments=False` - strip HTML comments from output
+
+
+## Supported Components
+
+All standard MJML v4 components are implemented. The project comes with no guarantee that additions or changes to the standard are implemented, or in which timing -- but coverage of the standard is a principal objective of the project.
+
+**Layout:** mj-body, mj-section, mj-column, mj-group, mj-wrapper, mj-hero
+
+**Content:** mj-text, mj-image, mj-button, mj-table, mj-divider, mj-spacer, mj-raw
+
+**Interactive:** mj-accordion, mj-carousel, mj-navbar, mj-social
+
+**Head:** mj-head, mj-title, mj-preview, mj-style, mj-attributes, mj-breakpoint, mj-font, mj-html-attributes
+
+**Other:** mj-include (file includes with relative/absolute paths)
+
+### Custom Components
+
+You can register your own components:
+
+```py
+from mjml.core.api import Component
+
+class MyComponent(Component):
+    component_name = 'mj-my-component'
+    # ...
+
+result = mjml_to_html(mjml_input, custom_components=[MyComponent])
 ```
 
 
 ## Limitations
 
-This library only implements a subset of the original MJML project. It lacks several features found in the JavaScript mjml implementation (e.g. minification, beautification and validation). Also the code likely contains many additional bugs.
+Compared to the JavaScript MJML implementation, the following features are **not** available:
 
-The upside is that there are lot of possibilities for you to make a real difference when you improve the code :-)
+- **Minification** of the generated HTML
+- **Beautification** (pretty-printing) of the generated HTML
+- **Validation** of MJML templates (attribute checks, structural rules)
+- **Includes inside `<mj-head>`**
+
+If you need these features, see the [Alternatives](#alternatives--additional-resources) section below.
 
 
 ## Goals / Motivation
 
-This library should track the [JS version of mjml](https://github.com/mjmlio/mjml) so ideally you should get the same HTML. However even under the best circumstances this library will always lag a bit behind as each change must be translated to Python manually (a mostly mechanical process).
+This library tracks the [JavaScript version of mjml](https://github.com/mjmlio/mjml) so you should get the same HTML output for supported components. There may be minor differences due to the manual porting process.
 
-While I like the idea behind mjml and all the knowledge about the quirks to get acceptable HTML rendering by various email clients we did not want to deploy a Node.js-based stack on our production servers. We did not feel comfortable auditing all 220 JS packages which are installed by `npm install mjml` (and re-doing this whenever new versions are available). Also due to data-privacy concerns we were unable to use any third-party products (i.e. MJML's API offering).
+Why a Python port?
 
-After a short [spike](https://en.wikipedia.org/wiki/Spike_(software_development)) to check the viability of a Python implementation I went ahead and wrote enough code to ensure some existing messages could be converted to mjml. Currently the library is deployed in some light production scenarios.
-
-Another benefit of using Python is that we can integrate that in our web apps more closely. As the startup overhead of CPython is much lower than Node.js we can also generate a few mails via CLI applications without massive performance problems. CPython uses \~70ms to translate a trivial mjml template to HTML while Node.JS needs \~650ms.
-
-
-
-## Documentation
-
-The idea is to implement the mjml XML dialect exactly like the JS implementation so eventually you should be able to use the [official docs](https://mjml.io/documentation/) and other online resources found on [mjml.io](https://mjml.io/). However we are nowhere near that right now! The current code can render the "Hello World" example as well as images, tables and groups but many components remain to be reimplemented. I'd love to see your pull requests to improve the current state though.
-
+- **No Node.js dependency**: avoid deploying a Node.js stack and auditing hundreds of npm packages
+- **Data privacy**: no need for third-party API services
+- **Fast startup**: CPython converts a trivial template in ~70ms vs ~650ms for Node.js, making it practical for CLI use and on-demand email generation
+- **Tight integration**: embed directly in Python web applications, Django/Flask views, or background workers
 
 
 ## Alternatives / Additional Resources
 
-- **django-mjml**: If deploying NodeJS is not an issue and you are using Django you could use the well established [django-mjml](https://github.com/liminspace/django-mjml) library. That library integrates the mjml JavaScript implementation with Django templates so you can access all mjml features.
-- **MJML.NET**: This is an unofficial port of mjml to C# ([github repo](https://github.com/LiamRiddell/MJML.NET/)) which supports more components than this Python implementation.
-- **mrml**: rust implementation of mjml ([github repo](https://github.com/jdrouet/mrml))
-- [email-bugs](https://github.com/hteumeuleu/email-bugs) is a github project which contains a lot of knowledge about rendering quirks in various email clients.
-- [htmlemailcheck](https://www.htmlemailcheck.com/knowledge-base/) is a commercial offering to help you checking email rendering in various environments. I don't have any experience with their services but they provide a free knowledgebase.
-- [#emailgeeks](https://email.geeks.chat) - Slack community for email marketers, designers, and developers
+- **django-mjml**: integrates the JavaScript mjml with Django templates ([github](https://github.com/liminspace/django-mjml)). Requires Node.js but gives access to all upstream features.
+- **MJML.NET**: unofficial C# port of mjml ([github](https://github.com/LiamRiddell/MJML.NET/))
+- **mrml**: Rust implementation of mjml ([github](https://github.com/jdrouet/mrml))
+- [email-bugs](https://github.com/hteumeuleu/email-bugs): knowledge base about rendering quirks in email clients
+- [htmlemailcheck](https://www.htmlemailcheck.com/knowledge-base/): commercial email rendering checker with a free knowledge base
+- [#emailgeeks](https://email.geeks.chat): Slack community for email developers and designers
