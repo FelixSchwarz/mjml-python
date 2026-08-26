@@ -1,6 +1,5 @@
 
 from ..helpers import parse_int, widthParser
-from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -51,7 +50,7 @@ class MjDivider(BodyComponent):
         }
         return {
             'p': p,
-            'outlook': merge_dicts(p, {'width': self.getOutlookWidth()}),
+            'outlook': {**p, 'width': self.getOutlookWidth()},
         }
 
     def getOutlookWidth(self):

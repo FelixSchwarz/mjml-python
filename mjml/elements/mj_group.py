@@ -1,6 +1,5 @@
 
 from ..helpers import strip_unit, widthParser
-from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -64,7 +63,7 @@ class MjGroup(BodyComponent):
             'containerWidth': containerWidth,
             'nonRawSiblings': len(children),
         }
-        return merge_dicts(self.context, extra_ctx)
+        return {**self.context, **extra_ctx}
 
     def getParsedWidth(self, toString=False):
         nonRawSiblings = self.props['nonRawSiblings']

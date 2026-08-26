@@ -1,5 +1,4 @@
 
-from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -29,10 +28,7 @@ class MjBody(BodyComponent):
         }
 
     def getChildContext(self):
-        return merge_dicts(
-            self.context,
-            {'containerWidth': self.get_attr('width')}
-        )
+        return {**self.context, 'containerWidth': self.get_attr('width')}
 
     def render(self):
         setBackgroundColor = self.context['setBackgroundColor']

@@ -11,7 +11,6 @@ from mjml.elements.head._head_base import HeadComponent
 from .core import initComponent
 from .core.registry import register_components, register_core_components
 from .helpers import json_to_xml, mergeOutlookConditionals, omit, skeleton_str as default_skeleton
-from .lib import merge_dicts
 
 
 if TYPE_CHECKING:
@@ -111,7 +110,7 @@ def mjml_to_html(
         # but we can not process lxml nodes here. applyAttributes() seems to do
         # the right thing though...
         _mjml_data = parseMJML(node) if parseMJML else applyAttributes(node)
-        initialDatas = merge_dicts(_mjml_data, {'context': context})
+        initialDatas = {**_mjml_data, 'context': context}
         node_tag = getattr(node, 'name', None)
         component = initComponent(name=node_tag, **initialDatas)
         if not component:
@@ -160,16 +159,18 @@ def mjml_to_html(
             def default_attr_classes(value: Any) -> Any:
                 return globalDatas.get("classesDefault").get(value, {}).get(tagName, {})
 
-            defaultAttributesForClasses = merge_dicts(*map(default_attr_classes, parent_mj_classes))
+            defaultAttributesForClasses = {}
+            for parent_mj_class in parent_mj_classes:
+                defaultAttributesForClasses |= default_attr_classes(parent_mj_class)
             nextParentMjClass = attributes.get('mj-class', parentMjClass)
 
             _attrs_omit = omit(attributes, 'mj-class')
-            _returned_attributes = merge_dicts(
-                globalDatas.get("defaultAttributes").get(tagName, {}),
-                attributesClasses,
-                defaultAttributesForClasses,
-                _attrs_omit,
-            )
+            _returned_attributes = {
+                **globalDatas.get("defaultAttributes").get(tagName, {}),
+                **attributesClasses,
+                **defaultAttributesForClasses,
+                **_attrs_omit,
+            }
 
             if tagName == 'mj-include':
                 mj_include_subtree = handle_include(attributes['path'],

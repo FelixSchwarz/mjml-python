@@ -1,6 +1,5 @@
 
 from ..helpers import parse_int, widthParser
-from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -66,10 +65,7 @@ class MjHero(BodyComponent):
             container_width = parsed_width - paddingSize
         currentContainerWidth = f'{container_width}px'
 
-        return merge_dicts(
-            self.context,
-            {'containerWidth': currentContainerWidth}
-        )
+        return {**self.context, 'containerWidth': currentContainerWidth}
 
 
     # js: getStyles()

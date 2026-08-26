@@ -1,6 +1,5 @@
 
 from ..helpers import parse_float, parse_int, strip_unit, widthParser
-from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -86,13 +85,14 @@ class MjColumn(BodyComponent):
                 'vertical-align': this.getAttribute('vertical-align'),
                 'width': this.getWidthAsPixel(),
             },
-            'gutter': merge_dicts({
+            'gutter': {
                 'padding': this.getAttribute('padding'),
                 'padding-top': this.getAttribute('padding-top'),
                 'padding-right': this.getAttribute('padding-right'),
                 'padding-bottom': this.getAttribute('padding-bottom'),
                 'padding-left': this.getAttribute('padding-left'),
-                }, tableStyle),
+                **tableStyle,
+            },
         }
 
     def getMobileWidth(self):
@@ -181,7 +181,7 @@ class MjColumn(BodyComponent):
         else:
             width = parsedWidth - allPaddings
             containerWidth = f'{width}px'
-        return merge_dicts(self.context, {'containerWidth': containerWidth})
+        return {**self.context, 'containerWidth': containerWidth}
 
 
     def hasGutter(self):

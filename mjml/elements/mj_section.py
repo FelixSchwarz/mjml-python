@@ -4,7 +4,6 @@ from decimal import Decimal
 from typing import Any
 
 from ..helpers import parse_percentage, strip_unit, suffixCssClasses
-from ..lib import merge_dicts
 from ._base import BodyComponent
 
 
@@ -79,16 +78,16 @@ class MjSection(BodyComponent):
         this = self
         border_radius = self.getAttribute('border-radius')
         return {
-            'tableFullwidth': merge_dicts({
+            'tableFullwidth': {
                 'width': '100%',
                 'border-radius': border_radius,
-                }, (background if fullWidth else {})
-            ),
-            'table': merge_dicts({
+                **(background if fullWidth else {}),
+            },
+            'table': {
                 'width': '100%',
                 'border-radius': border_radius,
-                }, ({} if fullWidth else background)
-            ),
+                **({} if fullWidth else background),
+            },
             'td': {
                 'border': this.getAttribute('border'),
                 'border-bottom': this.getAttribute('border-bottom'),
@@ -104,11 +103,12 @@ class MjSection(BodyComponent):
                 'padding-top': this.getAttribute('padding-top'),
                 'text-align': this.getAttribute('text-align'),
             },
-            'div': merge_dicts({} if fullWidth else background, {
+            'div': {
+                **({} if fullWidth else background),
                 'margin': '0px auto',
                 'border-radius': border_radius,
                 'max-width': containerWidth,
-            }),
+            },
             'innerDiv': {
                 'line-height': '0',
                 'font-size': '0',
@@ -140,8 +140,7 @@ class MjSection(BodyComponent):
 
     def getChildContext(self):
         box = self.getBoxWidths()['box']
-        child_context = merge_dicts(self.context, {'containerWidth': f'{box}px'})
-        return child_context
+        return {**self.context, 'containerWidth': f'{box}px'}
 
     def render(self):
         if self.isFullWidth():
