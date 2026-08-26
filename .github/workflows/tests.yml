@@ -16,6 +16,21 @@ on:
 
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.14
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run ty
+      continue-on-error: true
+      run: |
+        pip install -e .[testing]
+        pip install ty
+        ty check tests
+
   tests_cpython:
     runs-on: ubuntu-latest
     strategy:
