@@ -2,7 +2,6 @@
 from collections.abc import Mapping
 from typing import Any, ClassVar, Optional, Union
 
-from ..lib import merge_dicts
 from .registry import components
 
 
@@ -42,14 +41,14 @@ class Component:
         self.context = context
         self.tagName = tagName
 
-        self.props = merge_dicts(props or {}, {'children': children, 'content': content})
+        self.props = {**(props or {}), 'children': children, 'content': content}
 
         # upstream also checks "self.allowed_attrs"
-        self.attrs = merge_dicts(
-            self.default_attrs(),
-            globalAttributes or {},
-            attributes or {},
-        )
+        self.attrs = {
+            **self.default_attrs(),
+            **(globalAttributes or {}),
+            **(attributes or {}),
+        }
 
         # optional attributes (methods) for some components
         if headStyle:

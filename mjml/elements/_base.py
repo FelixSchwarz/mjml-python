@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, Optional
 from ..core import Component, initComponent
 from ..core.registry import components
 from ..helpers import *
-from ..lib import merge_dicts
 
 
 if TYPE_CHECKING:
@@ -147,18 +146,20 @@ class BodyComponent(Component):
             if children is None:
                 # "comment" node
                 continue
-            child_props = merge_dicts(props, {
+            child_props = {
+                **props,
                 'first': (index == 0),
                 'index': index,
                 'last': (index+1 == sibling),
                 'sibling': sibling,
                 'nonRawSiblings': nonRawSiblings,
-            })
-            initialDatas = merge_dicts(children,{
-                'attributes': merge_dicts(attributes, children['attributes']),
+            }
+            initialDatas = {
+                **children,
+                'attributes': {**attributes, **children['attributes']},
                 'context': self.getChildContext(),
                 'props': child_props,
-            })
+            }
             initialDatas.pop('tagName')
 
             component = initComponent(
