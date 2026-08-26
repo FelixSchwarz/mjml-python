@@ -19,6 +19,7 @@ def test_no_target_for_mailto_links():
     result = mjml_to_html(StringIO(mjml))
     html = result.html
     mailto_match = re.search('<a href="([^"]+?)"[^>]*>', html)
+    assert mailto_match is not None
     start, end = mailto_match.span()
     match_str = html[start:end]
 

@@ -15,8 +15,8 @@ TESTDATA_DIR = Path(__file__).parent / 'missing_functionality'
 def test_missing_functionality(test_id):
     mjml_filename = f'{test_id}.mjml'
     html_filename = f'{test_id}-expected.html'
-    with (TESTDATA_DIR / html_filename).open('rb') as html_fp:
-        expected_html = html_fp.read()
+    html_path = TESTDATA_DIR / html_filename
+    expected_html = html_path.read_text()
 
     with (TESTDATA_DIR / mjml_filename).open('rb') as mjml_fp:
         result = mjml_to_html(mjml_fp)
