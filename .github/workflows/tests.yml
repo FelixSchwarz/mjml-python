@@ -24,8 +24,8 @@ jobs:
       image: python:3.14
 
     steps:
-    - uses: actions/checkout@v7
-    - uses: astral-sh/setup-uv@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
     - name: Check that uv.lock is up to date
       run: uv lock --check
@@ -50,7 +50,7 @@ jobs:
         image: python:${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Run tests without optional features
       run: |
@@ -84,7 +84,7 @@ jobs:
         image: pypy:${{ matrix.pypy-version }}
 
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Run tests without optional features
       run: |
