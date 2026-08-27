@@ -39,8 +39,7 @@ class MjDivider(BodyComponent):
         }
 
     def get_styles(self):
-        _t = tuple
-        border_attrs = _t(map(lambda k: self.get_attr(f'border-{k}'), ['style', 'width', 'color']))
+        border_attrs = [self.get_attr(f'border-{k}') or '' for k in ('style', 'width', 'color')]
         border_attr_str = ' '.join(border_attrs)
         p = {
             'border-top': border_attr_str,

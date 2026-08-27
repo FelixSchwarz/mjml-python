@@ -1,10 +1,10 @@
 import re
-from typing import NamedTuple, Union
+from typing import NamedTuple, Optional, Union
 
 from .py_utils import strip_unit
 
 
-__all__ = ['widthParser']
+__all__ = ['widthParser', 'WidthUnit']
 
 
 class WidthUnit(NamedTuple):
@@ -21,9 +21,11 @@ class WidthUnit(NamedTuple):
 
 unitRegex = re.compile(r'[\d.,]*(\D*)$')
 
-def widthParser(width: str, parseFloatToInt: bool=True) -> WidthUnit:
+def widthParser(width: Optional[str], parseFloatToInt: bool=True) -> WidthUnit:
     width_str = str(width)
     match = unitRegex.search(width_str)
+    if match is None:
+        raise ValueError(f'No width value found in {width!r}')
     widthUnit = match.group(1) or 'px'
 
     if (widthUnit == '%') and not parseFloatToInt:

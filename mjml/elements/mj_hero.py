@@ -1,4 +1,6 @@
 
+from typing import Union
+
 from ..helpers import parse_int, widthParser
 from ._base import BodyComponent
 
@@ -57,7 +59,7 @@ class MjHero(BodyComponent):
         padding_right = self.getShorthandAttrValue('padding', 'right')
         paddingSize = padding_left + padding_right
 
-        container_width: int = parse_int(containerWidth)
+        container_width: Union[int, float] = parse_int(containerWidth)
         parsed_width, unit = widthParser(f'{container_width}px', parseFloatToInt=False)
         if unit == '%':
             container_width = (container_width * parsed_width) / 100 - paddingSize
@@ -71,8 +73,8 @@ class MjHero(BodyComponent):
     # js: getStyles()
     def get_styles(self):
         containerWidth = self.context['containerWidth']
-        backgroundHeight = self.get_attr('background-height')
-        backgroundWidth = self.get_attr('background-width')
+        backgroundHeight = self.get_attr('background-height') or 0
+        backgroundWidth = self.get_attr('background-width') or ''
         backgroundRatio = round(
             (parse_int(backgroundHeight) /
              parse_int(backgroundWidth)) *
@@ -93,7 +95,7 @@ class MjHero(BodyComponent):
             'vertical-align'     : self.get_attr('vertical-align'),
         }
         if self.get_attr('mode') == 'fixed-height':
-            height_attr = parse_int(self.get_attr('height'))
+            height_attr = parse_int(self.get_attr('height') or '')
             padding_top = self.getShorthandAttrValue('padding', 'top')
             padding_bottom = self.getShorthandAttrValue('padding', 'bottom')
             height = height_attr - padding_top - padding_bottom
@@ -271,7 +273,7 @@ class MjHero(BodyComponent):
                 <td {magicTd} />
             '''
         else:
-            height_attr = parse_int(self.getAttribute('height'))
+            height_attr = parse_int(self.getAttribute('height') or '')
             padding_top = self.getShorthandAttrValue('padding', 'top')
             padding_bottom = self.getShorthandAttrValue('padding', 'bottom')
             height = height_attr - padding_top - padding_bottom

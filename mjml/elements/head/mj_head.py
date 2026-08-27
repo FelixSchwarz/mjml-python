@@ -12,5 +12,5 @@ class MjHead(HeadComponent):
     component_name: ClassVar[str] = 'mj-head'
 
     @override
-    def handler(self) -> Optional[str]:
+    def handler(self) -> tuple[Optional[str], ...]:
         return self.handlerChildren()

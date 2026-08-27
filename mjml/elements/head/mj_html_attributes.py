@@ -14,7 +14,7 @@ class MjHtmlAttributes(HeadComponent):
     @override
     def handler(self) -> None:
         add = self.context['add']
-        _children = self.props.get("children")
+        _children = self.props.get("children", ())
 
         for child in _children:
             tagName = child['tagName']

@@ -16,7 +16,7 @@ from .helpers import json_to_xml, mergeOutlookConditionals, omit, skeleton_str a
 if TYPE_CHECKING:
     from _typeshed import StrPath, SupportsRead
 
-    from mjml.core.api import Component
+    from mjml.core.api import Component, HandlerResult
     T = TypeVar("T")
 
 
@@ -37,20 +37,26 @@ def mjml_to_html(
 ) -> ParseResult:
     register_core_components()
 
-    if isinstance(xml_fp_or_json, dict):
+    if isinstance(xml_fp_or_json, Mapping):
         xml_fp = StringIO(json_to_xml(xml_fp_or_json))
     elif isinstance(xml_fp_or_json, str):
         xml_fp = StringIO(xml_fp_or_json)
+    elif isinstance(xml_fp_or_json, bytes):
+        xml_fp = BytesIO(xml_fp_or_json)
     else:
         xml_fp = xml_fp_or_json
 
-    if template_dir is None and hasattr(xml_fp, 'name'):
-        template_dir = Path(xml_fp.name).parent
+    template_path = getattr(xml_fp, 'name', None)
+    if (template_dir is None) and isinstance(template_path, (str, PurePath)):
+        template_dir = Path(template_path).parent
 
-    mjml_doc = BeautifulSoup(xml_fp, 'html.parser')
-
-    if (mjml_root := mjml_doc.mjml) is None:
-        raise ValueError(f"could not parse '{xml_fp.name}'")
+    mjml_doc = BeautifulSoup(xml_fp.read(), 'html.parser')
+    mjml_root = mjml_doc.mjml
+    if mjml_root is None:
+        if template_path:
+            raise ValueError(f"Could not parse '{template_path}'")
+        else:
+            raise ValueError("Could not parse mjml input")
 
     skeleton_path = skeleton
     if skeleton_path:
@@ -103,7 +109,7 @@ def mjml_to_html(
     mjHead = _find_child(mjml_root, 'mj-head')
 
     def processing(node: Optional[Any], context: dict[str, Any],
-                   parseMJML: Optional[Callable[[Any], Any]]=None) -> Optional[str]:
+                   parseMJML: Optional[Callable[[Any], Any]]=None) -> "HandlerResult":
         if node is None:
             return None
         # LATER: upstream passes "parseMJML=identity" for head components
@@ -125,7 +131,7 @@ def mjml_to_html(
         if len(mjml_element) == 0:
             return {}
 
-        def parse(_mjml, parentMjClass: str='', *, template_dir: str) -> Any:
+        def parse(_mjml, parentMjClass: str='', *, template_dir: Optional["StrPath"]) -> Any:
             tagName = _mjml.name
             if isinstance(_mjml, Comment) and keep_comments:
                 comment_text = str(_mjml)
@@ -242,7 +248,8 @@ def mjml_to_html(
     )
     globalDatas["headRaw"] = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
-    if content is None:
+    if not isinstance(content, str):
+        # basically just a `None` check - only only head components might return a tuple
         raise ValueError('No <mj-body> content generated!')
 
     if attrs := globalDatas.get("htmlAttributes"):

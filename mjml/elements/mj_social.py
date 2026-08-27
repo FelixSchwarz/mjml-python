@@ -1,4 +1,5 @@
 
+
 from ._base import BodyComponent
 
 
@@ -89,7 +90,7 @@ class MjSocial(BodyComponent):
         children = self.props['children']
         align = self.getAttribute('align')
 
-        def render_child(component):
+        def render_child(component: BodyComponent):
             if component.isRawElement():
                 return component.render()
             table_attrs = component.html_attrs(

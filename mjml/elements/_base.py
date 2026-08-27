@@ -1,6 +1,6 @@
 import itertools
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from ..core import Component, initComponent
 from ..core.registry import components
@@ -22,7 +22,7 @@ class BodyComponent(Component):
 
     def getShorthandAttrValue(self,
                               attribute: str, direction: "Direction",
-                              attr_with_direction: bool=True) -> int:
+                              attr_with_direction: bool=True) -> Union[int, float]:
         if attr_with_direction:
             mjAttributeDirection = self.getAttribute(f'{attribute}-{direction}')
         else:
@@ -74,10 +74,10 @@ class BodyComponent(Component):
         return {}
 
     # js: styles(styles)
-    def styles(self, key: Optional[str]=None) -> str:
+    def styles(self, key: Optional[Union[str, dict[str, Any]]]=None) -> str:
         _styles: Optional[dict[str, Any]] = None
 
-        if key and isinstance(key, str):
+        if isinstance(key, str):
             _styles_dict = self.get_styles()
             keys = key.split('.')
             _styles = _styles_dict.get(keys[0])
@@ -102,7 +102,7 @@ class BodyComponent(Component):
         return style_str
 
     def renderChildren(self, childrens=None, props=None,
-                       renderer: Optional[Callable[[Component], str]]=None,
+                       renderer: Optional[Callable[['BodyComponent'], str]]=None,
                        attributes=None, rawXML=False) -> str:
         if not props:
             props = {}
@@ -110,7 +110,7 @@ class BodyComponent(Component):
             renderer = lambda component: component.render()
         if not attributes:
             attributes = {}
-        childrens = childrens or self.props.get("children")
+        childrens = childrens or self.props.get("children", ())
 
         if rawXML:
             # return childrens.map(child => jsonToXML(child)).join('\n')
@@ -167,6 +167,8 @@ class BodyComponent(Component):
                 **initialDatas,
             )
             if component:
+                if not isinstance(component, BodyComponent):
+                    raise ValueError(f'Unxpected child component: {component!r}')
                 output += renderer(component)
             index += 1
         return output
