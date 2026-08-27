@@ -60,6 +60,12 @@ Code            = "https://github.com/FelixSchwarz/mjml-python"
 mjml = "mjml.scripts.mjml:main"
 
 
+[dependency-groups]
+build = [
+    "setuptools >= 77.0",  # SPDX `license` expression and `license-files` (PEP 639)
+]
+
+
 [tool.setuptools]
 include-package-data = true
 # deprecated by setuptools, but `mjml-html-compare` is a plain script without a
@@ -76,6 +82,10 @@ mjml = ["py.typed"]
 include = ["mjml*"]
 # do not include plain directories without `__init__.py` in release artifacts
 namespaces = false
+
+
+[tool.uv]
+exclude-newer = "7 days"
 
 
 [tool.ruff]

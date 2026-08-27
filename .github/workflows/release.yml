@@ -6,15 +6,23 @@ on:
       - "v*"
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 
 jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
   artifacts:
+    needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Write access only for this job so the test workflow only inherits the
+    # (read-only) permissions declared above.
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
 
     steps:
     - name: checkout code
@@ -22,11 +30,12 @@ jobs:
 
     - uses: astral-sh/setup-uv@v7
 
-    - name: Build wheel
+    - name: Install locked build dependencies
+      run: uv sync --locked --only-group build
+
+    - name: Build wheel and sdist
       run: |
-          uv venv venv-test
-          . venv-test/bin/activate
-          uv build --wheel --sdist
+          uv build --no-build-isolation --wheel --sdist
           rm dist/.gitignore
 
     - name: Attest build provenance
