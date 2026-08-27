@@ -64,6 +64,10 @@ mjml = "mjml.scripts.mjml:main"
 build = [
     "setuptools >= 77.0",  # SPDX `license` expression and `license-files` (PEP 639)
 ]
+dev = [
+    # >= 0.4.7 for "prek update --freeze --cooldown-days"
+    "prek >= 0.4.7",
+]
 
 
 [tool.setuptools]

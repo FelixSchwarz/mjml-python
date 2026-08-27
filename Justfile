@@ -5,3 +5,6 @@ install-locked-dependencies:
 # update "uv.lock" to the latest versions
 update-dependencies:
     uv lock --upgrade
+
+update-prek-hooks:
+    uv run --group dev prek update --freeze --cooldown-days 7
