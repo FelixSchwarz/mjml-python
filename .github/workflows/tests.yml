@@ -47,7 +47,7 @@ jobs:
       run: |
         python -m venv venv-test
         . venv-test/bin/activate
-        # Some versions of pip do not recognize the declared "extras" in `setup.cfg`.
+        # Some versions of pip do not recognize the declared "extras" in `pyproject.toml`.
         # I don't know the exact problematic versions, so let's just upgrade pip.
         # GOOD: pip 23.0.1 with setuptools 47.1.0 (Python 3.7)
         # BAD:  pip 23.0.1 with setuptools 56.0.0 (Python 3.8)

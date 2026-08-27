@@ -1,8 +1,82 @@
 [build-system]
 requires = [
-    "setuptools >= 42.0",  # `license_files` in `setup.cfg`
-    "wheel"
+    "setuptools >= 77.0",  # SPDX `license` expression and `license-files` (PEP 639)
 ]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name            = "mjml"
+description     = "Python implementation for MJML - a framework that makes responsive-email easy"
+readme          = "README.md"
+license         = "MIT"
+license-files   = ["LICENSE.txt"]
+requires-python = ">= 3.9"
+dynamic         = ["version"]
+
+authors = [
+    {name = "Felix Schwarz", email = "felix.schwarz@oss.schwarz.eu"},
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: Email",
+    "Topic :: Text Processing :: Markup :: HTML",
+]
+
+dependencies = [
+    "beautifulsoup4",
+    "dotmap",
+    "docopt-ng",
+    "jinja2",
+    "typing_extensions",  # required for @override which was added only in Python 3.12
+]
+
+[project.optional-dependencies]
+testing = [
+    "HTMLCompare >= 0.4.0",  # >= 0.4.0 for enhanced whitespace detection
+    "lxml",
+    "pytest",
+]
+css_inlining = [
+    # >= 0.11: CSSInliner(inline_style_tags=..., keep_link_tags=..., keep_style_tags=...)
+    "css_inline >= 0.11",
+]
+
+[project.urls]
+Homepage        = "https://github.com/FelixSchwarz/mjml-python"
+Code            = "https://github.com/FelixSchwarz/mjml-python"
+"Issue tracker" = "https://github.com/FelixSchwarz/mjml-python/issues"
+
+[project.scripts]
+mjml = "mjml.scripts.mjml:main"
+
+
+[tool.setuptools]
+include-package-data = true
+# deprecated by setuptools, but `mjml-html-compare` is a plain script without a
+# `main()` function so it can not be declared in `[project.scripts]`.
+script-files = ["mjml/scripts/mjml-html-compare"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}
+
+[tool.setuptools.package-data]
+mjml = ["py.typed"]
+
+[tool.setuptools.packages.find]
+include = ["mjml*"]
+# do not include plain directories without `__init__.py` in release artifacts
+namespaces = false
+
 
 [tool.ruff]
 line-length = 100
