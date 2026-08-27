@@ -25,13 +25,17 @@ def initComponent(
     return component
 
 
+# Most head components just modify global data structures and return None
+# but "mj-head" returns the rendered output of all its children as tuple.
+HandlerResult = Union[str, tuple[Optional[str], ...], None]
+
 
 class Component:
     component_name: ClassVar[str]
 
     # LATER: not sure upstream also passes tagName, makes code easier for us
     def __init__(self, *, attributes=None, children=(), content: str='',
-                 context: Optional[Mapping[str, Any]],
+                 context: Mapping[str, Any],
                  props: Optional[dict[str, Any]]=None,
                  globalAttributes: Optional[dict[str, Any]]=None,
                  headStyle: Optional[Any]=None,
@@ -41,7 +45,7 @@ class Component:
         self.context = context
         self.tagName = tagName
 
-        self.props = {**(props or {}), 'children': children, 'content': content}
+        self.props: dict[str, Any] = {**(props or {}), 'children': children, 'content': content}
 
         # upstream also checks "self.allowed_attrs"
         self.attrs = {
@@ -83,7 +87,7 @@ class Component:
             return ''
         return self.content.strip()
 
-    def getChildContext(self) -> dict[str, Any]:
+    def getChildContext(self) -> Mapping[str, Any]:
         return self.context
 
     # js: getAttribute(name)
@@ -95,7 +99,7 @@ class Component:
         return self.attrs.get(name)
     getAttribute = get_attr
 
-    def handler(self) -> Optional[str]:
+    def handler(self) -> HandlerResult:
         return None
 
     def render(self) -> str:

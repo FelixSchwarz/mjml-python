@@ -1,6 +1,9 @@
 
 import random
 import string
+import typing
+
+from mjml.elements.mj_carousel_image import MjCarouselImage
 
 from ..helpers import msoConditionalTag, widthParser
 from ._base import BodyComponent
@@ -245,8 +248,12 @@ class MjCarousel(BodyComponent):
     def generateRadios(self):
         children = self.props['children']
 
+        def _render_radio(component: BodyComponent) -> str:
+            mj_carousel_image = typing.cast(MjCarouselImage, component)
+            return mj_carousel_image.renderRadio()
+
         return self.renderChildren(children,
-            renderer=lambda component: component.renderRadio(),
+            renderer=_render_radio,
             attributes={
                 'carouselId': self.carouselId,
             },
@@ -257,6 +264,10 @@ class MjCarousel(BodyComponent):
         if self.getAttribute('thumbnails') != 'visible':
             return ''
 
+        def _render_thumbnail(component: BodyComponent) -> str:
+            mj_carousel_image = typing.cast(MjCarouselImage, component)
+            return mj_carousel_image.renderThumbnail()
+
         return self.renderChildren(children,
             attributes={
                 'tb-border'       : self.getAttribute('tb-border'),
@@ -264,11 +275,11 @@ class MjCarousel(BodyComponent):
                 'tb-width'        : self.thumbnailsWidth(),
                 'carouselId'      : self.carouselId,
             },
-            renderer=lambda component: component.renderThumbnail(),
+            renderer=_render_thumbnail,
         )
 
     def generateControls(self, direction, icon):
-        iconWidth, _ = widthParser(self.getAttribute('icon-width'))
+        iconWidth, _ = widthParser(self.getAttribute('icon-width') or '')
 
         img_attrs = self.html_attrs(
             src=icon,

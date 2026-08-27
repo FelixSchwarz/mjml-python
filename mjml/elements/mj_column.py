@@ -1,5 +1,8 @@
 
-from ..helpers import parse_float, parse_int, strip_unit, widthParser
+from typing import Literal, Union, overload
+
+from mjml.helpers import WidthUnit, parse_float, parse_int, strip_unit, widthParser
+
 from ._base import BodyComponent
 
 
@@ -113,7 +116,7 @@ class MjColumn(BodyComponent):
 
     def getWidthAsPixel(self):
         containerWidth = self.context['containerWidth']
-        parsedWidth, unit = widthParser(self.getParsedWidth(True), parseFloatToInt=False)
+        parsedWidth, unit = widthParser(self.getParsedWidth(toString=True), parseFloatToInt=False)
         if unit == '%':
             px_width = (parse_float(containerWidth) * parsedWidth) / 100
             # we want to render the pixel width as string without decimal digits if possible
@@ -152,6 +155,15 @@ class MjColumn(BodyComponent):
         addMediaQuery = self.context['addMediaQuery']
         addMediaQuery(className, parsedWidth=parsedWidth, unit=unit)
         return className
+
+    @overload
+    def getParsedWidth(self, toString: Literal[False]=False) -> WidthUnit: ...
+
+    @overload
+    def getParsedWidth(self, toString: Literal[True]) -> str: ...
+
+    @overload
+    def getParsedWidth(self, toString: bool) -> Union[WidthUnit, str]: ...
 
     def getParsedWidth(self, toString=False):
         this = self

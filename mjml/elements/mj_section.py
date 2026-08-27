@@ -195,7 +195,8 @@ class MjSection(BodyComponent):
         }
 
     def parseBackgroundPosition(self):
-        posSplit = self.getAttribute('background-position').split(' ')
+        background_pos = self.getAttribute('background-position') or ''
+        posSplit = background_pos.split(' ')
         if len(posSplit) == 1:
             val, = posSplit
             # here we must determine if x or y was provided; other will be center
@@ -313,7 +314,7 @@ class MjSection(BodyComponent):
                 'size'  : '1,1',
                 'aspect': 'atleast' if is_cover else 'atmost',
             }
-        elif background_size != 'auto':
+        elif (background_size is not None) and (background_size != 'auto'):
             bgSplit = background_size.split(' ')
             if len(bgSplit) == 1:
                 vSizeAttributes = {

@@ -1,7 +1,7 @@
 import re
 from collections.abc import Sequence
 from decimal import Decimal
-from typing import Any, Optional, Union
+from typing import Any, Optional, Protocol, Union, cast
 
 
 __all__ = [
@@ -68,11 +68,17 @@ def is_nil(v: Optional[Any]) -> bool:
 def is_not_nil(v: Optional[Any]) -> bool:
     return not is_nil(v)
 
+
+class Strip(Protocol):
+    def strip(self) -> object: ...
+
+
 def is_empty(v: Optional[Sequence[Any]]) -> bool:
     if v is None:
         return True
     elif hasattr(v, 'strip'):
-        return not bool(v.strip())
+        _strippable_v = cast(Strip, v)
+        return not bool(_strippable_v.strip())
     elif isinstance(v, (int, float)):
         # Numeric zero is a valid CSS value (e.g. line-height: 0)
         return False

@@ -35,7 +35,8 @@ class MjAccordionText(BodyComponent):
         }
 
     def resolveFontFamily(self):
-        return resolve_accordion_font_family(self.props, self.context, self.get_attr('font-family'))
+        font_family_str = self.get_attr('font-family') or ''
+        return resolve_accordion_font_family(self.props, self.context, font_family_str)
 
     # js: getStyles()
     def get_styles(self):
