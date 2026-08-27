@@ -22,7 +22,7 @@ jobs:
       image: python:3.14
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Run ty
       continue-on-error: true
@@ -41,7 +41,7 @@ jobs:
         image: python:${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Run tests without optional features
       run: |
@@ -75,7 +75,7 @@ jobs:
         image: pypy:${{ matrix.pypy-version }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Run tests without optional features
       run: |
