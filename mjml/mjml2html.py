@@ -85,7 +85,6 @@ def mjml_to_html(
     mjml_dir = mjml_root.attrs.get('dir', 'auto')
     mjml_owa = mjml_root.attrs.get('owa', 'mobile')
     globalDatas: Mapping[str, Any] = DotMap({
-        'backgroundColor'    : None,
         'breakpoint'         : '480px',
         'classes'            : {},
         'classesDefault'     : {},
@@ -245,14 +244,10 @@ def mjml_to_html(
     def addComponentHeadSyle(headStyle):
         globalDatas["componentsHeadStyle"].append(headStyle)
 
-    def setBackgroundColor(color):
-        globalDatas["backgroundColor"] = color
-
     bodyHelpers = dict(
         addHeadStyle = addHeadStyle,
         addMediaQuery = addMediaQuery,
         addComponentHeadSyle = addComponentHeadSyle,
-        setBackgroundColor = setBackgroundColor,
         backgroundColor = lambda node, context: processing(node, context, applyAttributes),
         globalData = globalDatas,
         lang = mjml_lang,

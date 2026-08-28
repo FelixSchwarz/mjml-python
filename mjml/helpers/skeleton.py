@@ -5,7 +5,6 @@ from jinja2 import Template
 
 from .fonts import buildFontsTags
 from .media_queries import buildMediaQueriesTags
-from .preview import buildPreview
 from .py_utils import is_not_nil
 
 
@@ -14,7 +13,7 @@ __all__ = ['skeleton_str']
 # js: skeleton(...)
 def skeleton_str(*,
     inlineStyle,
-    title='', content='', backgroundColor='', breakpoint='480px', lang=None, dir_=None,
+    title='', content='', breakpoint='480px', lang=None, dir_=None,
     fonts=None, mediaQueries=None,
     headStyle=None, componentsHeadStyle=(), style=(), headRaw=(),
     classes=None,
@@ -55,7 +54,6 @@ def skeleton_str(*,
         'content'        : content,
         'langAttribute'  : f'lang="{lang}" ' if lang else '',
         'dirAttribute'   : f'dir="{dir_}" ' if dir_ else '',
-        'backgroundColor': f'background-color:{backgroundColor};' if backgroundColor else '',
 
         'font_tags_str'  : buildFontsTags(content, inlineStyle, fonts=fonts),
         'media_queries_str'  : buildMediaQueriesTags(
@@ -64,7 +62,6 @@ def skeleton_str(*,
         'combined_head_style': combined_head_style_content.strip(),
         'extra_style': extra_style,
         'headRaw_str': '\n'.join(filter(is_not_nil, headRaw or ())),
-        'preview_str'    : buildPreview(preview),
     }
 
     skeleton_tmpl = Template(skeleton_tmpl_str)
@@ -115,10 +112,7 @@ skeleton_tmpl_str_raw = '''\
         {{ extra_style }}
         {{ headRaw_str }}
       </head>
-      <body style="word-spacing:normal;{{ backgroundColor }}">
-        {{ preview_str }}
-        {{ content }}
-      </body>
+      {{ content }}
     </html>''' # noqa: E501
 
 skeleton_tmpl_str = textwrap.dedent(skeleton_tmpl_str_raw)
