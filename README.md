@@ -1,6 +1,6 @@
 # mjml-python
 
-A pure Python implementation of [MJML v4](https://github.com/mjmlio/mjml), the email markup language created by [Mailjet](https://www.mailjet.com/). Build responsive HTML emails without requiring JavaScript, Node.js or Rust.
+A pure Python implementation of [MJML v5](https://github.com/mjmlio/mjml) (unreleased, "main" branch), the email markup language created by [Mailjet](https://www.mailjet.com/). Build responsive HTML emails without requiring JavaScript, Node.js or Rust. For MJML v4, use the 0.x release series.
 
 All standard MJML components are supported, and the rendered output closely follows the upstream JavaScript implementation.
 

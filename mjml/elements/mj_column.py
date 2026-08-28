@@ -1,4 +1,5 @@
 
+import math
 from typing import Literal, Union, overload
 
 from mjml.helpers import WidthUnit, parse_float, parse_int, strip_unit, widthParser
@@ -114,19 +115,14 @@ class MjColumn(BodyComponent):
             return width
         return f'{normalize_unit_value((parsedWidth / parse_int(containerWidth)) * 100)}%'
 
+
     def getWidthAsPixel(self):
         containerWidth = self.context['containerWidth']
         parsedWidth, unit = widthParser(self.getParsedWidth(toString=True), parseFloatToInt=False)
         if unit == '%':
             px_width = (parse_float(containerWidth) * parsedWidth) / 100
-            # we want to render the pixel width as string without decimal digits if possible
-            if px_width == int(px_width):
-                px_width = int(px_width)
-            return f'{px_width}px'
-        # we want to render the pixel width as string without decimal digits if possible
-        if parsedWidth == int(parsedWidth):
-            parsedWidth = int(parsedWidth)
-        return f'{parsedWidth}px'
+            return f'{js_like_rounding(px_width)}px'
+        return f'{js_like_rounding(parsedWidth)}px'
 
 
     def render(self):
@@ -269,9 +265,19 @@ class MjColumn(BodyComponent):
 
 
 def normalize_unit_value(value: Union[int, float, str]) -> Union[int, float]:
-    # Render a number the way JS does: Python's float repr and JS number
-    # formatting both use the shortest round-trip representation, so the only
-    # difference is the trailing ".0" which JS omits for whole numbers.
+    # js: Number(parseFloat(value).toFixed(6))
+    # Upstream rounds to six decimals, so a width renders as "48.333333%" and
+    # not as "48.33333333333333%". Whole numbers are returned as int because
+    # JS omits the trailing ".0".
     if isinstance(value, str):
         value = parse_float(value)
-    return int(value) if (value == int(value)) else value
+    rounded = float(f'{value:.6f}')
+    return int(rounded) if (rounded == int(rounded)) else rounded
+
+
+def js_like_rounding(value: Union[float, str]) -> int:
+    # JS uses `Math.round()` which rounds half towards positive infinity.
+    # Python's `round()` uses round half to even ("banker's rounding").
+    if isinstance(value, str):
+        value = parse_float(value)
+    return math.floor(value + 0.5)

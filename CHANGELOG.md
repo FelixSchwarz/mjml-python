@@ -2,6 +2,7 @@
 1.0.0a1 (2026-??-??)
 --------------------
 
+- mjml v5.4.0 support
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element
