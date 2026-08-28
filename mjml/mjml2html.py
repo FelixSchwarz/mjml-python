@@ -25,6 +25,11 @@ class ParseResult(NamedTuple):
     errors: Sequence[str]
 
 
+class CSSInclude(NamedTuple):
+    css_str: str
+    inline: bool
+
+
 FpOrJson = Union[Mapping[str, Any], str, bytes, "SupportsRead[str]", "SupportsRead[bytes]"]
 
 
@@ -105,6 +110,8 @@ def mjml_to_html(
     errors: list[str] = []
     # LATER: optional validation
 
+    css_includes: list["CSSInclude"] = []
+
     mjBody = _find_child(mjml_root, 'mj-body')
     if not mjBody:
         raise ValueError('Did not find <mj-body>!')
@@ -181,6 +188,16 @@ def mjml_to_html(
             }
 
             if tagName == 'mj-include':
+                if attributes.get('type') == 'css':
+                    # Upstream collects all css includes while parsing and
+                    # appends them to <mj-head> afterwards, no matter where
+                    # they appeared in the document.
+                    css_includes.append(CSSInclude(
+                        css_str = read_css_include(attributes['path'],
+                                                   template_dir=template_dir),
+                        inline  = (attributes.get('css-inline') == 'inline'),
+                    ))
+                    return None
                 mj_include_subtree = handle_include(attributes['path'],
                                                     parse_mjml=parse,
                                                     template_dir=template_dir)
@@ -250,6 +267,9 @@ def mjml_to_html(
     )
     globalDatas["headRaw"] = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
+    for css_include in css_includes:
+        style_attr = 'inlineStyle' if css_include.inline else 'style'
+        _head_data_add(style_attr, css_include.css_str)
     if not isinstance(content, str):
         # basically just a `None` check - only only head components might return a tuple
         raise ValueError('No <mj-body> content generated!')
@@ -322,14 +342,23 @@ def _map_to_tuple(items, map_fn, filter_none=None):
     return tuple(results)
 
 
-def handle_include(path_value, parse_mjml, *, template_dir):
+def resolve_include_path(path_value, *, template_dir):
     path = PurePath(path_value)
     if path.is_absolute():
-        included_path = path
+        return path
     elif template_dir:
-        included_path = template_dir / path
-    else:
-        included_path = path
+        return template_dir / path
+    return path
+
+
+def read_css_include(path_value, *, template_dir) -> str:
+    included_path = resolve_include_path(path_value, template_dir=template_dir)
+    with open(included_path, 'rb') as fp:
+        return fp.read().decode('utf8')
+
+
+def handle_include(path_value, parse_mjml, *, template_dir):
+    included_path = resolve_include_path(path_value, template_dir=template_dir)
     # Upstream mjml does not raise an error if the included file was not found.
     # Instead they generate a HTML comment with a failure notice.
     # using plain "open()" call because "PurePath" does not support ".open()"

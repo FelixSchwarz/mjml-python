@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-style>.declared-in-head { color: #0000ff; }</mj-style>
+    <mj-include path="./_include.css" type="css" />
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="custom-title"><span>styled by the included css</span></mj-text>
+        <mj-text css-class="declared-in-head">styled by mj-style in mj-head</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

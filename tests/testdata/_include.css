@@ -1,0 +1,8 @@
+.custom-title {
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.custom-title > span {
+  text-decoration: underline;
+}
