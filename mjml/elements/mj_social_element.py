@@ -109,6 +109,7 @@ class MjSocialElement(BodyComponent):
             'icon-size'       : 'unit(px,%)',
             'icon-height'     : 'unit(px,%)',
             'icon-padding'    : 'unit(px,%){1,4}',
+            'icon-position'   : 'enum(left,right)',
             'line-height'     : 'unit(px,%,)',
             'name'            : 'string',
             'padding-bottom'  : 'unit(px,%)',
@@ -136,6 +137,7 @@ class MjSocialElement(BodyComponent):
             'border-radius'  : '3px',
             'font-family'    : 'Ubuntu, Helvetica, Arial, sans-serif',
             'font-size'      : '13px',
+            'icon-position'  : 'left',
             'line-height'    : '1',
             'padding'        : '4px',
             'text-padding'   : '4px 4px 4px 0',
@@ -269,8 +271,7 @@ class MjSocialElement(BodyComponent):
             role        = 'presentation',
             style       = 'table',
         )
-        return f'''
-            <tr {self.html_attrs(class_=self.getAttribute('css-class', missing_ok=True))}>
+        icon_html = f'''
                 <td {self.html_attrs(style='td')}>
                     <table {table_attrs}>
                         <tbody>
@@ -282,6 +283,14 @@ class MjSocialElement(BodyComponent):
                         </tbody>
                     </table>
                 </td>
-                {content_html}
+        '''
+        # upstream only checks for "left" so any other value puts the icon last
+        if self.getAttribute('icon-position') == 'left':
+            cells_html = f'{icon_html} {content_html}'
+        else:
+            cells_html = f'{content_html} {icon_html}'
+        return f'''
+            <tr {self.html_attrs(class_=self.getAttribute('css-class', missing_ok=True))}>
+                {cells_html}
             </tr>
         '''

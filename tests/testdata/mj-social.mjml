@@ -9,7 +9,7 @@
           <mj-social-element name="google" href="https://mjml.io/">
             Google
           </mj-social-element>
-          <mj-social-element  name="twitter" href="https://mjml.io/">
+          <mj-social-element  name="twitter" href="https://mjml.io/" icon-position="right">
             Twitter
           </mj-social-element>
         </mj-social>
