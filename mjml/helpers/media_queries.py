@@ -10,17 +10,22 @@ def buildMediaQueriesTags(breakpoint, mediaQueries=None, forceOWADesktop=False,
         # dict
         mediaQueries = tuple(mediaQueries.items())
 
-    def mqStr(item):
-        className, mediaQuery = item
-        return f'.{className} {mediaQuery}'
-    baseMediaQueries = tuple(map(mqStr, mediaQueries))
-    media_queries_str = '\n'.join(baseMediaQueries)
+    def groupMediaQueries(prefix=''):
+        # Upstream merges all class names which share the very same rule into a
+        # single comma-separated selector list. Without gutters every rule is
+        # unique (the class name is derived from the width) so this never
+        # kicked in - gutter paddings however are identical for all "inner"
+        # columns of a section.
+        grouped: dict[str, list[str]] = {}
+        for className, mediaQuery in mediaQueries:
+            grouped.setdefault(mediaQuery, []).append(f'{prefix}.{className}')
+        return '\n'.join(
+            f'{", ".join(selectors)} {mediaQuery}'
+            for mediaQuery, selectors in grouped.items()
+        )
 
-    def tbMqStr(item):
-        className, mediaQuery = item
-        return f'.moz-text-html .{className} {mediaQuery}'
-    thunderbirdMediaQueries = tuple(map(tbMqStr, mediaQueries))
-    thunderbird_media_queries_str = '\n'.join(thunderbirdMediaQueries)
+    media_queries_str = groupMediaQueries()
+    thunderbird_media_queries_str = groupMediaQueries('.moz-text-html ')
 
     if printerSupport:
         printer_style = f'''<style type="text/css">
