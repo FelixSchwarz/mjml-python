@@ -2,7 +2,9 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-image src="https://picsum.photos/100" width="100px" height="100px" href="http://foo.example" />
+        <mj-image src="https://picsum.photos/100" width="100px" height="100px" href="http://foo.example"
+                  srcset="https://picsum.photos/100 100w, https://picsum.photos/200 200w"
+                  sizes="(max-width: 600px) 100px, 200px" />
       </mj-column>
     </mj-section>
   </mj-body>
