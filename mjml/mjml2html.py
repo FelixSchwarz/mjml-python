@@ -248,7 +248,7 @@ def mjml_to_html(
         addHeadStyle = addHeadStyle,
         addMediaQuery = addMediaQuery,
         addComponentHeadSyle = addComponentHeadSyle,
-        backgroundColor = lambda node, context: processing(node, context, applyAttributes),
+        processing = lambda node, context: processing(node, context, applyAttributes),
         globalData = globalDatas,
         lang = mjml_lang,
         dir_ = mjml_dir,
