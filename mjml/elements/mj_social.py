@@ -12,6 +12,7 @@ class MjSocial(BodyComponent):
     def allowed_attrs(cls):
         return {
             'align'                     : 'enum(left,right,center)',
+            'border'                    : 'string',
             'border-radius'             : 'unit(px,%)',
             'container-background-color': 'color',
             'color'                     : 'color',
@@ -67,6 +68,7 @@ class MjSocial(BodyComponent):
             base['padding'] = padding
 
         for attr_name in [
+            'border',
             'border-radius',
             'color',
             'font-family',
