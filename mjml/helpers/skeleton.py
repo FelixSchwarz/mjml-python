@@ -19,7 +19,8 @@ def skeleton_str(*,
     headStyle=None, componentsHeadStyle=(), style=(), headRaw=(),
     classes=None,
     preview = None,
-    defaultAttributes=None
+    defaultAttributes=None,
+    forceOWADesktop=False,
     ) -> str:
 
     apply_breakpoints = lambda values: tuple(map(lambda v: v(breakpoint), values))
@@ -56,7 +57,8 @@ def skeleton_str(*,
         'backgroundColor': f'background-color:{backgroundColor};' if backgroundColor else '',
 
         'font_tags_str'  : buildFontsTags(content, inlineStyle, fonts=fonts),
-        'media_queries_str'  : buildMediaQueriesTags(breakpoint, mediaQueries),
+        'media_queries_str'  : buildMediaQueriesTags(
+            breakpoint, mediaQueries, forceOWADesktop=forceOWADesktop),
         'combined_head_style': combined_head_style_content.strip(),
         'extra_style': extra_style,
         'headRaw_str': '\n'.join(filter(is_not_nil, headRaw or ())),

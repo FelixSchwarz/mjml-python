@@ -77,6 +77,7 @@ def mjml_to_html(
 
     mjml_lang = mjml_root.attrs.get('lang', 'und')
     mjml_dir = mjml_root.attrs.get('dir', 'auto')
+    mjml_owa = mjml_root.attrs.get('owa', 'mobile')
     globalDatas: Mapping[str, Any] = DotMap({
         'backgroundColor'    : None,
         'breakpoint'         : '480px',
@@ -91,6 +92,7 @@ def mjml_to_html(
         'headRaw'            : [],
         'lang'               : mjml_lang,
         'dir_'               : mjml_dir,
+        'forceOWADesktop'    : (mjml_owa == 'desktop'),
         'mediaQueries'       : {},
         'preview'            : '',
         'style'              : [],

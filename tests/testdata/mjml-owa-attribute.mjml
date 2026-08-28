@@ -1,0 +1,12 @@
+<mjml owa="desktop">
+  <mj-body>
+    <mj-section>
+      <mj-column width="40%">
+        <mj-text>Outlook Web App does not support media queries</mj-text>
+      </mj-column>
+      <mj-column width="60%">
+        <mj-text>so every rule is repeated with an "[owa]" prefix</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

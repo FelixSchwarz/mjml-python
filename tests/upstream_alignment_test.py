@@ -73,6 +73,7 @@ TEST_IDS = (
     'mj-wrapper',
     'mjml-lang-attribute',
     'mjml-dir-attribute',
+    'mjml-owa-attribute',
     'missing-whitespace-before-tag',
     'mjml-comment-merging',
 )
