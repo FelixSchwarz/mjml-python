@@ -1,0 +1,34 @@
+<mjml>
+  <mj-body>
+    <mj-wrapper gap="16px" background-color="#eeeeee">
+      <mj-section>
+        <mj-column>
+          <mj-text>first section, no gap above it</mj-text>
+        </mj-column>
+      </mj-section>
+      <mj-section background-color="#cccccc">
+        <mj-column>
+          <mj-text>gap above, and the Outlook table loses its bgcolor</mj-text>
+        </mj-column>
+      </mj-section>
+      <mj-section full-width="full-width">
+        <mj-column>
+          <mj-text>full width section inside a wrapper with a gap</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+
+    <mj-wrapper>
+      <mj-section>
+        <mj-column>
+          <mj-text>wrapper without a gap, for comparison</mj-text>
+        </mj-column>
+      </mj-section>
+      <mj-section>
+        <mj-column>
+          <mj-text>second section</mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

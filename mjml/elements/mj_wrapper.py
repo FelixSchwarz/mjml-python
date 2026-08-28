@@ -9,6 +9,13 @@ __all__ = ['MjWrapper']
 class MjWrapper(MjSection):
     component_name = 'mj-wrapper'
 
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            **super().allowed_attrs(),
+            'gap': 'unit(px)',
+        }
+
     def renderWrappedChildren(self):
         children = self.props['children']
         containerWidth = self.context.get('containerWidth')

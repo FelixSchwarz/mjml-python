@@ -236,10 +236,15 @@ def mjml_to_html(
     def addHeadStyle(identifier, headStyle):
         globalDatas["headStyle"][identifier] = headStyle
 
-    def addMediaQuery(className, parsedWidth, unit):
-        width_str = f'{parsedWidth}{unit}'
-        width_css = f'{{ width:{width_str} !important; max-width: {width_str}; }}'
-        globalDatas["mediaQueries"][className] = width_css
+    def addMediaQuery(className, parsedWidth=None, unit=None, padding=None):
+        rule = '{'
+        if (parsedWidth is not None) and (unit is not None):
+            width_str = f'{parsedWidth}{unit}'
+            rule += f' width:{width_str} !important; max-width: {width_str};'
+        if padding:
+            rule += f' padding: {padding} !important;'
+        rule += ' }'
+        globalDatas["mediaQueries"][className] = rule
 
     def addComponentHeadSyle(headStyle):
         globalDatas["componentsHeadStyle"].append(headStyle)

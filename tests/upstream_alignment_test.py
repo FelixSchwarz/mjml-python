@@ -58,6 +58,7 @@ TEST_IDS = (
     'mj-section-with-mj-class',
     'mj-section-with-background-url',
     'mj-section-with-background',
+    'mj-section-with-gutter',
     'mj-font',
     'mj-font-multiple',
     'mj-font-unused',
@@ -76,6 +77,7 @@ TEST_IDS = (
     'mj-spacer',
     'mj-text-escaped-html', # this test is security-critical
     'mj-wrapper',
+    'mj-wrapper-with-gap',
     'mjml-lang-attribute',
     'mjml-dir-attribute',
     'mjml-owa-attribute',

@@ -1,5 +1,6 @@
 
 import math
+from collections import namedtuple
 from typing import Literal, Union, overload
 
 from mjml.helpers import WidthUnit, parse_float, parse_int, strip_unit, widthParser
@@ -8,6 +9,9 @@ from ._base import BodyComponent
 
 
 __all__ = ['MjColumn']
+
+# js: { top, right, bottom, left }
+Padding = namedtuple('Padding', ('top', 'right', 'bottom', 'left'))
 
 class MjColumn(BodyComponent):
     component_name = 'mj-column'
@@ -83,11 +87,13 @@ class MjColumn(BodyComponent):
                 'display': 'inline-block',
                 'vertical-align': this.getAttribute('vertical-align'),
                 'width': this.getMobileWidth(),
+                **self.getMobileGutterStyles(),
             },
             'table': gutterStyle if self.hasGutter() else tableStyle,
             'tdOutlook': {
                 'vertical-align': this.getAttribute('vertical-align'),
                 'width': this.getWidthAsPixel(),
+                **self.getOutlookGutterStyles(),
             },
             'gutter': {
                 'padding': this.getAttribute('padding'),
@@ -106,6 +112,13 @@ class MjColumn(BodyComponent):
         mobileWidth = self.getAttribute('mobileWidth')
         if mobileWidth != 'mobileWidth':
             return '100%'
+        # Group columns don't stack on mobile so they use the gutter-reduced
+        # desktop width.
+        elif self.context.get('isInGroup') and self.hasColumnGutter():
+            parsedWidth, unit = self.getDesktopWidth()
+            if unit == '%':
+                return f'{parsedWidth}%'
+            return f'{normalize_unit_value((parsedWidth / parse_int(containerWidth)) * 100)}%'
         # upstream uses "width === undefined" but we also need to handle width=''
         elif not width:
             return f'{int(100 / nonRawSiblings)}%'
@@ -127,7 +140,10 @@ class MjColumn(BodyComponent):
 
     def render(self):
         this = self
-        classesName = f'{this.getColumnClass()} mj-outlook-group-fix'
+        classesName = this.getColumnClass()
+        if this.hasColumnGutter():
+            classesName += f' {this.getDesktopGutterClassName()}'
+        classesName += ' mj-outlook-group-fix'
         css_class = this.getAttribute('css-class')
         if css_class:
             classesName += f' {css_class}'
@@ -139,7 +155,13 @@ class MjColumn(BodyComponent):
             </div>'''
 
     def getColumnClass(self):
-        parsedWidth, unit = self.getParsedWidth()
+        has_column_gutter = self.hasColumnGutter()
+        if has_column_gutter:
+            parsedWidth, unit = self.getDesktopWidth()
+        else:
+            parsedWidth, unit = self.getParsedWidth()
+        if unit == 'px':
+            parsedWidth = js_like_rounding(parsedWidth)
         formattedClassNb = str(parsedWidth).replace('.', '-')
         if unit == '%':
             className = f'mj-column-per-{formattedClassNb}'
@@ -150,6 +172,13 @@ class MjColumn(BodyComponent):
         # Add className to media queries
         addMediaQuery = self.context['addMediaQuery']
         addMediaQuery(className, parsedWidth=parsedWidth, unit=unit)
+        # Group columns already carry the gutter padding inline so we must not
+        # emit duplicate media query rules for them.
+        if has_column_gutter and not self.context.get('isInGroup'):
+            addMediaQuery(
+                self.getDesktopGutterClassName(),
+                padding=self.getDesktopPadding(),
+            )
         return className
 
     @overload
@@ -192,7 +221,146 @@ class MjColumn(BodyComponent):
         return {**self.context, 'containerWidth': containerWidth}
 
 
+    def hasColumnGutter(self):
+        """Whether the enclosing "mj-section" sets a "gutter" (!= ".hasGutter()"
+        which tells if this column has a padding of its own)."""
+        gutter = self.context.get('gutter')
+        return (gutter is not None) and (gutter != '')
+
+    def getNormalizedGutterValue(self, targetUnit: str) -> Union[int, float]:
+        gutter = self.context.get('gutter')
+        if not gutter:
+            return 0
+
+        containerWidth = self.context['containerWidth']
+        parsedWidth, unit = widthParser(gutter, parseFloatToInt=False)
+        if unit == targetUnit:
+            return parsedWidth
+        elif (targetUnit == '%') and (unit == 'px'):
+            return (parsedWidth / parse_float(containerWidth)) * 100
+        elif (targetUnit == 'px') and (unit == '%'):
+            return (parse_float(containerWidth) * parsedWidth) / 100
+        return parsedWidth
+
+    def getDesktopUnit(self) -> str:
+        return self.getParsedWidth().unit
+
+    def getDesktopWidth(self) -> WidthUnit:
+        """Column width reduced by its share of the gutter."""
+        sibling = self.props['sibling']
+        index = self.props['index']
+        parsedWidth, unit = self.getParsedWidth()
+
+        if not self.hasColumnGutter():
+            if unit == 'px':
+                parsedWidth = js_like_rounding(parsedWidth)
+            return WidthUnit(width=parsedWidth, unit=unit)
+
+        gutter = self.getNormalizedGutterValue(unit)
+        reduction = (gutter * (sibling - 1)) / sibling
+        reducedWidth = max(0, normalize_unit_value(parsedWidth - reduction))
+
+        if unit != 'px':
+            return WidthUnit(width=reducedWidth, unit=unit)
+
+        # Distribute the leftover pixels to the leading columns so that the
+        # column widths add up to the container width again.
+        floorWidth = math.floor(reducedWidth)
+        fractional = reducedWidth - floorWidth
+        extraPixels = max(0, min(sibling, js_like_rounding(sibling * fractional)))
+        return WidthUnit(width=floorWidth + (1 if (index < extraPixels) else 0), unit=unit)
+
+    def getDesktopGutterClassName(self) -> str:
+        gutterUnit = self.getDesktopUnit()
+        gutter = self.getNormalizedGutterValue(gutterUnit)
+        if gutterUnit == 'px':
+            gutter = js_like_rounding(gutter)
+        gutterUnitToken = 'per' if (gutterUnit == '%') else gutterUnit
+        gutterToken = str(normalize_unit_value(gutter)).replace('.', '-')
+        directionToken = '-rtl' if (self.context.get('direction') == 'rtl') else ''
+        sibling = self.props['sibling']
+        index = self.props['index']
+        return (
+            f'mj-column-gutter-{sibling}-{index + 1}'
+            f'-{gutterUnitToken}-{gutterToken}{directionToken}'
+        )
+
+    def getDesktopPaddingValues(self, unit: str) -> Padding:
+        first = self.props['first']
+        last = self.props['last']
+        sibling = self.props['sibling']
+        if sibling == 1:
+            return Padding(top=0, right=0, bottom=0, left=0)
+
+        is_px = (unit == 'px')
+        gutter = self.getNormalizedGutterValue(unit)
+        if is_px:
+            gutter = js_like_rounding(gutter)
+            halfLeading = math.ceil(gutter / 2)
+            halfTrailing = math.floor(gutter / 2)
+        else:
+            halfLeading = halfTrailing = gutter / 2
+
+        if self.context.get('direction') == 'rtl':
+            # when RTL, first/last visual positions are reversed
+            return Padding(
+                top=0,
+                right=0 if first else halfTrailing,
+                bottom=0,
+                left=0 if last else halfLeading,
+            )
+        return Padding(
+            top=0,
+            right=0 if last else halfLeading,
+            bottom=0,
+            left=0 if first else halfTrailing,
+        )
+
+    def getMobilePaddingValues(self) -> Padding:
+        # On mobile the gutter becomes vertical spacing between the stacked
+        # columns but there is no spacing on the outer top/bottom edges.
+        first = self.props['first']
+        last = self.props['last']
+        half = self.getNormalizedGutterValue('%') / 2
+        return Padding(
+            top=0 if first else half,
+            right=0,
+            bottom=0 if last else half,
+            left=0,
+        )
+
+    @staticmethod
+    def formatPadding(padding: Padding, unit: str) -> str:
+        if unit == 'px':
+            values = [f'{js_like_rounding(value)}px' for value in padding]
+        else:
+            values = [f'{normalize_unit_value(value)}{unit}' for value in padding]
+        return ' '.join(values)
+
+    def getDesktopPadding(self) -> str:
+        unit = self.getDesktopUnit()
+        return self.formatPadding(self.getDesktopPaddingValues(unit), unit)
+
+    def getMobilePadding(self) -> str:
+        return self.formatPadding(self.getMobilePaddingValues(), '%')
+
+    def getMobileGutterStyles(self) -> dict:
+        if not self.hasColumnGutter():
+            return {}
+        elif self.context.get('isInGroup'):
+            # Group columns don't stack on mobile so they keep the horizontal
+            # desktop padding.
+            return {'padding': self.getDesktopPadding()}
+        return {'padding': self.getMobilePadding()}
+
+    def getOutlookGutterStyles(self) -> dict:
+        if not self.hasColumnGutter():
+            return {}
+        return {'padding': self.formatPadding(self.getDesktopPaddingValues('px'), 'px')}
+
     def hasGutter(self):
+        # upstream name - this is about the column's own padding, the section
+        # "gutter" attribute is handled by ".hasColumnGutter()".
         padding_attrs = (
             'padding',
             'padding-bottom',

@@ -1,0 +1,66 @@
+<mjml>
+  <mj-body>
+    <mj-section gutter="20px">
+      <mj-column>
+        <mj-text>two columns, percentage width derived from the column count</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text>second column</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section gutter="30px">
+      <mj-column width="200px">
+        <mj-text>three columns with pixel widths (leftover pixels go to the leading columns)</mj-text>
+      </mj-column>
+      <mj-column width="200px">
+        <mj-text>second column</mj-text>
+      </mj-column>
+      <mj-column width="200px">
+        <mj-text>third column</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section gutter="5%" direction="rtl">
+      <mj-column>
+        <mj-text>percentage gutter, right-to-left</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text>second column</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section gutter="16px">
+      <mj-column>
+        <mj-text>a single column has no gutter padding at all</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section gutter="17px">
+      <mj-column>
+        <mj-text>four columns: the two inner ones share the same padding rule so
+          upstream merges them into a single comma-separated selector</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text>second column</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text>third column</mj-text>
+      </mj-column>
+      <mj-column>
+        <mj-text>fourth column</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section gutter="24px">
+      <mj-group>
+        <mj-column>
+          <mj-text>columns in a group keep their desktop padding on mobile</mj-text>
+        </mj-column>
+        <mj-column>
+          <mj-text>second column</mj-text>
+        </mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>
