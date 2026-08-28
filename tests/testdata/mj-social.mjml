@@ -2,7 +2,7 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-social font-size="15px" icon-size="30px" mode="horizontal">
+        <mj-social font-size="15px" icon-size="30px" mode="horizontal" border="2px solid #ff0000">
           <mj-social-element name="facebook" href="https://mjml.io/">
             Facebook
           </mj-social-element>

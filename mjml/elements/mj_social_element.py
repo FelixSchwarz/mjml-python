@@ -100,6 +100,7 @@ class MjSocialElement(BodyComponent):
             'align'           : 'enum(left,center,right)',
             'background-color': 'color',
             'color'           : 'color',
+            'border'          : 'string',
             'border-radius'   : 'unit(px)',
             'font-family'     : 'string',
             'font-size'       : 'unit(px)',
@@ -134,6 +135,7 @@ class MjSocialElement(BodyComponent):
         return {
             'align'          : 'left',
             'color'          : '#000',
+            'border'         : '0',
             'border-radius'  : '3px',
             'font-family'    : 'Ubuntu, Helvetica, Arial, sans-serif',
             'font-size'      : '13px',
@@ -172,6 +174,7 @@ class MjSocialElement(BodyComponent):
                 'width'         : iconSize,
             },
             'img'   : {
+                'border'       : self.getAttribute('border'),
                 'border-radius': self.getAttribute('border-radius'),
                 'display'      : 'block',
             },
