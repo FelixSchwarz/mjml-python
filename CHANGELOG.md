@@ -3,6 +3,7 @@
 --------------------
 
 - mjml v5.4.0 support
+  - add `gutter` attribute for `mj-section` and the `gap` attribute for `mj-wrapper`
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element

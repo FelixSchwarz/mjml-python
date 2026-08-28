@@ -33,6 +33,7 @@ class MjSection(BodyComponent):
             'border-top'       : 'string',
             'direction'        : 'enum(ltr,rtl)',
             'full-width'       : 'enum(full-width)',
+            'gutter'           : 'unit(px,%)',
             'padding'          : 'unit(px,%){1,4}',
             'padding-top'      : 'unit(px,%)',
             'padding-bottom'   : 'unit(px,%)',
@@ -55,6 +56,9 @@ class MjSection(BodyComponent):
 
             # other attrs
             'css-class'        : '',
+            # NOT declared upstream for "mj-section" (only for "mj-wrapper")
+            # but read in ".getChildContext()" for all sections.
+            'gap'              : None,
         }
 
     def get_styles(self):
@@ -108,6 +112,7 @@ class MjSection(BodyComponent):
                 'margin': '0px auto',
                 'border-radius': border_radius,
                 'max-width': containerWidth,
+                'margin-top': None if self.isFirstSection() else self.context.get('gap'),
             },
             'innerDiv': {
                 'line-height': '0',
@@ -140,7 +145,13 @@ class MjSection(BodyComponent):
 
     def getChildContext(self):
         box = self.getBoxWidths()['box']
-        return {**self.context, 'containerWidth': f'{box}px'}
+        extra_ctx = {
+            'containerWidth': f'{box}px',
+            'gap'           : self.getAttribute('gap'),
+            'gutter'        : self.getAttribute('gutter'),
+            'direction'     : self.getAttribute('direction'),
+        }
+        return {**self.context, **extra_ctx}
 
     def render(self):
         if self.isFullWidth():
@@ -223,6 +234,13 @@ class MjSection(BodyComponent):
 
     def isFullWidth(self):
         return self.get_attr('full-width') == 'full-width'
+
+    def isFirstSection(self):
+        return self.props.get('index') == 0
+
+    def hasGap(self):
+        gap = self.context.get('gap')
+        return (gap is not None) and (gap != '')
 
     def renderSection(self):
         hasBackground = self.hasBackground()
@@ -416,9 +434,12 @@ class MjSection(BodyComponent):
           cellspacing = '0',
           class_ = suffixCssClasses(self.get_attr('css-class'), 'outlook'),
           role = 'presentation',
-          style = {'width': str(containerWidth)},
+          style = {
+              'width': str(containerWidth),
+              'padding-top': None if self.isFirstSection() else self.context.get('gap'),
+          },
           width = containerWidth_int,
-          bgcolor = self.get_attr('background-color') or None,
+          bgcolor = None if self.hasGap() else (self.get_attr('background-color') or None),
         )
         return f'''
             <!--[if mso | IE]>

@@ -62,6 +62,8 @@ class MjGroup(BodyComponent):
         extra_ctx = {
             'containerWidth': containerWidth,
             'nonRawSiblings': len(children),
+            'isInGroup'     : True,
+            'direction'     : self.getAttribute('direction'),
         }
         return {**self.context, **extra_ctx}
 
