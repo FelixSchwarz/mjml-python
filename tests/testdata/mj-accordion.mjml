@@ -3,7 +3,7 @@
     <mj-attributes>
       <mj-accordion border="none" padding="1px" />
       <mj-accordion-element icon-wrapped-url="https://i.imgur.com/Xvw0vjq.png" icon-unwrapped-url="https://i.imgur.com/KKHenWa.png" icon-height="24px" icon-width="24px" />
-      <mj-accordion-title font-family="Roboto, Open Sans, Helvetica, Arial, sans-serif" background-color="#fafafa" color="#031017" padding="15px" font-size="18px" />
+      <mj-accordion-title font-family="Roboto, Open Sans, Helvetica, Arial, sans-serif" background-color="#fafafa" color="#031017" padding="15px" font-size="18px" font-weight="700" />
       <mj-accordion-text font-family="Open Sans, Helvetica, Arial, sans-serif" background-color="#fafafa" padding="15px" color="#505050" font-size="14px" />
     </mj-attributes>
   </mj-head>
