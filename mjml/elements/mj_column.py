@@ -112,7 +112,7 @@ class MjColumn(BodyComponent):
         parsedWidth, unit = widthParser(width, parseFloatToInt=False)
         if unit == '%':
             return width
-        return '%s%%' % (parsedWidth / parse_int(containerWidth))
+        return f'{normalize_unit_value((parsedWidth / parse_int(containerWidth)) * 100)}%'
 
     def getWidthAsPixel(self):
         containerWidth = self.context['containerWidth']
@@ -266,3 +266,14 @@ class MjColumn(BodyComponent):
                 {self.renderChildren(children, renderer=render_child)}
             </tbody>
         </table>'''
+
+
+def normalize_unit_value(value: Union[int, float, str]) -> Union[int, float]:
+    # js: Number(parseFloat(value).toFixed(6))
+    # Rounding to 6 decimals avoids float noise like "48.33333333333333" and
+    # JS renders whole numbers without a trailing ".0" so we return an int
+    # in that case.
+    if isinstance(value, str):
+        value = parse_float(value)
+    rounded = float(f'{value:.6f}')
+    return int(rounded) if (rounded == int(rounded)) else rounded

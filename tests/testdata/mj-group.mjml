@@ -18,5 +18,15 @@
         </mj-column>
       </mj-group>
     </mj-section>
+    <mj-section>
+      <mj-group>
+        <mj-column width="200px">
+          <mj-text>group columns with a pixel width</mj-text>
+        </mj-column>
+        <mj-column width="400px">
+          <mj-text>second column</mj-text>
+        </mj-column>
+      </mj-group>
+    </mj-section>
   </mj-body>
 </mjml>
