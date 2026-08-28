@@ -40,6 +40,7 @@ class MjButton(BodyComponent):
             'target'           : 'string',
             'text-decoration'  : 'string',
             'text-transform'   : 'string',
+            'title'            : 'string',
             'vertical-align'   : 'enum(top,bottom,middle)',
             'text-align'       : 'enum(left,right,center)',
             'width'            : 'unit(px,%)',
@@ -143,6 +144,7 @@ class MjButton(BodyComponent):
             href   = href_str,
             rel    = self.getAttribute('rel'),
             name   = self.getAttribute('name'),
+            title  = self.getAttribute('title'),
             style  = 'content',
             target = target,
         )

@@ -2,7 +2,7 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-button font-size="20px">Click me</mj-button>
+        <mj-button font-size="20px" title="Tooltip for the button">Click me</mj-button>
       </mj-column>
     </mj-section>
   </mj-body>
