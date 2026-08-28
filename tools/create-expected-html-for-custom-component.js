@@ -24,7 +24,7 @@ async function main() {
   const mjmlPath = path.resolve(inputArg);
   const mjmlString = await fs.readFile(mjmlPath, 'utf8');
 
-  const { html, errors } = mjml2html(mjmlString);
+  const { html, errors } = await mjml2html(mjmlString);
 
   const htmlPath = path.resolve(outputArg);
   await fs.writeFile(htmlPath, html, 'utf8');
