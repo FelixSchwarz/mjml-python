@@ -2,7 +2,7 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-table>
+        <mj-table role="presentation">
           <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
             <th style="padding: 0 15px 0 0;">Year</th>
             <th style="padding: 0 15px;">Language</th>

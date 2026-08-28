@@ -26,6 +26,7 @@ class MjTable(BodyComponent):
             'padding-right'    : 'unit(px,%)',
             'padding-top'      : 'unit(px,%)',
             'padding'          : 'unit(px,%){1,4}',
+            'role'             : 'enum(none,presentation)',
             'table-layout'     : 'enum(auto,fixed,initial,inherit)',
             'vertical-align'   : 'enum(top,bottom,middle)',
             'width'            : 'unit(px,%)',
@@ -75,6 +76,7 @@ class MjTable(BodyComponent):
             style  = 'table',
             cellpadding = self.get_attr('cellpadding'),
             cellspacing = self.get_attr('cellspacing'),
+            role        = self.get_attr('role'),
         )
         content_html = self.getContent()
         return f'''<table {table_attrs}>
