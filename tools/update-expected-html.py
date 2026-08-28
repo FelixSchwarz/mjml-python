@@ -80,7 +80,7 @@ def _update_expected_html(job):
     if 'custom' in mjml_basename:
         cmd = ['node', str(SCRIPT_GENERATE_CUSTOM_COMPONENT), job.mjml_path, job.expected_path]
     else:
-        cmd = [mjml_cmd, job.mjml_path, '-o', job.expected_path]
+        cmd = [mjml_cmd, job.mjml_path, '--config.allowIncludes=true', '-o', job.expected_path]
         if not job.keep_comments:
             cmd.insert(2, '--config.keepComments=false')
     subprocess.run(cmd)
