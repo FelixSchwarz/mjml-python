@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image
+          src="https://picsum.photos/100"
+          width="100px"
+          border-left="3px solid red"
+          border-right="4px solid blue"
+          border-top="5px solid green"
+          border-bottom="6px solid black" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
