@@ -37,6 +37,7 @@ TEST_IDS = (
     'mj-title',
     'mj-style',
     'mj-accordion',
+    'mj-accordion-element-font-family',
     'mj-attributes',
     'mj-attributes-for-mj-body',
     'mj-class-with-children',

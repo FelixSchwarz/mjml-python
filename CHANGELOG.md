@@ -11,6 +11,7 @@
   - pass the `border` attribute from `mj-social` to its children
   - `title` (`mj-button`), `sizes`/directional border attributes (`mj-image`), `role` (`mj-table`) and `font-weight` (`mj-accordion-title`)
   - `mj-carousel`: `thumbnails="supported"`
+  - inherit `font-family` from `mj-accordion-element`
 - support `mj-include` with `type="css"` and `type="html"`
 - support `mj-include` of files which contain an `<mj-head>`
 - support `<mj-class>` with child elements (default attributes for nested elements)

@@ -95,6 +95,11 @@ class MjAccordionElement(BodyComponent):
 
         return '\n'.join(result)
 
+    def getChildContext(self):
+        return {
+            **self.context,
+            'elementFontFamily': self.get_attr('font-family'),
+        }
 
 
     def render(self):
