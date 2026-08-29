@@ -51,14 +51,11 @@ jobs:
         tail -n +3 build-constraints.txt | diff --unified - "$actual_constraints"
 
     - name: Run prek hooks
-      run: uv run --group dev prek run --all-files
+      run: uv run --locked --python python --group quality prek run --all-files
 
     - name: Run ty
       continue-on-error: true
-      run: |
-        pip install -e .[testing]
-        pip install ty
-        ty check mjml tests
+      run: uv run --locked --python python --group quality --extra testing ty check mjml tests
 
   tests_cpython:
     runs-on: ubuntu-latest
@@ -71,27 +68,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
     - name: Run tests without optional features
       run: |
-        python -m venv venv-test
-        . venv-test/bin/activate
-        # Some versions of pip do not recognize the declared "extras" in `pyproject.toml`.
-        # I don't know the exact problematic versions, so let's just upgrade pip.
-        # GOOD: pip 23.0.1 with setuptools 47.1.0 (Python 3.7)
-        # BAD:  pip 23.0.1 with setuptools 56.0.0 (Python 3.8)
-        # BAD:  pip 23.0.1 with setuptools 58.1.0 (Python 3.9)
-        # BAD:  pip 23.0.1 with setuptools 65.5.0 (Python 3.10)
-        # GOOD: pip 24.0 with setuptools 65.5.0 (Python 3.11)
-        pip install "pip >= 24"
-        pip install -e .[testing]
-        pytest -m "not css_inlining"
+        # We deliberately disregard locked dependencies here so our scheduled
+        # pipeline runs can detect breakage due to new versions published on pypi.
+        # We use locked dependencies only for release builds to avoid installing
+        # compromised packages when we build our own wheels.
+        uv venv --python python venv-optional-features
+        . venv-optional-features/bin/activate
+        uv pip install -e '.[testing]'
+        uv run --active --no-project pytest -m "not css_inlining"
 
     - name: Test CSS inlining
       run: |
+        # no locked dependencies here (see above)
+        uv venv --python python venv-test
         . venv-test/bin/activate
-        pip install -e .[css_inlining]
-        pytest
+        uv pip install -e '.[testing,css_inlining]'
+        uv run --active --no-project pytest
 
 
   tests_pypy:
@@ -105,10 +101,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
     - name: Run tests without optional features
       run: |
-        python -m venv venv-test
+        # no locked dependencies here (see above)
+        uv venv --python python venv-test
         . venv-test/bin/activate
-        pip install -e .[testing]
-        pytest -m "not css_inlining"
+        uv pip install -e '.[testing]'
+        uv run --active --no-project pytest -m "not css_inlining"

@@ -63,9 +63,10 @@ mjml-html-compare = "mjml.scripts.mjml_html_compare:main"
 build = [
     "hatchling",
 ]
-dev = [
+quality = [
     # >= 0.4.7 for "prek update --freeze --cooldown-days"
     "prek >= 0.4.7",
+    "ty",
 ]
 
 

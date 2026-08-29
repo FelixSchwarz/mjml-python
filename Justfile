@@ -16,7 +16,7 @@ build:
     uv build --wheel --build-constraint build-constraints.txt --require-hashes
 
 update-prek-hooks:
-    uv run --group dev prek update --freeze --cooldown-days=7
+    uv run --group quality prek update --freeze --cooldown-days=7
 
 # pin GitHub Actions in ".github/workflows" to the latest commit sha
 # (stays within the current major version unless `--allow-major-upgrades`
