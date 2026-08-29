@@ -6,6 +6,15 @@ install-locked-dependencies:
 update-dependencies:
     uv lock --upgrade
 
+# Build isolation deliberately does not use "uv.lock". Export the locked build
+# backend and pass the resulting, hashed constraints to "uv build" instead.
+update-build-constraints:
+    uv lock --upgrade-package hatchling
+    uv export --frozen --only-group build --output-file build-constraints.txt
+
+build:
+    uv build --wheel --build-constraint build-constraints.txt --require-hashes
+
 update-prek-hooks:
     uv run --group dev prek update --freeze --cooldown-days=7
 

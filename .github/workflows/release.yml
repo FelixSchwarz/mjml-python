@@ -30,12 +30,9 @@ jobs:
 
     - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
-    - name: Install locked build dependencies
-      run: uv sync --locked --only-group build
-
     - name: Build wheel and sdist
       run: |
-          uv build --no-build-isolation --wheel --sdist
+          uv build --wheel --sdist --build-constraint build-constraints.txt --require-hashes
           rm dist/.gitignore
 
     - name: Attest build provenance

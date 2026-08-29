@@ -41,6 +41,15 @@ jobs:
     - name: Check that uv.lock is up to date
       run: uv lock --check
 
+    - name: Check that build constraints match uv.lock
+      # The generated-file header contains its output path, so compare only the
+      # dependency records with a header-less fresh export.
+      run: |
+        actual_constraints=$(mktemp)
+        trap 'rm -f "$actual_constraints"' EXIT
+        uv export --frozen --only-group build --no-header > "$actual_constraints"
+        tail -n +3 build-constraints.txt | diff --unified - "$actual_constraints"
+
     - name: Run prek hooks
       run: uv run --group dev prek run --all-files
 
