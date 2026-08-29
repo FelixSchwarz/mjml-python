@@ -10,6 +10,7 @@
   - `title` (`mj-button`), `sizes` (`mj-image`), `role` (`mj-table`) and `font-weight` (`mj-accordion-title`)
 - support `mj-include` with `type="css"` and `type="html"`
 - support `mj-include` of files which contain an `<mj-head>`
+- support `<mj-class>` with child elements (default attributes for nested elements)
 - add `printer_support` parameter to `mjml_to_html()` (same as upstream's `printerSupport` option)
 - fix mobile width for `mj-column` with a pixel width inside `mj-group`
 

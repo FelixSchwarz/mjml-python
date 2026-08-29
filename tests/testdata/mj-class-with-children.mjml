@@ -1,0 +1,42 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-text font-style="italic" />
+      <!--
+        The attributes apply to the element using the mj-class, the children
+        declare per-tag defaults for all elements below it.
+      -->
+      <mj-class name="fancy" background-color="#eeeeee">
+        <mj-text color="#ff0000" font-size="30px" />
+        <mj-button background-color="#00ff00" />
+      </mj-class>
+      <mj-class name="small">
+        <mj-text font-size="9px" />
+      </mj-class>
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body>
+    <mj-section mj-class="fancy">
+      <mj-column>
+        <!-- inherited across two levels -->
+        <mj-text>below fancy</mj-text>
+        <mj-button href="https://example.org">button below fancy</mj-button>
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column mj-class="fancy small">
+        <!-- "small" wins for font-size, the color of "fancy" survives -->
+        <mj-text>below fancy and small</mj-text>
+        <mj-text color="#0000ff">own attribute wins</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-text>unaffected by any mj-class</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

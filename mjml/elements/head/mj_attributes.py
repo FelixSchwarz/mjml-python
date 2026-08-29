@@ -27,20 +27,10 @@ class MjAttributes(HeadComponent):
                 attr_name = attributes['name']
                 add('classes', attr_name, omit(attributes, 'name'))
 
-                assert not children, 'not yet implemented'
-                # upstream:
-                #   reduce(
-                #     children,
-                #     (acc, { tagName, attributes }) => ({
-                #       ...acc,
-                #       [tagName]: attributes,
-                #     }),
-                #     {},
-                #   ),
-                #def reducer(acc, tn_attr):
-                #    tagName, attributes = tn_attr
-                #    return {'tagName': attributes, **acc}
-                #add('classesDefault', attr_name, reduce(children, reducer, {}))
+                class_defaults = {}
+                for grand_child in children:
+                    class_defaults[grand_child['tagName']] = grand_child['attributes']
+                add('classesDefault', attr_name, class_defaults)
             else:
                 if not attributes:
                     # TODO: not present upstream

@@ -39,6 +39,7 @@ TEST_IDS = (
     'mj-accordion',
     'mj-attributes',
     'mj-attributes-for-mj-body',
+    'mj-class-with-children',
     'mj-carousel',
     'mj-html-attributes',
     'mj-column-with-attributes',
