@@ -1,6 +1,9 @@
 /build
 /dist
+/*.egg-info
 /*.sh
+# e.g. ruff/mypy
+/.*cache
 /venv*
 /.venv
 /.project

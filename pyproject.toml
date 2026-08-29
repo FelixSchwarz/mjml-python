@@ -1,8 +1,6 @@
 [build-system]
-requires = [
-    "setuptools >= 77.0",  # SPDX `license` expression and `license-files` (PEP 639)
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 
 [project]
@@ -63,7 +61,7 @@ mjml-html-compare = "mjml.scripts.mjml_html_compare:main"
 
 [dependency-groups]
 build = [
-    "setuptools >= 77.0",  # SPDX `license` expression and `license-files` (PEP 639)
+    "hatchling",
 ]
 dev = [
     # >= 0.4.7 for "prek update --freeze --cooldown-days"
@@ -71,20 +69,9 @@ dev = [
 ]
 
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.dynamic]
-version = {file = "VERSION.txt"}
-
-[tool.setuptools.package-data]
-mjml = ["py.typed"]
-
-[tool.setuptools.packages.find]
-include = ["mjml*"]
-# do not include plain directories without `__init__.py` in release artifacts
-namespaces = false
-
+[tool.hatch.version]
+path = "VERSION.txt"
+pattern = "(?P<version>.+)"
 
 [tool.uv]
 exclude-newer = "7 days"
