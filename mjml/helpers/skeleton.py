@@ -21,6 +21,7 @@ def skeleton_str(*,
     preview = None,
     defaultAttributes=None,
     forceOWADesktop=False,
+    printerSupport=False,
     ) -> str:
 
     apply_breakpoints = lambda values: tuple(map(lambda v: v(breakpoint), values))
@@ -58,7 +59,8 @@ def skeleton_str(*,
 
         'font_tags_str'  : buildFontsTags(content, inlineStyle, fonts=fonts),
         'media_queries_str'  : buildMediaQueriesTags(
-            breakpoint, mediaQueries, forceOWADesktop=forceOWADesktop),
+            breakpoint, mediaQueries, forceOWADesktop=forceOWADesktop,
+            printerSupport=printerSupport),
         'combined_head_style': combined_head_style_content.strip(),
         'extra_style': extra_style,
         'headRaw_str': '\n'.join(filter(is_not_nil, headRaw or ())),

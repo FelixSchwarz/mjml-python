@@ -2,7 +2,8 @@
 
 __all__ = ['buildMediaQueriesTags']
 
-def buildMediaQueriesTags(breakpoint, mediaQueries=None, forceOWADesktop=False):
+def buildMediaQueriesTags(breakpoint, mediaQueries=None, forceOWADesktop=False,
+                          printerSupport=False):
     if not mediaQueries:
         return ''
     elif hasattr(mediaQueries, 'items'):
@@ -20,6 +21,15 @@ def buildMediaQueriesTags(breakpoint, mediaQueries=None, forceOWADesktop=False):
         return f'.moz-text-html .{className} {mediaQuery}'
     thunderbirdMediaQueries = tuple(map(tbMqStr, mediaQueries))
     thunderbird_media_queries_str = '\n'.join(thunderbirdMediaQueries)
+
+    if printerSupport:
+        printer_style = f'''<style type="text/css">
+      @media only print {{
+          {media_queries_str}
+      }}
+    </style>'''
+    else:
+        printer_style = ''
 
     if forceOWADesktop:
         # Outlook Web App does not evaluate media queries so upstream repeats
@@ -41,5 +51,6 @@ def buildMediaQueriesTags(breakpoint, mediaQueries=None, forceOWADesktop=False):
     <style media="screen and (min-width:{breakpoint})">
         {thunderbird_media_queries_str}
     </style>
+    {printer_style}
     {owa_style}
     '''

@@ -39,6 +39,7 @@ def mjml_to_html(
     template_dir: Optional["StrPath"] = None,
     custom_components: Optional[Sequence[type["Component"]]] = None,
     keep_comments: bool = True,
+    printer_support: bool = False,
 ) -> ParseResult:
     register_core_components()
 
@@ -98,6 +99,7 @@ def mjml_to_html(
         'lang'               : mjml_lang,
         'dir_'               : mjml_dir,
         'forceOWADesktop'    : (mjml_owa == 'desktop'),
+        'printerSupport'     : printer_support,
         'mediaQueries'       : {},
         'preview'            : '',
         'style'              : [],
