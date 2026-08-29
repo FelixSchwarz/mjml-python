@@ -11,7 +11,7 @@
 """Pin GitHub Actions to full commit SHAs and update them to the latest release.
 
 usage: update-workflow-actions.py [--check] [--allow-major-upgrades]
-                                  [--cooldown-days DAYS] [FILE ...]
+                                  [--cooldown-days DAYS] [--exclude ACTION] [FILE ...]
 
 Every "uses: owner/repo@ref" is rewritten to
 
@@ -27,6 +27,8 @@ major usually means changed inputs. "--allow-major-upgrades" lifts that
 restriction.
 "--check" reports outdated pins without touching any file and exits non-zero,
 which makes it usable in CI.
+
+"--exclude" can be repeated to leave named actions untouched.
 
 Releases younger than "--cooldown-days" days (7 by default, 0 disables the
 check) are skipped so a freshly published — possibly broken or compromised —
@@ -72,10 +74,11 @@ SHA_RE = re.compile(r'^[0-9a-f]{40}$')
 
 
 class Updater:
-    def __init__(self, token, allow_major, cooldown_days):
+    def __init__(self, token, allow_major, cooldown_days, excluded_actions):
         self.token = token
         self.allow_major = allow_major
         self.cooldown_days = cooldown_days
+        self.excluded_actions = set(excluded_actions)
         self.tag_cache = {}
         self.release_cache = {}
         self.commit_date_cache = {}
@@ -201,6 +204,8 @@ class Updater:
         if not match:
             return (None, None)
         action = match.group('action')
+        if action in self.excluded_actions:
+            return (None, None)
         ref = match.group('ref')
         repo = '/'.join(action.split('/')[:2])
         tags = self.fetch_tags(repo)
@@ -342,6 +347,8 @@ def main():
                         help='also update across major versions')
     parser.add_argument('--cooldown-days', type=int, default=7, metavar='DAYS',
                         help='ignore releases younger than DAYS days (default: 7, 0 disables)')
+    parser.add_argument('--exclude', action='append', default=[], metavar='ACTION',
+                        help='leave ACTION unchanged (may be repeated)')
     parser.add_argument('files', nargs='*', type=Path, metavar='FILE')
     args = parser.parse_args()
 
@@ -351,7 +358,8 @@ def main():
     if not paths:
         sys.exit('error: no workflow files found in "%s"' % WORKFLOW_DIR)
 
-    updater = Updater(usable_token(), args.allow_major_upgrades, args.cooldown_days)
+    updater = Updater(usable_token(), args.allow_major_upgrades, args.cooldown_days,
+                      args.exclude)
     outdated = []
     for path in paths:
         print('%s' % path)

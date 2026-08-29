@@ -14,6 +14,12 @@ on:
     - cron: '47 5 * * 0'
   # This is necessary so that "release.yml" can require a passing test suite
   workflow_call:
+    inputs:
+      use_locked_dependencies:
+        description: "Run tests against the committed uv.lock instead of current PyPI releases."
+        required: false
+        default: false
+        type: boolean
 
 
 env:
@@ -33,7 +39,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+    - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: "latest-known"
 
     # This job runs inside a container, not directly on the runner: the
     # checkout belongs to the runner user while the steps run as root, so git
@@ -73,26 +81,36 @@ jobs:
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+    - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: "latest-known"
 
     - name: Run tests without optional features
       run: |
-        # We deliberately disregard locked dependencies here so our scheduled
-        # pipeline runs can detect breakage due to new versions published on pypi.
-        # We use locked dependencies only for release builds to avoid installing
-        # compromised packages when we build our own wheels.
-        uv venv --python python venv-optional-features
-        . venv-optional-features/bin/activate
-        uv pip install -e '.[testing]'
-        uv run --active --no-project pytest -m "not css_inlining"
+        if [ "${{ inputs.use_locked_dependencies }}" = "true" ]; then
+          uv run --locked --python python --extra testing pytest -m "not css_inlining"
+        else
+          # We deliberately disregard locked dependencies here so our scheduled
+          # pipeline runs can detect breakage due to new versions published on pypi.
+          # We use locked dependencies only for release builds to avoid installing
+          # compromised packages when we build our own wheels.
+          uv venv --python python venv-optional-features
+          . venv-optional-features/bin/activate
+          uv pip install -e '.[testing]'
+          uv run --active --no-project pytest -m "not css_inlining"
+        fi
 
     - name: Test CSS inlining
       run: |
-        # no locked dependencies here (see above)
-        uv venv --python python venv-test
-        . venv-test/bin/activate
-        uv pip install -e '.[testing,css_inlining]'
-        uv run --active --no-project pytest
+        if [ "${{ inputs.use_locked_dependencies }}" = "true" ]; then
+          uv run --locked --python python --extra testing --extra css_inlining pytest
+        else
+          # no locked dependencies here (see above)
+          uv venv --python python venv-test
+          . venv-test/bin/activate
+          uv pip install -e '.[testing,css_inlining]'
+          uv run --active --no-project pytest
+        fi
 
 
   tests_pypy:
@@ -106,12 +124,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+    - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: "latest-known"
 
     - name: Run tests without optional features
       run: |
-        # no locked dependencies here (see above)
-        uv venv --python python venv-test
-        . venv-test/bin/activate
-        uv pip install -e '.[testing]'
-        uv run --active --no-project pytest -m "not css_inlining"
+        if [ "${{ inputs.use_locked_dependencies }}" = "true" ]; then
+          uv run --locked --python python --extra testing pytest -m "not css_inlining"
+        else
+          # no locked dependencies here (see above)
+          uv venv --python python venv-test
+          . venv-test/bin/activate
+          uv pip install -e '.[testing]'
+          uv run --active --no-project pytest -m "not css_inlining"
+        fi

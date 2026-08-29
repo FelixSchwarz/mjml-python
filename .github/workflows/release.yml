@@ -17,6 +17,8 @@ env:
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml
+    with:
+      use_locked_dependencies: true
 
   artifacts:
     needs: tests
@@ -33,7 +35,9 @@ jobs:
     - name: checkout code
       uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
-    - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+    - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        version: "latest-known"
 
     - name: Build wheel and sdist
       run: |
