@@ -29,7 +29,7 @@ class MjTable(BodyComponent):
             'role'             : 'enum(none,presentation)',
             'table-layout'     : 'enum(auto,fixed,initial,inherit)',
             'vertical-align'   : 'enum(top,bottom,middle)',
-            'width'            : 'unit(px,%)',
+            'width'            : 'unit(px,%,auto)',
             # hidden / used by MjColumn
             'css-class'        : '',
         }
@@ -66,6 +66,8 @@ class MjTable(BodyComponent):
 
     def getWidth(self):
         width = self.get_attr('width')
+        if width == 'auto':
+            return width
         parsedWidth, unit = widthParser(width)
         return width if (unit == '%') else parsedWidth
 

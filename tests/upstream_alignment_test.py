@@ -52,6 +52,7 @@ TEST_IDS = (
     'mj-button-with-width',
     'mj-text-with-tail-text',
     'mj-table',
+    'mj-table-with-auto-width',
     'mj-head-with-comment',
     'mj-image-with-empty-alt-attribute',
     'mj-image-with-directional-borders',
