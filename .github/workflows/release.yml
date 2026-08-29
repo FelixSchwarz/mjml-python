@@ -9,6 +9,11 @@ permissions:
   contents: read
 
 
+env:
+  # query OSV for known malware before syncing
+  UV_MALWARE_CHECK: "1"
+
+
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml

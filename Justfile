@@ -1,3 +1,6 @@
+# query OSV for known malware before syncing
+export UV_MALWARE_CHECK := "1"
+
 # Install the build backend used by the current lockfile.
 install-locked-dependencies:
     uv sync --locked --only-group build
