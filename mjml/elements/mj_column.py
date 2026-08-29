@@ -269,11 +269,9 @@ class MjColumn(BodyComponent):
 
 
 def normalize_unit_value(value: Union[int, float, str]) -> Union[int, float]:
-    # js: Number(parseFloat(value).toFixed(6))
-    # Rounding to 6 decimals avoids float noise like "48.33333333333333" and
-    # JS renders whole numbers without a trailing ".0" so we return an int
-    # in that case.
+    # Render a number the way JS does: Python's float repr and JS number
+    # formatting both use the shortest round-trip representation, so the only
+    # difference is the trailing ".0" which JS omits for whole numbers.
     if isinstance(value, str):
         value = parse_float(value)
-    rounded = float(f'{value:.6f}')
-    return int(rounded) if (rounded == int(rounded)) else rounded
+    return int(value) if (value == int(value)) else value
