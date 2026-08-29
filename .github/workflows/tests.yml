@@ -7,11 +7,6 @@ on:
   pull_request:
     branches:
     - main
-  schedule:
-    # Run tests weekly on Sundays at 5:47 UTC.
-    # This might help us us detecting unexpected breakage due to changes in
-    # 3rd-party dependencies. GitHub only triggers this for the default branch.
-    - cron: '47 5 * * 0'
   # This is necessary so that "release.yml" can require a passing test suite
   workflow_call:
     inputs:
