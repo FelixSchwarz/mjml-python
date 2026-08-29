@@ -1,0 +1,12 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-carousel thumbnails="supported">
+          <mj-carousel-image src="https://example.com/one.png" />
+          <mj-carousel-image src="https://example.com/two.png" />
+        </mj-carousel>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

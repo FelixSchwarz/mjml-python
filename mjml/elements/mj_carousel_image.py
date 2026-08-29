@@ -32,6 +32,12 @@ class MjCarouselImage(BodyComponent):
             'target': '_blank',
         }
 
+    def hasThumbnailsSupported(self):
+        thumbnails = (
+            self.getAttribute('thumbnails', missing_ok=True) or self.context.get('thumbnails')
+        )
+        return thumbnails == 'supported'
+
     def get_styles(self):
         return {
             'images'    : {
@@ -58,7 +64,7 @@ class MjCarouselImage(BodyComponent):
                 'a'  : {
                     'border'       : self.getAttribute('tb-border'),
                     'border-radius': self.getAttribute('tb-border-radius'),
-                    'display'      : 'inline-block',
+                    'display'      : 'none' if self.hasThumbnailsSupported() else 'inline-block',
                     'overflow'     : 'hidden',
                     'width'        : self.getAttribute('tb-width', missing_ok=True),
                 },

@@ -99,7 +99,8 @@ def _generate_deterministic_ids(count: int) -> list[str]:
 
 
 def _replace_random_ids_if_needed(job: Job, mjml_basename: str) -> None:
-    if mjml_basename not in ('mj-navbar.mjml', 'mj-carousel.mjml'):
+    is_carousel = mjml_basename.startswith('mj-carousel')
+    if mjml_basename != 'mj-navbar.mjml' and not is_carousel:
         return
     expected_path = Path(job.expected_path)
 
@@ -107,9 +108,9 @@ def _replace_random_ids_if_needed(job: Job, mjml_basename: str) -> None:
 
     _patterns = {
         'mj-navbar.mjml': r'id="([a-f0-9]{16})" class="mj-menu-checkbox"',
-        'mj-carousel.mjml': r'mj-carousel-radio-([a-f0-9]{16})',
+        'carousel': r'mj-carousel-radio-([a-f0-9]{16})',
     }
-    pattern = _patterns[mjml_basename]
+    pattern = _patterns['mj-navbar.mjml' if mjml_basename == 'mj-navbar.mjml' else 'carousel']
     id_matches = re.findall(pattern, html)
     unique_ids = list(dict.fromkeys(id_matches))  # preserve order, remove duplicates
     deterministic_ids = _generate_deterministic_ids(len(unique_ids))
@@ -118,7 +119,7 @@ def _replace_random_ids_if_needed(job: Job, mjml_basename: str) -> None:
         for upstream_id, deterministic_id in id_mapping.items():
             html = html.replace(f'id="{upstream_id}"', f'id="{deterministic_id}"')
             html = html.replace(f'for="{upstream_id}"', f'for="{deterministic_id}"')
-    elif mjml_basename == 'mj-carousel.mjml':
+    elif is_carousel:
         for upstream_id, deterministic_id in id_mapping.items():
             html = html.replace(upstream_id, deterministic_id)
 

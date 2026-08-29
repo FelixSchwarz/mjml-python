@@ -41,6 +41,7 @@ TEST_IDS = (
     'mj-attributes-for-mj-body',
     'mj-class-with-children',
     'mj-carousel',
+    'mj-carousel-supported-thumbnails',
     'mj-html-attributes',
     'mj-column-with-attributes',
     'mj-column-with-fractional-width',

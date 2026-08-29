@@ -29,7 +29,7 @@ class MjCarousel(BodyComponent):
             'padding-left'              : 'unit(px,%)',
             'padding-right'             : 'unit(px,%)',
             'right-icon'                : 'string',
-            'thumbnails'                : 'enum(visible,hidden)',
+            'thumbnails'                : 'enum(visible,hidden,supported)',
             'tb-border'                 : 'string',
             'tb-border-radius'          : 'unit(px,%)',
             'tb-hover-border-color'     : 'color',
@@ -261,7 +261,7 @@ class MjCarousel(BodyComponent):
 
     def generateThumbnails(self):
         children = self.props['children']
-        if self.getAttribute('thumbnails') != 'visible':
+        if self.getAttribute('thumbnails') not in ('visible', 'supported'):
             return ''
 
         def _render_thumbnail(component: BodyComponent) -> str:
@@ -351,6 +351,12 @@ class MjCarousel(BodyComponent):
                 }
             )
         )
+
+    def getChildContext(self):
+        return {
+            **self.context,
+            'thumbnails': self.getAttribute('thumbnails'),
+        }
 
     def render(self):
         content_div_attrs = self.html_attrs(
