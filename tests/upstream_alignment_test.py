@@ -65,6 +65,7 @@ TEST_IDS = (
     'mj-include-css',
     'mj-include-head',
     'mj-include-head-without-head',
+    'mj-include-inside-head',
     'mj-include-html',
     'mj-navbar',
     'mj-preview',

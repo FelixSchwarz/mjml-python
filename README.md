@@ -97,7 +97,6 @@ Compared to the JavaScript MJML implementation, the following features are **not
 - **Minification** of the generated HTML
 - **Beautification** (pretty-printing) of the generated HTML
 - **Validation** of MJML templates (attribute checks, structural rules)
-- **Includes inside `<mj-head>`**
 
 If you need these features, see the [Alternatives](#alternatives--additional-resources) section below.
 

@@ -1,0 +1,14 @@
+<mjml>
+  <mj-head>
+    <mj-include path="./_head-nested.mjml" />
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="styled-by-nested-include">
+          styled by an include inside mj-head
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
