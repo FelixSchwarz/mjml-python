@@ -1,6 +1,6 @@
 
-1.0.0 (2026-??-??)
--------------------
+1.0.0a1 (2026-??-??)
+--------------------
 
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
