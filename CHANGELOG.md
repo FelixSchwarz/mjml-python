@@ -1,4 +1,17 @@
 
+1.0.0 (2026-??-??)
+-------------------
+
+- add py.typed marker (contributed by @sh-at-cs)
+- various fixes to support additional attributes
+  - `owa` attribute in `<mjml>` root element
+  - `icon-position` for `mj-social-element`
+  - pass the `border` attribute from `mj-social` to its children
+  - `title` (`mj-button`), `sizes` (`mj-image`), `role` (`mj-table`) and `font-weight` (`mj-accordion-title`)
+- support `mj-include` with `type="css"`
+- fix mobile width for `mj-column` with a pixel width inside `mj-group`
+
+
 0.12.0 (2025-12-27)
 -------------------
 
