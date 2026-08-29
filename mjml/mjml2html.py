@@ -190,17 +190,27 @@ def mjml_to_html(
             }
 
             if tagName == 'mj-include':
+                _include_path = attributes['path']
                 if attributes.get('type') == 'css':
                     # Upstream collects all css includes while parsing and
                     # appends them to <mj-head> afterwards, no matter where
                     # they appeared in the document.
                     css_includes.append(CSSInclude(
-                        css_str = read_css_include(attributes['path'],
-                                                   template_dir=template_dir),
+                        css_str = read_include_file(_include_path, template_dir=template_dir),
                         inline  = (attributes.get('css-inline') == 'inline'),
                     ))
                     return None
-                mj_include_subtree = handle_include(attributes['path'],
+                elif attributes.get('type') == 'html':
+                    # inject the html file contents verbatim, just like an "mj-raw" element.
+                    html_str = read_include_file(_include_path, template_dir=template_dir)
+                    return {
+                        'tagName': 'mj-raw',
+                        'content': html_str,
+                        'attributes': {},
+                        'globalAttributes': {},
+                        'children': [],
+                    }
+                mj_include_subtree = handle_include(_include_path,
                                                     parse_mjml=parse,
                                                     template_dir=template_dir)
                 return mj_include_subtree
@@ -353,7 +363,7 @@ def resolve_include_path(path_value, *, template_dir):
     return path
 
 
-def read_css_include(path_value, *, template_dir) -> str:
+def read_include_file(path_value, *, template_dir) -> str:
     included_path = resolve_include_path(path_value, template_dir=template_dir)
     with open(included_path, 'rb') as fp:
         return fp.read().decode('utf8')

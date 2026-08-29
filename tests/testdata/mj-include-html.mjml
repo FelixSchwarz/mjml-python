@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>before the include</mj-text>
+        <mj-include path="./_include.html" type="html" />
+        <mj-text>after the include</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
