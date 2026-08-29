@@ -1,0 +1,18 @@
+<mjml>
+  <mj-head>
+    <mj-title>Title from the included file</mj-title>
+    <mj-attributes>
+      <mj-text color="#ff0000" />
+    </mj-attributes>
+    <mj-style>.styled-by-included-head { text-decoration: underline; }</mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-include path="./_head-nested.mjml" />
+
+    <mj-section>
+      <mj-column>
+        <mj-text>body of the included file</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

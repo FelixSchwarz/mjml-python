@@ -9,6 +9,7 @@
   - pass the `border` attribute from `mj-social` to its children
   - `title` (`mj-button`), `sizes` (`mj-image`), `role` (`mj-table`) and `font-weight` (`mj-accordion-title`)
 - support `mj-include` with `type="css"` and `type="html"`
+- support `mj-include` of files which contain an `<mj-head>`
 - add `printer_support` parameter to `mjml_to_html()` (same as upstream's `printerSupport` option)
 - fix mobile width for `mj-column` with a pixel width inside `mj-group`
 

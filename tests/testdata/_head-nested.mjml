@@ -1,0 +1,5 @@
+<mjml>
+  <mj-head>
+    <mj-style>.styled-by-nested-include { font-style: italic; }</mj-style>
+  </mj-head>
+</mjml>

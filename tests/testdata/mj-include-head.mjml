@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-preview>preview declared in the including file</mj-preview>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <!-- red because of the mj-attributes in the included head -->
+        <mj-text css-class="styled-by-included-head">before the include</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="./_head.mjml" />
+  </mj-body>
+</mjml>

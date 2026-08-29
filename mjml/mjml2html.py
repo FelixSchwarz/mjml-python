@@ -117,6 +117,9 @@ def mjml_to_html(
     mjBody = _find_child(mjml_root, 'mj-body')
     if not mjBody:
         raise ValueError('Did not find <mj-body>!')
+    # must run before <mj-head> is looked up: this can add a head to documents
+    # which do not have one.
+    merge_included_heads(mjml_root, template_dir=template_dir)
     mjHead = _find_child(mjml_root, 'mj-head')
 
     def processing(node: Optional[Any], context: dict[str, Any],
@@ -369,7 +372,7 @@ def read_include_file(path_value, *, template_dir) -> str:
         return fp.read().decode('utf8')
 
 
-def handle_include(path_value, parse_mjml, *, template_dir):
+def parse_include_document(path_value, *, template_dir) -> BeautifulSoup:
     included_path = resolve_include_path(path_value, template_dir=template_dir)
     # Upstream mjml does not raise an error if the included file was not found.
     # Instead they generate a HTML comment with a failure notice.
@@ -385,14 +388,49 @@ def handle_include(path_value, parse_mjml, *, template_dir):
     # lxml does not like non-ascii StringIO input but utf8-encoded BytesIO works
     # seen with pypy3 7.3.1, lxml 4.6.3 (Fedora 34)
     fp_included = BytesIO(included_bytes)
-    mjml_doc = BeautifulSoup(fp_included, 'html.parser')
-    _body = mjml_doc('mj-body')
-    _head = mjml_doc('mj-head')
-    assert (not _head), '<mj-head> within <mj-include> not yet implemented '
-    assert _body
+    return BeautifulSoup(fp_included, 'html.parser')
 
-    if _body:
-        body_result = parse_mjml(_body[0], template_dir=included_path.parent)
-        assert body_result['tagName'] == 'mj-body'
-        included_items = body_result['children']
-        return included_items
+
+def merge_included_heads(mjml_root, *, template_dir) -> None:
+    """
+    Merge the <mj-head> of all included files (regardless of their position within
+    the mjml) into the document's own <mj-head>.
+    """
+    for include in mjml_root.find_all('mj-include'):
+        # "css" and "html" includes are not parsed as MJML, so they have no head
+        if include.attrs.get('type') in ('css', 'html'):
+            continue
+        path_value = include.attrs['path']
+        included_root = parse_include_document(path_value, template_dir=template_dir).mjml
+        if included_root is None:
+            continue
+        # nested includes contribute to the head of the file which includes them
+        included_dir = resolve_include_path(path_value, template_dir=template_dir).parent
+        merge_included_heads(included_root, template_dir=included_dir)
+
+        # upstream only looks at direct children of <mjml> here, so a stray
+        # <mj-head> inside <mj-body> is left alone.
+        included_head = _find_child(included_root, 'mj-head')
+        if included_head is None:
+            continue
+        head = _find_child(mjml_root, 'mj-head')
+        if head is None:
+            head = BeautifulSoup('', 'html.parser').new_tag('mj-head')
+            mjml_root.append(head)
+        for child in list(included_head.children):
+            head.append(child.extract())
+
+
+def handle_include(path_value, parse_mjml, *, template_dir):
+    included_path = resolve_include_path(path_value, template_dir=template_dir)
+    mjml_doc = parse_include_document(path_value, template_dir=template_dir)
+    # <mj-head> was already merged into the document head by
+    # merge_included_heads(), only the body is spliced in at this point.
+    _body = mjml_doc('mj-body')
+    if not _body:
+        return ()
+
+    body_result = parse_mjml(_body[0], template_dir=included_path.parent)
+    assert body_result['tagName'] == 'mj-body'
+    included_items = body_result['children']
+    return included_items
