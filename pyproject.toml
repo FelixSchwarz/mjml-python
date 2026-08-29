@@ -57,7 +57,8 @@ Code            = "https://github.com/FelixSchwarz/mjml-python"
 "Issue tracker" = "https://github.com/FelixSchwarz/mjml-python/issues"
 
 [project.scripts]
-mjml = "mjml.scripts.mjml:main"
+mjml              = "mjml.scripts.mjml:main"
+mjml-html-compare = "mjml.scripts.mjml_html_compare:main"
 
 
 [dependency-groups]
@@ -72,9 +73,6 @@ dev = [
 
 [tool.setuptools]
 include-package-data = true
-# deprecated by setuptools, but `mjml-html-compare` is a plain script without a
-# `main()` function so it can not be declared in `[project.scripts]`.
-script-files = ["mjml/scripts/mjml-html-compare"]
 
 [tool.setuptools.dynamic]
 version = {file = "VERSION.txt"}
