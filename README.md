@@ -41,6 +41,7 @@ The `mjml_to_html()` function accepts several optional parameters:
 - `template_dir` - base directory for resolving `<mj-include>` paths
 - `keep_comments` - preserve HTML comments in output (default: `True`)
 - `custom_components` - list of custom component classes to register
+- `validation_level` - `'skip'` (default), `'soft'` or `'strict'`, see [Validation](#validation)
 
 ### CLI
 
@@ -59,6 +60,97 @@ CLI options:
 
 - `--template-dir=<path>` - base directory for `<mj-include>` (default: directory of the input file)
 - `--config.keepComments=False` - strip HTML comments from output
+- `--validate` - report problems in the template, generate no HTML and exit
+  nonzero when something was found
+- `--validation-level=<level>` - `skip` (default), `soft` or `strict`
+
+## Validation
+
+Validation checks an MJML template either on its own or before generating HTML.
+It reports unknown or misplaced elements, unsupported attributes, invalid
+attribute values, unreadable includes, and MJML JS features which this Python
+port cannot reproduce correctly.
+
+### Validation levels
+
+`mjml_to_html()` supports three validation levels:
+
+| Level            | Behavior                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `skip` (default) | Generate HTML without validating the template.                                                        |
+| `soft`           | Validate and generate HTML. Problems are returned in `result.errors`.                                 |
+| `strict`         | Validate first. Generate HTML only when no errors were found; otherwise raise `MJMLValidationErrors`. |
+
+### Command line
+
+Use `--validation-level` to validate while converting a template:
+
+```sh
+# Report problems (on stderr) and generate HTML anyway
+mjml --validation-level=soft my_email.mjml
+
+# Refuse to generate HTML when validation fails
+mjml --validation-level=strict my_email.mjml
+```
+
+To validate without generating HTML, use:
+
+```sh
+mjml --validate my_email.mjml
+```
+
+`--validate` writes problems to standard error and exits with a nonzero status
+when any were found.
+
+### Python API
+
+Soft validation lets an application report problems without preventing HTML
+generation:
+
+```py
+from mjml import mjml_to_html
+
+result = mjml_to_html(mjml_input, validation_level='soft')
+
+for error in result.errors:
+    print(error.formatted_message())
+
+html = result.html
+```
+
+Strict validation prevents generation when the template contains errors:
+
+```py
+from mjml import MJMLValidationErrors, mjml_to_html
+
+try:
+    result = mjml_to_html(mjml_input, validation_level='strict')
+except MJMLValidationErrors as error:
+    for validation_error in error.errors:
+        print(validation_error.formatted_message())
+```
+
+#### Validation without rendering
+
+Use `validate()` when only the validation result is needed:
+
+```py
+from mjml import validate
+
+errors = validate(mjml_input)
+
+for error in errors:
+    print(error.formatted_message())
+```
+
+Each `ValidationError` provides a message, the affected element, its source
+location when available, and the rule which reported it. Included templates
+also retain information about the chain of files through which they were
+included. `formatted_message()` combines this information into a
+human-readable line.
+
+Validation currently defaults to `skip`. The default is planned to change to
+`soft` in version 1.0.
 
 
 ## Supported Components
@@ -80,14 +172,21 @@ All standard MJML v4 components are implemented. The project comes with no guara
 You can register your own components:
 
 ```py
-from mjml.core.api import Component
+from mjml.core.api import Category, Component
 
 class MyComponent(Component):
     component_name = 'mj-my-component'
+    categories = frozenset({Category.BODY_ELEMENT})
     # ...
 
 result = mjml_to_html(mjml_input, custom_components=[MyComponent])
 ```
+
+`categories` says where the component may be used and is what
+`registerDependencies()` declares in the JavaScript implementation. A component
+which declares none is reported as misplaced wherever it is put, exactly as
+mjml js rejects a custom component which registered no dependencies. A subclass
+of a built-in component inherits the categories of the element it derives from.
 
 
 ## Limitations
@@ -96,7 +195,6 @@ Compared to the JavaScript MJML implementation, the following features are **not
 
 - **Minification** of the generated HTML
 - **Beautification** (pretty-printing) of the generated HTML
-- **Validation** of MJML templates (attribute checks, structural rules)
 
 If you need these features, see the [Alternatives](#alternatives--additional-resources) section below.
 
