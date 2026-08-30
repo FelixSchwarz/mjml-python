@@ -1,0 +1,15 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="first" css-class="one" color="red" />
+      <mj-class name="second" css-class="two" color="blue" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text mj-class="first second">text</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

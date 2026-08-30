@@ -40,6 +40,7 @@ TEST_IDS = (
     'mj-accordion-element-font-family',
     'mj-attributes',
     'mj-attributes-for-mj-body',
+    'mj-class-multiple-css-classes',
     'mj-class-with-children',
     'mj-carousel',
     'mj-carousel-supported-thumbnails',

@@ -171,7 +171,13 @@ def mjml_to_html(
             for css_class in classes:
                 mjClassValues = globalDatas.get("classes").get(css_class)
                 if mjClassValues:
+                    multiple_classes = {}
+                    if attributesClasses.get('css-class') and mjClassValues.get('css-class'):
+                        multiple_classes['css-class'] = (
+                            f"{attributesClasses['css-class']} {mjClassValues['css-class']}"
+                        )
                     attributesClasses.update(mjClassValues)
+                    attributesClasses.update(multiple_classes)
 
             parent_mj_classes = ignore_empty(parentMjClass.split(' '))
 
