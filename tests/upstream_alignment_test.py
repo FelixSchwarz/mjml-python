@@ -132,10 +132,14 @@ def test_accepts_also_plain_strings_as_input():
     _assert_same_html(result.html, test_id)
 
 
+CSS_INLINING_TEST_IDS = (
+    'css-inlining',
+    'css-inlining-important',
+    'mj-style-with-attributes',
+)
 @pytest.mark.css_inlining
-def test_can_use_css_inlining():
-    test_id = 'css-inlining'
-
+@pytest.mark.parametrize('test_id', CSS_INLINING_TEST_IDS)
+def test_can_use_css_inlining(test_id):
     result = _render_html(test_id)
 
     assert not result.errors

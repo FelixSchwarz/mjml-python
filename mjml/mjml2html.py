@@ -15,6 +15,7 @@ from .helpers import (
     json_to_xml,
     mergeOutlookConditionals,
     omit,
+    remove_important_from_inlined_styles,
     skeleton_str as default_skeleton,
 )
 
@@ -334,7 +335,10 @@ def mjml_to_html(
             keep_style_tags=True,
             load_remote_stylesheets=False,
         )
-        content = inliner.inline(content)
+        inlined_content = inliner.inline(content)
+        # js: Juice drops "!important" while inlining ("preserveImportant" is
+        # false by default) but "css_inline" has no such option.
+        content = remove_important_from_inlined_styles(content, inlined_content)
 
     content = mergeOutlookConditionals(content)
 

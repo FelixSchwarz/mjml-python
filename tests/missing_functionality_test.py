@@ -9,11 +9,8 @@ from mjml import mjml_to_html
 
 TESTDATA_DIR = Path(__file__).parent / 'missing_functionality'
 
-@pytest.mark.parametrize('test_id', [
-    # "css_inline" keeps "!important" when inlining CSS while upstream uses Juice
-    # which strips it ("preserveImportant" defaults to false).
-    pytest.param('mj-style-with-attributes', marks=pytest.mark.css_inlining),
-])
+# currently there are no tests which are expected to fail
+@pytest.mark.parametrize('test_id', [])
 @pytest.mark.xfail
 def test_missing_functionality(test_id):
     mjml_filename = f'{test_id}.mjml'
