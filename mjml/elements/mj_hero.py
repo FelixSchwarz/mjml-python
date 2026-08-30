@@ -21,7 +21,6 @@ class MjHero(BodyComponent):
             'background-height'         : 'unit(px,%)',
             'background-position'       : 'string',
             'border-radius'             : 'string',
-            'container-background-color': 'color',
             'inner-background-color'    : 'color',
             'inner-padding'             : 'unit(px,%){1,4}',
             'inner-padding-top'         : 'unit(px,%)',

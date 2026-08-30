@@ -12,9 +12,9 @@ class MjStyle(HeadComponent):
 
     @override
     @classmethod
-    def default_attrs(cls) -> dict[str, str]:
+    def allowed_attrs(cls) -> dict[str, str]:
         return {
-            'inline': '',
+            'inline': 'string',
         }
 
     @override
