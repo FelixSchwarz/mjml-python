@@ -10,6 +10,7 @@ from ..helpers import conditionalTag
 
 class MjAccordionTitle(BodyComponent):
     component_name = 'mj-accordion-title'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

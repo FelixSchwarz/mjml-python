@@ -9,6 +9,7 @@ __all__ = ['MjTable']
 
 class MjTable(BodyComponent):
     component_name = 'mj-table'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

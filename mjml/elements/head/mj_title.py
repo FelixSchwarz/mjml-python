@@ -9,6 +9,7 @@ __all__ = ['MjTitle']
 
 class MjTitle(HeadComponent):
     component_name: ClassVar[str] = 'mj-title'
+    ending_tag = True
 
     @override
     def handler(self) -> None:

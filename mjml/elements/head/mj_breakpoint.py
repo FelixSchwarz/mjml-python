@@ -10,6 +10,7 @@ __all__ = ['MjBreakpoint']
 
 class MjBreakpoint(HeadComponent):
     component_name: ClassVar[str] = 'mj-breakpoint'
+    ending_tag = True
 
     @override
     @classmethod

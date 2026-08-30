@@ -33,6 +33,8 @@ HandlerResult = Union[str, tuple[Optional[str], ...], None]
 
 class Component:
     component_name: ClassVar[str]
+    # the content of an ending tag is raw text/HTML, not MJML
+    ending_tag: ClassVar[bool] = False
 
     # LATER: not sure upstream also passes tagName, makes code easier for us
     def __init__(self, *, attributes=None, children=(), content: str='',

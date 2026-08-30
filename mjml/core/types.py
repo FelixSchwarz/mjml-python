@@ -156,13 +156,13 @@ def _unit_type(type_config: str) -> AttributeType:
     accepted = '(%s) units' % ', '.join(unit for unit in units if unit)
     if '' in units:
         accepted += ' or a plain number,'
-    nr_values = ' to '.join(args)
-    value_word = 'value' if (nr_values == '1') else 'values'
+    num_values = ' to '.join(args)
+    value_word = 'value' if (num_values == '1') else 'values'
     return UnitType(
         matchers=(matcher,),
         error_template=(
             f'has invalid value: $value for type Unit, '
-            f'only accepts {accepted} and {nr_values} {value_word}'
+            f'only accepts {accepted} and {num_values} {value_word}'
         ),
     )
 

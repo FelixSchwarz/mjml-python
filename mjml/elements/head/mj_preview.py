@@ -10,6 +10,7 @@ __all__ = ['MjPreview']
 
 class MjPreview(HeadComponent):
     component_name: ClassVar[str] = 'mj-preview'
+    ending_tag = True
 
     @override
     def handler(self) -> None:

@@ -6,6 +6,7 @@ __all__ = ['MjText']
 
 class MjText(BodyComponent):
     component_name = 'mj-text'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

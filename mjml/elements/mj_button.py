@@ -7,6 +7,7 @@ __all__ = ['MjButton']
 
 class MjButton(BodyComponent):
     component_name = 'mj-button'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

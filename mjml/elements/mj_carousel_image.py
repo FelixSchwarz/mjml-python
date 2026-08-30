@@ -9,6 +9,7 @@ __all__ = ['MjCarouselImage']
 
 class MjCarouselImage(BodyComponent):
     component_name = 'mj-carousel-image'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

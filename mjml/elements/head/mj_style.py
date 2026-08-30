@@ -9,6 +9,7 @@ __all__ = ['MjStyle']
 
 class MjStyle(HeadComponent):
     component_name: ClassVar[str] = 'mj-style'
+    ending_tag = True
 
     @override
     @classmethod

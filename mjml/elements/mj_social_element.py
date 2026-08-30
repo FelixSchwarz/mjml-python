@@ -93,6 +93,7 @@ for key, value in list(defaultSocialNetworks.items()):
 
 class MjSocialElement(BodyComponent):
     component_name = 'mj-social-element'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

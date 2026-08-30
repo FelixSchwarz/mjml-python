@@ -8,6 +8,7 @@ __all__ = ['MjAccordionText']
 
 class MjAccordionText(BodyComponent):
     component_name = 'mj-accordion-text'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

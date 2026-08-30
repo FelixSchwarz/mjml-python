@@ -21,39 +21,45 @@ from typing import NamedTuple
 
 SNAPSHOT_PATH = Path(__file__).parent.parent / 'tests' / 'upstream_attributes.json'
 
-_class_re = re.compile(r'class\s+(\w+)\s+extends\s+[\w.]+\s*\{')
+_class_re = re.compile(r'class\s+(\w+)\s+extends\s+([\w.]+)\s*\{')
 _component_name_re = re.compile(r"static\s+componentName\s*=\s*'([^']+)'")
 _allowed_attrs_re = re.compile(r'static\s+allowedAttributes\s*=\s*')
 _spread_re = re.compile(r'\.\.\.(\w+)\.allowedAttributes')
 _attr_re = re.compile(r"(?:'([^']+)'|([\w-]+))\s*:\s*'([^']*)'")
+_ending_tag_re = re.compile(r'static\s+endingTag\s*=\s*true')
 
 
 class JsClass(NamedTuple):
     component_name: str
     attrs: dict[str, str]
+    ending_tag: bool
+    extends: str
     # "mj-wrapper" declares "...MjSection.allowedAttributes"
     inherits_from: list[str]
 
 
-def parse_upstream(upstream_dir: Path) -> dict[str, dict[str, str]]:
+def parse_upstream(upstream_dir: Path) -> dict[str, JsClass]:
     js_files = sorted(upstream_dir.glob('packages/mjml-*/src/*.js'))
     if not js_files:
         raise SystemExit(f'no components found in {upstream_dir}/packages/mjml-*/src/')
 
     classes: dict[str, JsClass] = {}
-    nr_components = 0
+    num_components = 0
     for js_file in js_files:
         source = js_file.read_text(encoding='utf8')
-        nr_components += len(_component_name_re.findall(source))
+        num_components += len(_component_name_re.findall(source))
         for class_name, js_class in _parse_classes(source):
             classes[class_name] = js_class
-    if len(classes) != nr_components:
+    if len(classes) != num_components:
         raise SystemExit(
-            f'parsed {len(classes)} components but found {nr_components} '
+            f'parsed {len(classes)} components but found {num_components} '
             'component names - the JavaScript syntax likely changed'
         )
     return {
-        js_class.component_name: _with_inherited_attrs(class_name, classes)
+        js_class.component_name: js_class._replace(
+            attrs=_with_inherited_attrs(class_name, classes),
+            ending_tag=_ending_tag(class_name, classes),
+        )
         for class_name, js_class in classes.items()
     }
 
@@ -74,7 +80,13 @@ def _parse_classes(source: str) -> Iterator[tuple[str, JsClass]]:
             (attr.group(1) or attr.group(2)): attr.group(3)
             for attr in _attr_re.finditer(declaration)
         }
-        js_class = JsClass(name_match.group(1), attrs, _spread_re.findall(declaration))
+        js_class = JsClass(
+            component_name=name_match.group(1),
+            attrs=attrs,
+            ending_tag=bool(_ending_tag_re.search(body)),
+            extends=class_match.group(2),
+            inherits_from=_spread_re.findall(declaration),
+        )
         yield class_match.group(1), js_class
 
 
@@ -101,6 +113,15 @@ def _with_inherited_attrs(class_name: str, classes: dict[str, JsClass]) -> dict[
     return attrs
 
 
+def _ending_tag(class_name: str, classes: dict[str, JsClass]) -> bool:
+    # JavaScript classes inherit static attributes ("MjWrapper extends MjSection")
+    js_class = classes[class_name]
+    if js_class.ending_tag:
+        return True
+    parent = js_class.extends
+    return _ending_tag(parent, classes) if (parent in classes) else False
+
+
 def upstream_version(upstream_dir: Path) -> str:
     package_json = json.loads((upstream_dir / 'packages' / 'mjml' / 'package.json').read_text())
     return package_json['version']
@@ -114,15 +135,20 @@ def main() -> None:
     components = parse_upstream(args.upstream_dir)
     snapshot = {
         'mjml_version': upstream_version(args.upstream_dir),
-        'allowed_attributes': dict(sorted(components.items())),
+        'allowed_attributes': {name: c.attrs for name, c in sorted(components.items())},
+        'ending_tags': sorted(name for name, c in components.items() if c.ending_tag),
     }
     previous = {}
     if SNAPSHOT_PATH.exists():
         previous = json.loads(SNAPSHOT_PATH.read_text(encoding='utf8'))
     SNAPSHOT_PATH.write_text(json.dumps(snapshot, indent=2, sort_keys=True) + '\n', encoding='utf8')
 
-    nr_attrs = sum(len(attrs) for attrs in components.values())
-    print(f'mjml {snapshot["mjml_version"]}: {len(components)} components, {nr_attrs} attributes')
+    num_attrs = sum(len(c.attrs) for c in components.values())
+    num_ending_tags = len(snapshot['ending_tags'])
+    print(
+        f'mjml {snapshot["mjml_version"]}: {len(components)} components, '
+        f'{num_attrs} attributes, {num_ending_tags} ending tags'
+    )
     for line in _changes(previous.get('allowed_attributes', {}), snapshot['allowed_attributes']):
         print(line)
 

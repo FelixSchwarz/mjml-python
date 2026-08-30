@@ -8,6 +8,7 @@ __all__ = ['MjNavbarLink']
 
 class MjNavbarLink(BodyComponent):
     component_name = 'mj-navbar-link'
+    ending_tag = True
 
     @classmethod
     def allowed_attrs(cls):

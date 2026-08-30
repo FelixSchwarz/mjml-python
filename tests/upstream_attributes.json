@@ -452,5 +452,20 @@
       "text-padding": "unit(px,%){1,4}"
     }
   },
+  "ending_tags": [
+    "mj-accordion-text",
+    "mj-accordion-title",
+    "mj-breakpoint",
+    "mj-button",
+    "mj-carousel-image",
+    "mj-navbar-link",
+    "mj-preview",
+    "mj-raw",
+    "mj-social-element",
+    "mj-style",
+    "mj-table",
+    "mj-text",
+    "mj-title"
+  ],
   "mjml_version": "5.4.0"
 }
