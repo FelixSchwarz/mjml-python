@@ -452,6 +452,108 @@
       "text-padding": "unit(px,%){1,4}"
     }
   },
+  "dependencies": {
+    "mj-accordion": [
+      "mj-accordion-element",
+      "mj-raw"
+    ],
+    "mj-accordion-element": [
+      "mj-accordion-text",
+      "mj-accordion-title",
+      "mj-raw"
+    ],
+    "mj-accordion-text": [],
+    "mj-accordion-title": [],
+    "mj-attributes": null,
+    "mj-body": [
+      "mj-hero",
+      "mj-raw",
+      "mj-section",
+      "mj-wrapper"
+    ],
+    "mj-button": [],
+    "mj-carousel": [
+      "mj-carousel-image"
+    ],
+    "mj-carousel-image": [],
+    "mj-column": [
+      "mj-accordion",
+      "mj-button",
+      "mj-carousel",
+      "mj-divider",
+      "mj-image",
+      "mj-navbar",
+      "mj-raw",
+      "mj-social",
+      "mj-spacer",
+      "mj-table",
+      "mj-text"
+    ],
+    "mj-divider": [],
+    "mj-group": [
+      "mj-column",
+      "mj-raw"
+    ],
+    "mj-head": [
+      "mj-attributes",
+      "mj-breakpoint",
+      "mj-font",
+      "mj-html-attributes",
+      "mj-preview",
+      "mj-raw",
+      "mj-style",
+      "mj-title"
+    ],
+    "mj-hero": [
+      "mj-accordion",
+      "mj-button",
+      "mj-carousel",
+      "mj-divider",
+      "mj-image",
+      "mj-navbar",
+      "mj-raw",
+      "mj-social",
+      "mj-spacer",
+      "mj-table",
+      "mj-text"
+    ],
+    "mj-html-attribute": [],
+    "mj-html-attributes": [
+      "mj-selector"
+    ],
+    "mj-image": [],
+    "mj-navbar": [
+      "mj-navbar-link",
+      "mj-raw"
+    ],
+    "mj-raw": [],
+    "mj-section": [
+      "mj-column",
+      "mj-group",
+      "mj-raw"
+    ],
+    "mj-selector": [
+      "mj-html-attribute"
+    ],
+    "mj-social": [
+      "mj-raw",
+      "mj-social-element"
+    ],
+    "mj-social-element": [],
+    "mj-spacer": [],
+    "mj-table": [],
+    "mj-text": [],
+    "mj-wrapper": [
+      "mj-hero",
+      "mj-raw",
+      "mj-section"
+    ],
+    "mjml": [
+      "mj-body",
+      "mj-head",
+      "mj-raw"
+    ]
+  },
   "ending_tags": [
     "mj-accordion-text",
     "mj-accordion-title",

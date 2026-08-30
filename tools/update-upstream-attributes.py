@@ -16,7 +16,7 @@ import re
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 SNAPSHOT_PATH = Path(__file__).parent.parent / 'tests' / 'upstream_attributes.json'
@@ -27,6 +27,8 @@ _allowed_attrs_re = re.compile(r'static\s+allowedAttributes\s*=\s*')
 _spread_re = re.compile(r'\.\.\.(\w+)\.allowedAttributes')
 _attr_re = re.compile(r"(?:'([^']+)'|([\w-]+))\s*:\s*'([^']*)'")
 _ending_tag_re = re.compile(r'static\s+endingTag\s*=\s*true')
+_dependency_re = re.compile(r"'?([\w-]+)'?\s*:\s*\[([^\]]*)\]")
+_DEPENDENCIES_JS = 'packages/mjml-preset-core/src/dependencies.js'
 
 
 class JsClass(NamedTuple):
@@ -122,6 +124,26 @@ def _ending_tag(class_name: str, classes: dict[str, JsClass]) -> bool:
     return _ending_tag(parent, classes) if (parent in classes) else False
 
 
+def parse_dependencies(upstream_dir: Path) -> dict[str, Optional[list[str]]]:
+    """
+    Which children upstream allows per element.
+
+    A component without an entry accepts no children at all, see
+    "dependencies[tagName] || []" in the "validChildren" rule. "mj-attributes"
+    is declared as a regular expression matching everything and becomes None.
+    """
+    source = (upstream_dir / _DEPENDENCIES_JS).read_text(encoding='utf8')
+    body = source.split('export default {', 1)[-1].rsplit('}', 1)[0]
+    dependencies: dict[str, Optional[list[str]]] = {}
+    for name, entries in _dependency_re.findall(body):
+        children = re.findall(r"'([\w-]+)'", entries)
+        accepts_anything = ('/' in entries) and not children
+        dependencies[name] = None if accepts_anything else sorted(children)
+    if 'mj-body' not in dependencies:
+        raise SystemExit(f'no dependencies found in {_DEPENDENCIES_JS}')
+    return dependencies
+
+
 def upstream_version(upstream_dir: Path) -> str:
     package_json = json.loads((upstream_dir / 'packages' / 'mjml' / 'package.json').read_text())
     return package_json['version']
@@ -135,6 +157,7 @@ def main() -> None:
     components = parse_upstream(args.upstream_dir)
     snapshot = {
         'mjml_version': upstream_version(args.upstream_dir),
+        'dependencies': parse_dependencies(args.upstream_dir),
         'allowed_attributes': {name: c.attrs for name, c in sorted(components.items())},
         'ending_tags': sorted(name for name, c in components.items() if c.ending_tag),
     }
@@ -147,7 +170,8 @@ def main() -> None:
     num_ending_tags = len(snapshot['ending_tags'])
     print(
         f'mjml {snapshot["mjml_version"]}: {len(components)} components, '
-        f'{num_attrs} attributes, {num_ending_tags} ending tags'
+        f'{num_attrs} attributes, {num_ending_tags} ending tags, '
+        f'{len(snapshot["dependencies"])} dependency entries'
     )
     for line in _changes(previous.get('allowed_attributes', {}), snapshot['allowed_attributes']):
         print(line)
