@@ -118,3 +118,38 @@ def test_unreadable_include_is_reported(tmp_path):
 
     (error,) = errors
     assert error.rule is ValidationRule.INCLUDE_ERROR
+
+
+def test_formatted_message_of_a_real_error(tmp_path):
+    template = tmp_path / 'template.mjml'
+    template.write_text(
+        '<mjml>\n  <mj-body>\n    <mj-section>\n'
+        '      <mj-column><mj-text color="bogus">hi</mj-text></mj-column>\n'
+        '    </mj-section>\n  </mj-body>\n</mjml>'
+    )
+    components = core_components()
+    soup = BeautifulSoup(template.read_bytes(), 'html.parser')
+    tree = node_tree_from_soup(soup.mjml, components, file=str(template))
+
+    (error,) = validate_tree(tree, components)
+    expected = (
+        f'Line 4 of {template} (mj-text) - '
+        'Attribute color has invalid value: bogus for type Color'
+    )
+    assert error.formatted_message() == expected
+
+
+def test_formatted_message_names_the_included_file(tmp_path):
+    (tmp_path / 'header.mjml').write_text(
+        '<mj-section><mj-column><mj-text color="bogus">hi</mj-text></mj-column></mj-section>'
+    )
+    mjml_str = _body('<mj-include path="./header.mjml" />')
+
+    (error,) = _validate(mjml_str, template_dir=tmp_path)
+
+    included = tmp_path / 'header.mjml'
+    # the including template was read from a string, so it has no file name
+    assert error.formatted_message() == (
+        f'Line 1 of {included}, included at line 1 (mj-text) - '
+        'Attribute color has invalid value: bogus for type Color'
+    )

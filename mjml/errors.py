@@ -26,9 +26,13 @@ class Include:
 
 
 def _include_location(include: Include) -> str:
-    if include.line is None:
-        return f'file {include.file}'
-    return f'line {include.line} of file {include.file}'
+    # a template which was not read from a file has no name to print
+    parts = []
+    if include.line is not None:
+        parts.append(f'line {include.line}')
+    if include.file is not None:
+        parts.append(f'file {include.file}')
+    return ' of '.join(parts) or 'an unknown location'
 
 
 @dataclass(frozen=True)
