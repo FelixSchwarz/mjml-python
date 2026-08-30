@@ -1,7 +1,6 @@
 
 from io import StringIO
 
-import pytest
 from htmlcompare import assert_same_html
 
 from mjml import mjml_to_html
@@ -59,7 +58,5 @@ def test_custom_components_do_not_leak_into_later_calls():
     html = mjml_to_html(StringIO(mjml), custom_components=[MjTextCustom]).html
     assert 'START CUSTOM WRAPPER' in html
 
-    # the next call must not know "mj-text-custom" any more. Unknown elements
-    # raise for now, upstream skips them instead.
-    with pytest.raises(KeyError):
-        mjml_to_html(StringIO(mjml))
+    # the next call must not know "mj-text-custom" any more, so it is skipped
+    assert 'START CUSTOM WRAPPER' not in mjml_to_html(StringIO(mjml)).html

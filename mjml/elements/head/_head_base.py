@@ -1,3 +1,4 @@
+import sys
 from typing import Any, Optional
 
 from mjml.core import Component, initComponent
@@ -19,7 +20,8 @@ class HeadComponent(Component):
             if not component:
                 # LATER: hook up with error reporting structure
                 # (e.g. via "context"? - upstream uses console.error() here)
-                print(f'No matching component for tag : {tagName}')
+                # stderr, not stdout: the cli writes the generated html there
+                sys.stderr.write(f'No matching component for tag : {tagName}\n')
                 return None
 
             if hasattr(component, 'handler'):

@@ -14,7 +14,7 @@ def initComponent(
 ) -> Optional["Component"]:
     if name is None:
         return None
-    component_cls = components[name]
+    component_cls = components.get(name)
     if not component_cls:
         return None
 
