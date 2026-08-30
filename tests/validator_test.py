@@ -72,7 +72,9 @@ def test_misplaced_child_is_reported_with_its_possible_parents():
     (error,) = _validate(_body('<mj-section><mj-text>hi</mj-text></mj-section>'))
 
     assert error.rule is ValidationRule.VALID_CHILDREN
-    expected = 'mj-text cannot be used inside mj-section, only inside: mj-column, mj-hero'
+    expected = (
+        'mj-text cannot be used inside mj-section, only inside: mj-attributes, mj-column, mj-hero'
+    )
     assert error.message == expected
     # the error points at the child, not at the parent
     assert error.tag_name == 'mj-text'

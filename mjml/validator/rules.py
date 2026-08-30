@@ -100,7 +100,8 @@ def _possible_parents(tag_name: str, components: Components) -> list[str]:
     return sorted(
         name
         for name, component_cls in components.items()
-        if (tag_name in component_cls.accepts)
+        if (ComponentCategory.ANY in component_cls.accepts)
+        or (tag_name in component_cls.accepts)
         or (child_cls.categories & component_cls.accepts)
     )
 
