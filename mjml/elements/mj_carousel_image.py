@@ -20,9 +20,9 @@ class MjCarouselImage(BodyComponent):
             'title'           : 'string',
             'src'             : 'string',
             'thumbnails-src'  : 'string',
-            'border-radius'   : 'unit(px,%){1,4}',
+            'border-radius'   : 'string',
             'tb-border'       : 'string',
-            'tb-border-radius': 'unit(px,%){1,4}',
+            'tb-border-radius': 'string',
         }
 
     @classmethod

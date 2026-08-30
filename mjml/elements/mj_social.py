@@ -13,7 +13,7 @@ class MjSocial(BodyComponent):
         return {
             'align'                     : 'enum(left,right,center)',
             'border'                    : 'string',
-            'border-radius'             : 'unit(px,%)',
+            'border-radius'             : 'string',
             'container-background-color': 'color',
             'color'                     : 'color',
             'font-family'               : 'string',

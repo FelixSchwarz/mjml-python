@@ -19,7 +19,7 @@ class MjCarousel(BodyComponent):
     def allowed_attrs(cls):
         return {
             'align'                     : 'enum(left,center,right)',
-            'border-radius'             : 'unit(px,%){1,4}',
+            'border-radius'             : 'string',
             'container-background-color': 'color',
             'icon-width'                : 'unit(px,%)',
             'left-icon'                 : 'string',
@@ -31,7 +31,7 @@ class MjCarousel(BodyComponent):
             'right-icon'                : 'string',
             'thumbnails'                : 'enum(visible,hidden,supported)',
             'tb-border'                 : 'string',
-            'tb-border-radius'          : 'unit(px,%)',
+            'tb-border-radius'          : 'string',
             'tb-hover-border-color'     : 'color',
             'tb-selected-border-color'  : 'color',
             'tb-width'                  : 'unit(px,%)',

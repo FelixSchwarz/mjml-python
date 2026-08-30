@@ -101,7 +101,7 @@ class MjSocialElement(BodyComponent):
             'background-color': 'color',
             'color'           : 'color',
             'border'          : 'string',
-            'border-radius'   : 'unit(px)',
+            'border-radius'   : 'string',
             'font-family'     : 'string',
             'font-size'       : 'unit(px)',
             'font-style'      : 'string',
