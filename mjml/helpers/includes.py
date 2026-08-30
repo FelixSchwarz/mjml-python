@@ -1,13 +1,45 @@
+from collections.abc import Sequence
 from io import BytesIO
-from pathlib import PurePath
+from pathlib import Path, PurePath
+from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
 
-__all__ = ['parse_include_document', 'read_include_file', 'resolve_include_path']
+if TYPE_CHECKING:
+    from _typeshed import StrPath
 
 
-def resolve_include_path(path_value, *, template_dir):
+__all__ = [
+    'CircularIncludeError',
+    'guard_against_circular_include',
+    'parse_include_document',
+    'read_include_file',
+    'resolve_include_path',
+]
+
+
+class CircularIncludeError(Exception):
+    pass
+
+
+def guard_against_circular_include(
+    included_path: "StrPath",
+    include_chain: Sequence[Path],
+) -> Sequence[Path]:
+    """
+    Return the include chain extended by "included_path".
+
+    A file which includes itself, directly or through other files, would
+    otherwise be expanded until the recursion limit stops it.
+    """
+    resolved = Path(included_path).resolve()
+    if resolved in include_chain:
+        raise CircularIncludeError(f'Circular inclusion detected on file : {resolved}')
+    return (*include_chain, resolved)
+
+
+def resolve_include_path(path_value, *, template_dir) -> "StrPath":
     path = PurePath(path_value)
     if path.is_absolute():
         return path

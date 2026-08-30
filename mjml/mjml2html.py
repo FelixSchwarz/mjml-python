@@ -19,6 +19,7 @@ from mjml.errors import (
 )
 from mjml.helpers import (
     convertBooleansOnAttrs,
+    guard_against_circular_include,
     json_to_xml,
     mergeOutlookConditionals,
     omit,
@@ -208,7 +209,13 @@ def mjml_to_html(
         if len(mjml_element) == 0:
             return {}
 
-        def parse(_mjml, parentMjClass: str='', *, template_dir: Optional["StrPath"]) -> Any:
+        def parse(
+            _mjml,
+            parentMjClass: str = '',
+            *,
+            template_dir: Optional["StrPath"],
+            include_chain: tuple = (),
+        ) -> Any:
             tagName = _mjml.name
             if isinstance(_mjml, Comment) and keep_comments:
                 comment_text = str(_mjml)
@@ -283,9 +290,12 @@ def mjml_to_html(
                         'globalAttributes': {},
                         'children': [],
                     }
-                mj_include_subtree = handle_include(_include_path,
-                                                    parse_mjml=parse,
-                                                    template_dir=template_dir)
+                mj_include_subtree = handle_include(
+                    _include_path,
+                    parse_mjml=parse,
+                    template_dir=template_dir,
+                    include_chain=include_chain,
+                )
                 return mj_include_subtree
             result = {
                 'tagName': tagName,
@@ -294,7 +304,10 @@ def mjml_to_html(
                 'globalAttributes': globalDatas.get("defaultAttributes").get('mj-all', {}).copy(),
                 'children': [], # will be set afterwards
             }
-            _parse_mjml = lambda mjml: parse(mjml, nextParentMjClass, template_dir=template_dir)
+            def _parse_mjml(mjml):
+                return parse(
+                    mjml, nextParentMjClass, template_dir=template_dir, include_chain=include_chain
+                )
             for child_result in _map_to_tuple(children, _parse_mjml, filter_none=True):
                 if isinstance(child_result, (tuple, list)):
                     result['children'].extend(child_result)
@@ -433,7 +446,7 @@ def _map_to_tuple(items, map_fn, filter_none=None):
     return tuple(results)
 
 
-def merge_included_heads(mjml_root, *, template_dir) -> None:
+def merge_included_heads(mjml_root, *, template_dir, include_chain=()) -> None:
     """
     Merge the <mj-head> of all included files (regardless of their position within
     the mjml) into the document's own <mj-head>.
@@ -447,8 +460,11 @@ def merge_included_heads(mjml_root, *, template_dir) -> None:
         if included_root is None:
             continue
         # nested includes contribute to the head of the file which includes them
-        included_dir = resolve_include_path(path_value, template_dir=template_dir).parent
-        merge_included_heads(included_root, template_dir=included_dir)
+        included_path = resolve_include_path(path_value, template_dir=template_dir)
+        nested_chain = guard_against_circular_include(included_path, include_chain)
+        merge_included_heads(
+            included_root, template_dir=included_path.parent, include_chain=nested_chain
+        )
 
         # upstream only looks at direct children of <mjml> here, so a stray
         # <mj-head> inside <mj-body> is left alone.
@@ -463,8 +479,9 @@ def merge_included_heads(mjml_root, *, template_dir) -> None:
             head.append(child.extract())
 
 
-def handle_include(path_value, parse_mjml, *, template_dir):
+def handle_include(path_value, parse_mjml, *, template_dir, include_chain: Sequence[Path]=()):
     included_path = resolve_include_path(path_value, template_dir=template_dir)
+    include_chain = guard_against_circular_include(included_path, include_chain)
     mjml_doc = parse_include_document(path_value, template_dir=template_dir)
     # <mj-head> was already merged into the document head by
     # merge_included_heads(), only the body is spliced in at this point.
@@ -472,7 +489,9 @@ def handle_include(path_value, parse_mjml, *, template_dir):
     if not _body:
         return ()
 
-    body_result = parse_mjml(_body[0], template_dir=included_path.parent)
+    body_result = parse_mjml(
+        _body[0], template_dir=included_path.parent, include_chain=include_chain
+    )
     assert body_result['tagName'] == 'mj-body'
     included_items = body_result['children']
     return included_items
