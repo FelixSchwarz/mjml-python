@@ -1,8 +1,8 @@
 [[repos]]
 repo = "builtin"
 hooks = [
-    { id = "trailing-whitespace", exclude = '^tests/testdata/.*\.html$' },
-    { id = "end-of-file-fixer", exclude = '^tests/testdata/.*\.html$' },
+    { id = "trailing-whitespace", exclude = '^tests/(testdata|missing_functionality)/.*\.html$' },
+    { id = "end-of-file-fixer", exclude = '^tests/(testdata|missing_functionality)/.*\.html$' },
 ]
 
 [[repos]]

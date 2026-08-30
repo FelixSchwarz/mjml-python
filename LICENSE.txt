@@ -1,7 +1,8 @@
 The MIT License (MIT)
 
 Copyright (c) 2016 Mailjet SAS, https://mjml.io
-Copyright (c) 2020 Felix Schwarz
+Copyright (c) 2020-2026 Jérémie Drouet and mrml contributors (some test templates)
+Copyright (c) 2020-2026 Felix Schwarz and mjml-python contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
