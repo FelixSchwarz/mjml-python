@@ -4,6 +4,7 @@ from .convert_booleans_on_attrs import *
 from .css_inlining import *
 from .fonts import *
 from .format_attributes import *
+from .includes import *
 from .json_to_xml import *
 from .make_lower_breakpoint import *
 from .media_queries import *
