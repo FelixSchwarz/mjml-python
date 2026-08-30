@@ -10,6 +10,7 @@ from mjml.elements.head._head_base import HeadComponent
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
+from .errors import ValidationError
 from .helpers import (
     convertBooleansOnAttrs,
     json_to_xml,
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
 
 class ParseResult(NamedTuple):
     html: str
-    errors: Sequence[str]
+    errors: Sequence[ValidationError]
 
 
 class CSSInclude(NamedTuple):
@@ -115,7 +116,7 @@ def mjml_to_html(
     # "validationLevel" is not used but available upstream - makes it easier to
     # match the line of code with the upstream sources.
     validationLevel = 'skip' # noqa: F841
-    errors: list[str] = []
+    errors: list[ValidationError] = []
     # LATER: optional validation
 
     css_includes: list["CSSInclude"] = []

@@ -1,8 +1,11 @@
-
-from .mjml2html import ParseResult, mjml_to_html
+from mjml.errors import Severity, ValidationError, ValidationRule
+from mjml.mjml2html import ParseResult, mjml_to_html
 
 
 __all__ = [
     'mjml_to_html',
     'ParseResult',
+    'Severity',
+    'ValidationError',
+    'ValidationRule',
 ]
