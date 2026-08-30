@@ -32,6 +32,8 @@ class ValidationRule(Enum):
     VALID_TYPES = 'valid-types'
     VALID_CHILDREN = 'valid-children'
     INCLUDE_ERROR = 'include-error'
+    # unsupported in our implementation but it is valid in mjml js
+    NOT_IMPLEMENTED = 'not-implemented'
 
 
 @dataclass(frozen=True)

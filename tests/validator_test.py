@@ -155,3 +155,130 @@ def test_formatted_message_names_the_included_file(tmp_path):
         f'Line 1 of {included}, included at line 1 (mj-text) - '
         'Attribute color has invalid value: bogus for type Color'
     )
+
+
+def test_unsupported_attribute_says_so_instead_of_illegal():
+    inner = '<mj-raw position="file-start">x</mj-raw><mj-section><mj-column /></mj-section>'
+    (error,) = _validate(_body(inner))
+
+    assert error.rule is ValidationRule.NOT_IMPLEMENTED
+    assert error.message == 'position is not implemented by this port (#74)'
+
+
+def test_repeated_declaration_in_mj_attributes_is_reported():
+    mjml_str = (
+        '<mjml><mj-head><mj-attributes>'
+        '<mj-text color="red" /><mj-text font-size="20px" />'
+        '</mj-attributes></mj-head>'
+        '<mj-body><mj-section><mj-column /></mj-section></mj-body></mjml>'
+    )
+    (error,) = _validate(mjml_str)
+
+    assert error.rule is ValidationRule.NOT_IMPLEMENTED
+    assert error.message == 'mj-text is declared more than once.'
+
+
+def test_different_declarations_in_mj_attributes_are_fine():
+    mjml_str = (
+        '<mjml>'
+          '<mj-head>'
+            '<mj-attributes>'
+              '<mj-text color="red" />'
+              '<mj-button font-size="20px" />'
+            '</mj-attributes>'
+          '</mj-head>'
+          '<mj-body>'
+            '<mj-section>'
+              '<mj-column />'
+            '</mj-section>'
+          '</mj-body>'
+        '</mjml>'
+    )
+    assert _validate(mjml_str) == []
+
+
+def _head(inner):
+    return (
+        '<mjml>'
+          f'<mj-head>{inner}</mj-head>'
+          '<mj-body>'
+            '<mj-section>'
+              '<mj-column>'
+                '<mj-text>hi</mj-text>'
+              '</mj-column>'
+            '</mj-section>'
+          '</mj-body>'
+        '</mjml>'
+    )
+
+
+def test_an_empty_declaration_in_mj_attributes_is_not_repeated():
+    # rendering skips a declaration without attributes, so two of them merge
+    # into nothing and produce the same html as upstream
+    mjml_str = _head(
+        '<mj-attributes><mj-text /><mj-text color="red" /></mj-attributes>'
+    )
+    assert _validate(mjml_str) == []
+
+
+def test_declarations_collide_across_mj_attributes_blocks():
+    mjml_str = _head(
+        '<mj-attributes><mj-text color="red" /></mj-attributes>'
+        '<mj-attributes><mj-text font-size="20px" /></mj-attributes>'
+    )
+    (error,) = _validate(mjml_str)
+
+    assert error.rule is ValidationRule.NOT_IMPLEMENTED
+    assert error.message == 'mj-text is declared more than once.'
+
+
+def test_repeated_mj_font_name_is_reported():
+    different = '<mj-font name="A" href="a.css" /><mj-font name="B" href="b.css" />'
+    assert _validate(_head(different)) == []
+
+    same = '<mj-font name="Mine" href="one.css" /><mj-font name="Mine" href="two.css" />'
+    (error,) = _validate(_head(same))
+
+    assert error.rule is ValidationRule.NOT_IMPLEMENTED
+    expected = 'mj-font name="Mine" is declared more than once.'
+    assert error.message == expected
+
+
+def test_repeated_mj_selector_path_is_reported():
+    def selector(path, name):
+        return (
+            f'<mj-selector path="{path}">'
+            f'<mj-html-attribute name="{name}">1</mj-html-attribute>'
+            '</mj-selector>'
+        )
+
+    block = f'<mj-html-attributes>{selector(".x", "a")}{selector(".x", "b")}</mj-html-attributes>'
+    (error,) = _validate(_head(block))
+
+    assert error.rule is ValidationRule.NOT_IMPLEMENTED
+    expected = 'mj-selector path=".x" is declared more than once.'
+    assert error.message == expected
+
+
+def test_mj_class_declarations_with_the_same_name_are_reported_as_repeated():
+    def attributes(inner: str) -> str:
+        return (
+            '<mjml>'
+              '<mj-head>'
+                f'<mj-attributes>{inner}</mj-attributes>'
+              '</mj-head>'
+              '<mj-body>'
+                '<mj-section>'
+                  '<mj-column />'
+                '</mj-section>'
+              '</mj-body>'
+            '</mjml>'
+        )
+
+    different = '<mj-class name="a" color="red" /><mj-class name="b" color="blue" />'
+    assert _validate(attributes(different)) == []
+
+    same = '<mj-class name="a" color="red" /><mj-class name="a" font-size="9px" />'
+    (error,) = _validate(attributes(same))
+    expected = 'mj-class name="a" is declared more than once.'
+    assert error.message == expected

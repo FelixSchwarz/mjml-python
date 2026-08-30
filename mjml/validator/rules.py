@@ -1,5 +1,5 @@
 from collections.abc import Iterator, Mapping
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
 from mjml.core.api import GLOBAL_ATTRS, ComponentCategory
 from mjml.core.types import initialize_type
@@ -17,6 +17,36 @@ __all__ = ['RULES']
 COMPONENTLESS_TAGS = frozenset({'mj-all', 'mj-class', 'mj-selector', 'mj-html-attribute'})
 
 Components = Mapping[str, type["Component"]]
+
+
+class _Declaration(NamedTuple):
+    destination: tuple[str, str]
+    description: str
+    node: Node
+
+
+# Declarations whose renderer destination is selected by an attribute.
+# Each key is (container tag, declaration tag), and each value is
+# (head-data collection, key attribute). Other non-empty children of mj-attributes
+# use their element name as the destination key.
+ATTRIBUTE_KEYED_DECLARATIONS = {
+    ('mj-head', 'mj-font'): ('fonts', 'name'),
+    ('mj-attributes', 'mj-class'): ('classes', 'name'),
+    ('mj-html-attributes', 'mj-selector'): ('htmlAttributes', 'path'),
+}
+
+# Containers whose child elements define head-data declarations.
+DECLARATION_CONTAINERS = frozenset({
+    'mj-attributes',
+    'mj-html-attributes',
+})
+
+# Attributes which we do not support yet.
+# These will be accepted by `valid_attributes` so the specialized check for
+# `report_unsupported_features` can build a more helpful error message.
+UNSUPPORTED_ATTRS = {
+    ('mj-raw', 'position'): 'position is not implemented by this port (#74)',
+}
 
 
 def _error(node: Node, message: str, rule: ValidationRule) -> ValidationError:
@@ -43,7 +73,10 @@ def valid_attributes(node: Node, components: Components) -> Iterator[ValidationE
     if component_cls is None:
         return
     allowed = set(component_cls.allowed_attrs()) | GLOBAL_ATTRS
-    unknown = [attr for attr in node.attributes if attr not in allowed]
+    unknown = [
+        attr for attr in node.attributes
+        if (attr not in allowed) and ((node.tag_name, attr) not in UNSUPPORTED_ATTRS)
+    ]
     if not unknown:
         return
     if len(unknown) == 1:
@@ -95,6 +128,75 @@ def include_errors(node: Node, components: Components) -> Iterator[ValidationErr
     yield from node.errors
 
 
+def report_unsupported_features(node: Node, components: Components) -> Iterator[ValidationError]:
+    for attr in node.attributes:
+        message = UNSUPPORTED_ATTRS.get((node.tag_name, attr))
+        if message:
+            yield _error(node, message, ValidationRule.NOT_IMPLEMENTED)
+
+    if node.tag_name == 'mj-head':
+        yield from _colliding_declarations(node)
+
+
+def _colliding_declarations(head: Node) -> Iterator[ValidationError]:
+    """Report declarations that target the same renderer destination."""
+    seen: set[tuple[str, str]] = set()
+
+    for declaration in _head_declarations(head):
+        if declaration.destination in seen:
+            message = f'{declaration.description} is declared more than once.'
+            yield _error(declaration.node, message, ValidationRule.NOT_IMPLEMENTED)
+        seen.add(declaration.destination)
+
+
+def _head_declarations(head: Node) -> Iterator[_Declaration]:
+    for parent in (head, *_declaration_containers(head)):
+        for child in parent.children:
+            if child.kind is NodeKind.COMMENT:
+                continue
+
+            declaration = _declaration(parent.tag_name, child)
+            if declaration is not None:
+                yield declaration
+
+
+def _declaration_containers(head: Node) -> Iterator[Node]:
+    for child in head.children:
+        if child.tag_name in DECLARATION_CONTAINERS:
+            yield child
+
+
+def _declaration(parent_tag: str, node: Node) -> Optional[_Declaration]:
+    destination_and_key_attribute = ATTRIBUTE_KEYED_DECLARATIONS.get(
+        (parent_tag, node.tag_name)
+    )
+    if destination_and_key_attribute is not None:
+        destination, key_attribute = destination_and_key_attribute
+        key_value = node.attributes.get(key_attribute)
+        if key_value is None:
+            # a declaration without its key never gets that far
+            return None
+
+        return _Declaration(
+            destination=(destination, key_value),
+            description=f'{node.tag_name} {key_attribute}="{key_value}"',
+            node=node,
+        )
+
+    if parent_tag != 'mj-attributes':
+        return None
+
+    # The renderer ignores empty declarations, so they occupy no destination.
+    if not node.attributes:
+        return None
+
+    return _Declaration(
+        destination=('defaultAttributes', node.tag_name),
+        description=node.tag_name,
+        node=node,
+    )
+
+
 def _possible_parents(tag_name: str, components: Components) -> list[str]:
     child_cls = components[tag_name]
     return sorted(
@@ -112,4 +214,5 @@ RULES = (
     valid_types,
     valid_children,
     include_errors,
+    report_unsupported_features,
 )

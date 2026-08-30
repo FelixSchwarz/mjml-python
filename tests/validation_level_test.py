@@ -37,6 +37,31 @@ def test_soft_reports_errors_and_still_renders():
     assert 'Hello World' in result.html
 
 
+def test_empty_default_declaration_does_not_collide_with_following_declaration():
+    # The renderer ignores empty declarations, so the validator must ignore them too.
+    mjml_str = (
+        '<mjml>'
+          '<mj-head>'
+            '<mj-attributes>'
+              '<mj-text />'
+              '<mj-text color="red" />'
+            '</mj-attributes>'
+          '</mj-head>'
+          '<mj-body>'
+            '<mj-section>'
+              '<mj-column>'
+                '<mj-text>text</mj-text>'
+              '</mj-column>'
+            '</mj-section>'
+          '</mj-body>'
+        '</mjml>'
+    )
+    result = mjml_to_html(StringIO(mjml_str), validation_level='soft')
+
+    assert result.errors == []
+    assert 'color:red' in result.html
+
+
 def test_strict_raises_before_rendering():
     with pytest.raises(MJMLValidationErrors) as exc_info:
         mjml_to_html(StringIO(INVALID_MJML), validation_level='strict')
