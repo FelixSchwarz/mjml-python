@@ -36,6 +36,9 @@ __all__ = ['parse_document']
 
 _Attrs = list  # list[tuple[str, Optional[str]]] as "html.parser" hands them over
 
+# "mjml" is the default and the only one which is parsed as a template
+INCLUDE_TYPES = frozenset({'mjml', 'css', 'html'})
+
 # an attribute name, optionally followed by its value
 _ATTR_RE = re.compile(r"""([^\s=/>]+)\s*(?:=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]*))?""")
 
@@ -276,6 +279,14 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         yield _failed_include(element, origin, 'mj-include has no "path" attribute')
         return
     include_type = element.attributes.get('type')
+    if include_type and (include_type not in INCLUDE_TYPES):
+        if origin.report_include_errors:
+            known_include_types = ', '.join(sorted(INCLUDE_TYPES))
+            _msg = f'unknown mj-include type "{include_type}", use one of {known_include_types}'
+            yield _failed_include(element, origin, _msg)
+            return
+        include_type = None
+
     resolved = resolve_include_path(path_value, template_dir=origin.template_dir)
     try:
         if include_type in ('css', 'html'):

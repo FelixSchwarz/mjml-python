@@ -145,6 +145,29 @@ def test_reports_circular_include(tmp_path: Path):
     (error,) = raw.errors
     assert 'Circular inclusion' in error.message
 
+
+def test_reports_unknown_include_type(tmp_path: Path):
+    path = _include_template(
+        tmp_path, '<mj-include path="./part.mjml" type="bogus" />',
+        part='<mj-section><mj-column /></mj-section>',
+    )
+    (raw,) = _find(_parse_file(path), 'mj-body').children
+
+    (error,) = raw.errors
+    assert error.message.startswith('unknown mj-include type')
+
+
+def test_renders_unknown_include_type_as_an_mjml_include(tmp_path: Path):
+    path = _include_template(
+        tmp_path, '<mj-include path="./part.mjml" type="bogus" />',
+        part='<mj-section><mj-column /></mj-section>',
+    )
+    tree = _parse_file(path, report_include_errors=False)
+
+    (section,) = _find(tree, 'mj-body').children
+    assert section.tag_name == 'mj-section'
+
+
 def test_head_of_an_included_file_joins_the_document_head(tmp_path: Path):
     mjml_str = (
         '<mjml>'
@@ -268,12 +291,16 @@ def _parse(source: str, file: Optional[str] = None) -> Node:
     return root
 
 
-def _parse_file(path: Path, **kwargs) -> Node:
+def _parse_file(path: Path, *, report_include_errors: bool = True, **kwargs) -> Node:
     mjml_str = path.read_text(encoding='utf8')
     # The tests below look at reported problems, so parsing must not raise.
     root = parse_document(
-        mjml_str, core_components(), file=str(path), template_dir=path.parent,
-        report_include_errors=True, **kwargs
+        mjml_str,
+        core_components(),
+        file=str(path),
+        template_dir=path.parent,
+        report_include_errors=report_include_errors,
+        **kwargs,
     )
     assert root is not None
     return root

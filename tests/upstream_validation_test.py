@@ -62,7 +62,10 @@ def test_everything_upstream_rejects_is_rejected_here(test_id):
 
 
 def test_the_snapshot_covers_every_template():
-    templates = {path.stem for path in TEMPLATE_DIR.glob('*.mjml')}
+    templates = {
+        path.stem for path in TEMPLATE_DIR.glob('*.mjml')
+        if not path.stem.startswith('_')
+    }
     assert templates == set(UPSTREAM_FINDINGS)
 
 
@@ -81,6 +84,7 @@ DEVIATIONS = {
     'deviation-rgba-unanchored': ('mj-text', 'valid-types', 'color'),
     'deviation-unit-number': ('mj-text', 'valid-types', 'font-size'),
     'deviation-unit-with-negative-number': ('mj-text', 'valid-types', 'letter-spacing'),
+    'deviation-unknown-include-type': ('mj-raw', 'include-error', None),
 }
 
 

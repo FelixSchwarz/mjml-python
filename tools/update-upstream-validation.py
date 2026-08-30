@@ -58,7 +58,12 @@ def findings_for(mjml_js: str, template: Path) -> Optional[list[list]]:
     recorded as "no verdict" rather than as "no findings".
     """
     process = subprocess.run(
-        [mjml_js, str(template), '-s', '--validationLevel=strict'],
+        [
+            mjml_js, str(template), '-s', '--validationLevel=strict',
+            # mjml 5.4.0 ignores every "mj-include" unless both are given
+            '--config.allowIncludes', 'true',
+            '--config.includePath', str(template.parent),
+        ],
         capture_output=True, text=True, check=False,
     )
     if 'failed to render' in process.stderr:
@@ -95,7 +100,9 @@ def main() -> None:
 
     snapshot = {
         template.stem: findings_for(mjml_js, template)
+        # files starting with "_" are include targets, not templates
         for template in sorted(TEMPLATE_DIR.glob('*.mjml'))
+        if not template.stem.startswith('_')
     }
     if not snapshot:
         raise SystemExit(f'no templates in {TEMPLATE_DIR}')
