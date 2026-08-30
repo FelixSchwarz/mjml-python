@@ -3,6 +3,7 @@ import random
 import string
 import typing
 
+from mjml.core import ComponentCategory
 from mjml.elements.mj_carousel_image import MjCarouselImage
 
 from ..helpers import msoConditionalTag, widthParser
@@ -14,6 +15,8 @@ __all__ = ['MjCarousel']
 
 class MjCarousel(BodyComponent):
     component_name = 'mj-carousel'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
+    accepts = frozenset({'mj-carousel-image'})
 
     @classmethod
     def allowed_attrs(cls):

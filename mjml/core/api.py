@@ -1,11 +1,25 @@
 
 from collections.abc import Mapping
+from enum import Enum
 from typing import Any, ClassVar, Optional, Union
 
 from mjml.helpers.format_attributes import formatAttributes
 
 
-__all__ = ['initComponent', 'Component']
+__all__ = ['initComponent', 'ComponentCategory', 'Component']
+
+
+class ComponentCategory(Enum):
+    """
+    What a component is, so a parent can say which children it takes.
+    """
+    HEAD_ELEMENT = 'head-element'
+    SECTION_LEVEL = 'section-level'
+    COLUMN_LEVEL = 'column-level'
+    BODY_ELEMENT = 'body-element'
+    RAW = 'raw'
+    # only "mj-attributes": it declares defaults for every element there is
+    ANY = 'any'
 
 def initComponent(
     name: Optional[str],
@@ -36,6 +50,10 @@ class Component:
     component_name: ClassVar[str]
     # the content of an ending tag is raw text/HTML, not MJML
     ending_tag: ClassVar[bool] = False
+    # which groups this component belongs to
+    categories: ClassVar[frozenset[ComponentCategory]] = frozenset()
+    # categories and tag names this component takes as children
+    accepts: ClassVar[frozenset[Union[ComponentCategory, str]]] = frozenset()
 
     # LATER: not sure upstream also passes tagName, makes code easier for us
     def __init__(self, *, attributes=None, children=(), content: str='',

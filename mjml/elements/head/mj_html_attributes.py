@@ -3,6 +3,8 @@ from typing import ClassVar
 
 from typing_extensions import override
 
+from mjml.core import ComponentCategory
+
 from ._head_base import HeadComponent
 
 
@@ -10,6 +12,8 @@ __all__ = ['MjHtmlAttributes']
 
 class MjHtmlAttributes(HeadComponent):
     component_name: ClassVar[str] = 'mj-html-attributes'
+    categories = frozenset({ComponentCategory.HEAD_ELEMENT})
+    accepts = frozenset({'mj-selector'})
 
     @override
     def handler(self) -> None:

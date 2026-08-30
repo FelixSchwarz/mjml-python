@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ..helpers import parse_int, widthParser
 from ._base import BodyComponent
 
@@ -7,6 +9,7 @@ __all__ = ['MjDivider']
 
 class MjDivider(BodyComponent):
     component_name = 'mj-divider'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
 
     @classmethod
     def allowed_attrs(cls):

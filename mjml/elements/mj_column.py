@@ -3,6 +3,7 @@ import math
 from collections import namedtuple
 from typing import Literal, Union, overload
 
+from mjml.core import ComponentCategory
 from mjml.helpers import WidthUnit, parse_float, parse_int, strip_unit, widthParser
 
 from ._base import BodyComponent
@@ -15,6 +16,8 @@ Padding = namedtuple('Padding', ('top', 'right', 'bottom', 'left'))
 
 class MjColumn(BodyComponent):
     component_name = 'mj-column'
+    categories = frozenset({ComponentCategory.COLUMN_LEVEL})
+    accepts = frozenset({ComponentCategory.BODY_ELEMENT, ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

@@ -1,6 +1,8 @@
 
 from typing import Union
 
+from mjml.core import ComponentCategory
+
 from ..helpers import parse_int, widthParser
 from ._base import BodyComponent
 
@@ -10,6 +12,8 @@ __all__ = ['MjHero']
 
 class MjHero(BodyComponent):
     component_name = 'mj-hero'
+    categories = frozenset({ComponentCategory.SECTION_LEVEL})
+    accepts = frozenset({ComponentCategory.BODY_ELEMENT, ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

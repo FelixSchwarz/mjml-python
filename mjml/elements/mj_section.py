@@ -3,6 +3,8 @@ from collections import namedtuple
 from decimal import Decimal
 from typing import Any
 
+from mjml.core import ComponentCategory
+
 from ..helpers import parse_percentage, strip_unit, suffixCssClasses
 from ._base import BodyComponent
 
@@ -14,6 +16,8 @@ Position = namedtuple('Position', ('x', 'y'))
 
 class MjSection(BodyComponent):
     component_name = 'mj-section'
+    categories = frozenset({ComponentCategory.SECTION_LEVEL})
+    accepts = frozenset({ComponentCategory.COLUMN_LEVEL, ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls) -> dict[str, str]:

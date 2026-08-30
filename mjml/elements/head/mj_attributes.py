@@ -2,6 +2,7 @@ from typing import ClassVar
 
 from typing_extensions import override
 
+from mjml.core import ComponentCategory
 from mjml.helpers import omit
 
 from ._head_base import HeadComponent
@@ -12,6 +13,8 @@ __all__ = ['MjAttributes']
 
 class MjAttributes(HeadComponent):
     component_name: ClassVar[str] = 'mj-attributes'
+    categories = frozenset({ComponentCategory.HEAD_ELEMENT})
+    accepts = frozenset({ComponentCategory.ANY})
 
     @override
     def handler(self) -> None:

@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ._base import BodyComponent
 
 
@@ -6,6 +8,7 @@ __all__ = ['MjText']
 
 class MjText(BodyComponent):
     component_name = 'mj-text'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
     ending_tag = True
 
     @classmethod

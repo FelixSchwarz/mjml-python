@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ..helpers import suffixCssClasses
 from . import MjSection
 
@@ -8,6 +10,10 @@ __all__ = ['MjWrapper']
 
 class MjWrapper(MjSection):
     component_name = 'mj-wrapper'
+    # not section level although it derives from MjSection: a wrapper takes
+    # sections but must not be nested inside another wrapper
+    categories = frozenset()
+    accepts = frozenset({ComponentCategory.SECTION_LEVEL, ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

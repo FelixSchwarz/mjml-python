@@ -1,6 +1,8 @@
 
 import re
 
+from mjml.core import ComponentCategory
+
 from ..helpers import widthParser
 from ._base import BodyComponent
 
@@ -9,6 +11,7 @@ __all__ = ['MjTable']
 
 class MjTable(BodyComponent):
     component_name = 'mj-table'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
     ending_tag = True
 
     @classmethod

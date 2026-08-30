@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ._base import BodyComponent
 
 
@@ -6,6 +8,8 @@ __all__ = ['MjAccordion']
 
 class MjAccordion(BodyComponent):
     component_name = 'mj-accordion'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
+    accepts = frozenset({'mj-accordion-element', ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

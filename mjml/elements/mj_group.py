@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ..helpers import strip_unit, widthParser
 from ._base import BodyComponent
 
@@ -7,6 +9,8 @@ __all__ = ['MjGroup']
 
 class MjGroup(BodyComponent):
     component_name = 'mj-group'
+    categories = frozenset({ComponentCategory.COLUMN_LEVEL})
+    accepts = frozenset({'mj-column', ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

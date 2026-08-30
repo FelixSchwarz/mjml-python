@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ..helpers import widthParser
 from ._base import BodyComponent
 
@@ -7,6 +9,7 @@ __all__ = ['MjButton']
 
 class MjButton(BodyComponent):
     component_name = 'mj-button'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
     ending_tag = True
 
     @classmethod

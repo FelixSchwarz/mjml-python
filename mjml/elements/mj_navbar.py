@@ -1,6 +1,8 @@
 import random
 import string
 
+from mjml.core import ComponentCategory
+
 from ..helpers import conditionalTag, makeLowerBreakpoint, msoConditionalTag
 from ._base import BodyComponent
 
@@ -10,6 +12,8 @@ __all__ = ['MjNavbar']
 
 class MjNavbar(BodyComponent):
     component_name = 'mj-navbar'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
+    accepts = frozenset({'mj-navbar-link', ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

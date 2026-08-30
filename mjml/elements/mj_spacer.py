@@ -1,4 +1,6 @@
 
+from mjml.core import ComponentCategory
+
 from ._base import BodyComponent
 
 
@@ -7,6 +9,7 @@ __all__ = ['MjSpacer']
 
 class MjSpacer(BodyComponent):
     component_name = 'mj-spacer'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
 
     @classmethod
     def allowed_attrs(cls):

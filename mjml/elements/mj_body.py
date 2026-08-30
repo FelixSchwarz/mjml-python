@@ -1,4 +1,5 @@
 
+from mjml.core import ComponentCategory
 from mjml.elements._base import BodyComponent
 from mjml.helpers import buildPreview
 
@@ -7,6 +8,7 @@ __all__ = ['MjBody']
 
 class MjBody(BodyComponent):
     component_name = 'mj-body'
+    accepts = frozenset({ComponentCategory.SECTION_LEVEL, 'mj-wrapper', ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

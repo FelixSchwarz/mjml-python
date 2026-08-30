@@ -1,5 +1,7 @@
 
 
+from mjml.core import ComponentCategory
+
 from ._base import BodyComponent
 
 
@@ -7,6 +9,8 @@ __all__ = ['MjSocial']
 
 class MjSocial(BodyComponent):
     component_name = 'mj-social'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
+    accepts = frozenset({'mj-social-element', ComponentCategory.RAW})
 
     @classmethod
     def allowed_attrs(cls):

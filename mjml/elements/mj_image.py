@@ -1,6 +1,8 @@
 
 import math
 
+from mjml.core import ComponentCategory
+
 from ..helpers import makeLowerBreakpoint, parse_int, strip_unit, widthParser
 from ._base import BodyComponent
 
@@ -9,6 +11,7 @@ __all__ = ['MjImage']
 
 class MjImage(BodyComponent):
     component_name = 'mj-image'
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
 
     @classmethod
     def allowed_attrs(cls):
