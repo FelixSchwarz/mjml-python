@@ -1,0 +1,10 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-group>
+        <!-- a comment -->
+        <mj-column />
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

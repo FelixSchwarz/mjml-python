@@ -4,7 +4,7 @@ usage: update-upstream-validation.py [-h] [--mjml MJML]
 
 Script to update "tests/upstream_validation.json" with the findings the mjml
 reference implementation (NodeJS) reports for the templates in
-"tests/invalid_templates/". Set the MJML environment variable (or --mjml) to
+"tests/validation_templates/". Set the MJML environment variable (or --mjml) to
 the mjml executable, as for "update-expected-html.py".
 """
 
@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Optional
 
 
-TEMPLATE_DIR = Path(__file__).parent.parent / 'tests' / 'invalid_templates'
+TEMPLATE_DIR = Path(__file__).parent.parent / 'tests' / 'validation_templates'
 SNAPSHOT_PATH = Path(__file__).parent.parent / 'tests' / 'upstream_validation.json'
 
 # "Line 4 of /path/to.mjml (mj-text) - Attribute nope is illegal"
@@ -50,11 +50,19 @@ def classify(message: str) -> list[tuple[str, Optional[str]]]:
     raise SystemExit(f'cannot classify upstream message: {message!r}')
 
 
-def findings_for(mjml_js: str, template: Path) -> list[list]:
+def findings_for(mjml_js: str, template: Path) -> Optional[list[list]]:
+    """
+    What mjml reports for a template, or None when it cannot render it.
+
+    A template mjml crashes on says nothing about its validator, so those are
+    recorded as "no verdict" rather than as "no findings".
+    """
     process = subprocess.run(
         [mjml_js, str(template), '-s', '--validationLevel=strict'],
         capture_output=True, text=True, check=False,
     )
+    if 'failed to render' in process.stderr:
+        return None
     findings = []
     for line in process.stderr.splitlines():
         line = line.strip()
@@ -93,7 +101,7 @@ def main() -> None:
         raise SystemExit(f'no templates in {TEMPLATE_DIR}')
     SNAPSHOT_PATH.write_text(json.dumps(snapshot, indent=2, sort_keys=True) + '\n', encoding='utf8')
 
-    num_findings = sum(len(f) for f in snapshot.values())
+    num_findings = sum(len(f) for f in snapshot.values() if f is not None)
     sys.stdout.write(f'{len(snapshot)} templates, {num_findings} findings\n')
 
 

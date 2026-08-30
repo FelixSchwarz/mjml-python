@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-accordion>
+          <!-- a comment -->
+          <mj-accordion-element>
+            <mj-accordion-title>title</mj-accordion-title>
+            <mj-accordion-text>text</mj-accordion-text>
+          </mj-accordion-element>
+        </mj-accordion>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
