@@ -1,6 +1,6 @@
 import re
 from collections.abc import Mapping
-from typing import Any, Union
+from typing import Any
 
 
 __all__ = ['formatAttributes']
@@ -14,7 +14,7 @@ _color_shorthand_regex = re.compile(r'^#(\w)(\w)(\w)$', re.ASCII)
 
 def formatAttributes(
     attributes: Mapping[str, Any],
-    allowed_attrs: Mapping[str, Union[str, None]],
+    allowed_attrs: Mapping[str, str],
 ) -> dict[str, Any]:
     """
     Return the attributes with their values normalized as implied by the

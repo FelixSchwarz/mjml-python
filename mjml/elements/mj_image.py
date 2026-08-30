@@ -41,9 +41,8 @@ class MjImage(BodyComponent):
             'max-height'      : 'unit(px,%)',
             'font-size'       : 'unit(px)',
             'usemap'          : 'string',
-            # not present upstream but used by mj-column
-            'vertical-align'   : '',
-            'css-class'        : '',
+            # not declared upstream, MjHero reads it on its children
+            'css-class'        : 'string',
         }
 
     @classmethod

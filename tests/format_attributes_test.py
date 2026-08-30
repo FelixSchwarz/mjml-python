@@ -5,7 +5,7 @@ ALLOWED_ATTRS = {
     'color'           : 'color',
     'background-color': 'color',
     'border'          : 'string',
-    'css-class'       : None,
+    'css-class'       : 'string',
 }
 
 

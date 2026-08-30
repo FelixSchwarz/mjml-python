@@ -32,8 +32,8 @@ class MjTable(BodyComponent):
             'table-layout'     : 'enum(auto,fixed,initial,inherit)',
             'vertical-align'   : 'enum(top,bottom,middle)',
             'width'            : 'unit(px,%,auto)',
-            # hidden / used by MjColumn
-            'css-class'        : '',
+            # not declared upstream, MjHero reads it on its children
+            'css-class'        : 'string',
         }
 
     @classmethod

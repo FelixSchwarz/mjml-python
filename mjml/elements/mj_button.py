@@ -45,7 +45,7 @@ class MjButton(BodyComponent):
             'text-align'       : 'enum(left,right,center)',
             'width'            : 'unit(px,%)',
             # hidden
-            'css-class'        : '',
+            'css-class'        : 'string',
         }
 
 

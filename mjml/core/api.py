@@ -78,7 +78,7 @@ class Component:
 
     # js: static allowedAttributes
     @classmethod
-    def allowed_attrs(cls) -> Mapping[str, Union[str, None]]:
+    def allowed_attrs(cls) -> Mapping[str, str]:
         return {}
 
     def getContent(self) -> str:

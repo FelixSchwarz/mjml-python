@@ -1,5 +1,6 @@
 import pytest
 
+from mjml.core.registry import register_core_components
 from mjml.core.types import initialize_type
 
 
@@ -194,3 +195,15 @@ def test_error_message_for_unit_lists_units_and_number_of_values():
     assert initialize_type('unit(px,%){1,4}').error_message('10em') == (
         'has invalid value: 10em for type Unit, only accepts (px, %) units and 1 to 4 value(s)'
     )
+
+
+def test_every_declared_attribute_has_a_known_type():
+    # an attribute declared without a type can never be validated
+    undeclared = []
+    for component_name, component_cls in sorted(register_core_components().items()):
+        for attr_name, type_config in component_cls.allowed_attrs().items():
+            try:
+                initialize_type(type_config)
+            except ValueError:
+                undeclared.append(f'{component_name} {attr_name}={type_config!r}')
+    assert not undeclared

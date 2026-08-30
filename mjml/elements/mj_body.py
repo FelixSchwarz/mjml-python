@@ -13,7 +13,7 @@ class MjBody(BodyComponent):
         return {
             'background-color': 'color',
             'width'           : 'unit(px)',
-            'css-class'       : None,
+            'css-class'       : 'string',
             'id'              : 'string',
         }
 
