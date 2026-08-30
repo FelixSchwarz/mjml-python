@@ -190,10 +190,21 @@ def test_error_message_for_enum_lists_the_accepted_values():
 
 def test_error_message_for_unit_lists_units_and_number_of_values():
     assert initialize_type('unit(px,%)').error_message('10em') == (
-        'has invalid value: 10em for type Unit, only accepts (px, %) units and 1 value(s)'
+        'has invalid value: 10em for type Unit, only accepts (px, %) units and 1 value'
     )
     assert initialize_type('unit(px,%){1,4}').error_message('10em') == (
-        'has invalid value: 10em for type Unit, only accepts (px, %) units and 1 to 4 value(s)'
+        'has invalid value: 10em for type Unit, only accepts (px, %) units and 1 to 4 values'
+    )
+
+
+def test_error_message_spells_out_the_empty_value():
+    assert initialize_type('enum(full-width,false,)').error_message('yes') == (
+        'has invalid value: yes for type Enum, '
+        'only accepts full-width, false or an empty value'
+    )
+    assert initialize_type('unit(px,%,)').error_message('bogus') == (
+        'has invalid value: bogus for type Unit, '
+        'only accepts (px, %) units or a plain number, and 1 value'
     )
 
 

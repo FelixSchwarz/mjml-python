@@ -124,10 +124,13 @@ def _params(type_config: str) -> list[str]:
 
 def _enum_type(type_config: str) -> AttributeType:
     values = _params(type_config)
+    accepted = ', '.join(value for value in values if value)
+    if '' in values:
+        accepted += ' or an empty value'
     return EnumType(
         matchers=tuple(re.compile('^%s$' % re.escape(value)) for value in values),
         error_template=(
-            'has invalid value: $value for type Enum, only accepts ' + ', '.join(values)
+            f'has invalid value: $value for type Enum, only accepts {accepted}'
         ),
     )
 
@@ -150,11 +153,16 @@ def _unit_type(type_config: str) -> AttributeType:
 
     value_pattern = f'(?:{number}(?:{unit_names})|0{allow_auto}) ?'
     matcher = re.compile('^(?:%s){%s}$' % (value_pattern, ','.join(args)))
+    accepted = '(%s) units' % ', '.join(unit for unit in units if unit)
+    if '' in units:
+        accepted += ' or a plain number,'
+    nr_values = ' to '.join(args)
+    value_word = 'value' if (nr_values == '1') else 'values'
     return UnitType(
         matchers=(matcher,),
         error_template=(
-            f'has invalid value: $value for type Unit, only accepts '
-            f'({", ".join(units)}) units and {" to ".join(args)} value(s)'
+            f'has invalid value: $value for type Unit, '
+            f'only accepts {accepted} and {nr_values} {value_word}'
         ),
     )
 
