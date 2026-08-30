@@ -1,0 +1,104 @@
+{
+  "invalid-color": [
+    [
+      "mj-section",
+      "valid-types",
+      "background-color"
+    ],
+    [
+      "mj-text",
+      "valid-types",
+      "color"
+    ]
+  ],
+  "invalid-enum": [
+    [
+      "mj-section",
+      "valid-types",
+      "direction"
+    ],
+    [
+      "mj-text",
+      "valid-types",
+      "align"
+    ]
+  ],
+  "invalid-in-mj-attributes": [
+    [
+      "mj-text",
+      "valid-attributes",
+      "nope"
+    ],
+    [
+      "mj-text",
+      "valid-types",
+      "color"
+    ]
+  ],
+  "invalid-unit": [
+    [
+      "mj-column",
+      "valid-types",
+      "width"
+    ],
+    [
+      "mj-text",
+      "valid-types",
+      "font-size"
+    ]
+  ],
+  "misplaced-child": [
+    [
+      "mj-text",
+      "valid-children",
+      null
+    ]
+  ],
+  "nested-column": [
+    [
+      "mj-column",
+      "valid-children",
+      null
+    ]
+  ],
+  "several-unknown-attributes": [
+    [
+      "mj-button",
+      "valid-attributes",
+      "bar"
+    ],
+    [
+      "mj-button",
+      "valid-attributes",
+      "foo"
+    ]
+  ],
+  "social-element-outside-social": [
+    [
+      "mj-social-element",
+      "valid-children",
+      null
+    ]
+  ],
+  "unknown-attribute": [
+    [
+      "mj-text",
+      "valid-attributes",
+      "nonexistent"
+    ]
+  ],
+  "unknown-element": [
+    [
+      "mj-nonexistent",
+      "valid-tag",
+      null
+    ]
+  ],
+  "unknown-element-in-head": [
+    [
+      "mj-nonexistent",
+      "valid-tag",
+      null
+    ]
+  ]
+}

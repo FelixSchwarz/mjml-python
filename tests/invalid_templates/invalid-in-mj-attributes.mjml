@@ -1,0 +1,12 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-text color="bogus" nope="1" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column />
+    </mj-section>
+  </mj-body>
+</mjml>
