@@ -32,7 +32,7 @@ class MjSection(BodyComponent):
             'border-right'     : 'string',
             'border-top'       : 'string',
             'direction'        : 'enum(ltr,rtl)',
-            'full-width'       : 'enum(full-width)',
+            'full-width'       : 'enum(full-width,false,)',
             'gutter'           : 'unit(px,%)',
             'padding'          : 'unit(px,%){1,4}',
             'padding-top'      : 'unit(px,%)',
