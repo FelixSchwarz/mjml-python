@@ -1,4 +1,6 @@
 
+import re
+
 from ..helpers import widthParser
 from ._base import BodyComponent
 
@@ -52,6 +54,7 @@ class MjTable(BodyComponent):
 
     # js: getStyles()
     def get_styles(self):
+        has_cellspacing = self.hasCellspacing()
         return {
             'table': {
                 'color'       : self.get_attr('color'),
@@ -61,6 +64,7 @@ class MjTable(BodyComponent):
                 'table-layout': self.get_attr('table-layout'),
                 'width'       : self.get_attr('width'),
                 'border'      : self.get_attr('border'),
+                'border-collapse': 'separate' if has_cellspacing else None,
             },
         }
 
@@ -70,6 +74,12 @@ class MjTable(BodyComponent):
             return width
         parsedWidth, unit = widthParser(width)
         return width if (unit == '%') else parsedWidth
+
+    def hasCellspacing(self):
+        cellspacing = self.get_attr('cellspacing')
+        numeric_value = re.sub(r'[^\d.]', '', str(cellspacing))
+        match = re.match(r'(?:\d+\.?\d*|\.\d+)', numeric_value)
+        return bool(match) and float(match.group()) > 0
 
     def render(self):
         table_attrs = self.html_attrs(
