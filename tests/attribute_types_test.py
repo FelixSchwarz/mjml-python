@@ -1,6 +1,6 @@
 import pytest
 
-from mjml.core.registry import register_core_components
+from mjml.core.registry import core_components
 from mjml.core.types import initialize_type
 
 
@@ -211,7 +211,7 @@ def test_error_message_spells_out_the_empty_value():
 def test_every_declared_attribute_has_a_known_type():
     # an attribute declared without a type can never be validated
     undeclared = []
-    for component_name, component_cls in sorted(register_core_components().items()):
+    for component_name, component_cls in sorted(core_components().items()):
         for attr_name, type_config in component_cls.allowed_attrs().items():
             try:
                 initialize_type(type_config)

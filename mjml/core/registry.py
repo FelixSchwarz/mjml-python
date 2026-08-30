@@ -1,17 +1,15 @@
-
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 
 if TYPE_CHECKING:
     from mjml.core.api import Component
 
 
-__all__ = ['components', 'register_components', 'register_core_components']
+__all__ = ['components_for_invocation', 'core_components']
 
-components = {}
 
-def register_core_components():
+def core_components() -> dict[str, type["Component"]]:
     from ..elements import (
         MjAccordion,
         MjAccordionElement,
@@ -48,7 +46,7 @@ def register_core_components():
         MjTitle,
     )
 
-    register_components([
+    return _by_tag_name([
         MjAccordion,
         MjAccordionElement,
         MjAccordionText,
@@ -83,9 +81,21 @@ def register_core_components():
         MjBreakpoint,
     ])
 
+
+def components_for_invocation(
+    custom_components: Optional[Sequence[type["Component"]]] = None,
+) -> dict[str, type["Component"]]:
+    """
+    The components a single mjml_to_html() call may use.
+
+    Every call gets its own mapping so custom components can not leak into
+    later or concurrent calls.
+    """
+    components = core_components()
+    if custom_components:
+        components.update(_by_tag_name(custom_components))
     return components
 
 
-def register_components(source: Sequence[type["Component"]]):
-    for component in source:
-        components[component.component_name] = component
+def _by_tag_name(source: Sequence[type["Component"]]) -> dict[str, type["Component"]]:
+    return {component.component_name: component for component in source}

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from mjml.core.registry import register_core_components
+from mjml.core.registry import core_components
 
 
 _snapshot = json.loads(
@@ -26,18 +26,9 @@ ACCEPTED_DELTA = {
 }
 
 
-def port_components():
-    # custom components registered by other tests stay in the global registry
-    return {
-        component_name: component_cls
-        for component_name, component_cls in register_core_components().items()
-        if component_cls.__module__.startswith('mjml.')
-    }
-
-
 def divergences_from_upstream():
     delta = {}
-    components = port_components()
+    components = core_components()
     for component_name in sorted(set(components) & set(UPSTREAM_ATTRS)):
         port = dict(components[component_name].allowed_attrs())
         upstream = UPSTREAM_ATTRS[component_name]
@@ -52,13 +43,13 @@ def divergences_from_upstream():
 
 
 def test_the_same_components_exist_upstream():
-    assert set(port_components()) == set(UPSTREAM_ATTRS)
+    assert set(core_components()) == set(UPSTREAM_ATTRS)
 
 
 def test_the_same_components_are_ending_tags():
     ending_tags = {
         component_name
-        for component_name, component_cls in port_components().items()
+        for component_name, component_cls in core_components().items()
         if component_cls.ending_tag
     }
     assert ending_tags == UPSTREAM_ENDING_TAGS

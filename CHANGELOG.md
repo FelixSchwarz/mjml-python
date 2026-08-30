@@ -26,6 +26,9 @@
 - support `<mj-class>` with child elements (default attributes for nested elements)
 - add `printer_support` parameter to `mjml_to_html()` (same as upstream's `printerSupport` option)
 - fix mobile width for `mj-column` with a pixel width inside `mj-group`
+- removed `register_components()` and `register_core_components()` from
+  `mjml.core.registry`, use the `custom_components` parameter of
+  `mjml_to_html()`
 
 
 0.12.0 (2025-12-27)

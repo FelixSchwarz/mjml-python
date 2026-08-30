@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 from mjml import Include, ValidationRule
 from mjml._node_adapter import node_tree_from_soup
-from mjml.core.registry import register_core_components
+from mjml.core.registry import core_components
 from mjml.node import NodeKind
 
 
@@ -117,7 +117,7 @@ def test_nested_includes_build_a_provenance_chain(tmp_path: Path):
 
 
 def _build_tree(mjml_str, file=None, template_dir=None):
-    components = register_core_components()
+    components = core_components()
     soup = BeautifulSoup(mjml_str, 'html.parser')
     return node_tree_from_soup(soup.mjml, components, file=file, template_dir=template_dir)
 

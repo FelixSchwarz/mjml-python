@@ -9,7 +9,7 @@ from dotmap import DotMap
 from mjml.elements.head._head_base import HeadComponent
 
 from .core import initComponent
-from .core.registry import register_components, register_core_components
+from .core.registry import components_for_invocation
 from .errors import ValidationError
 from .helpers import (
     convertBooleansOnAttrs,
@@ -52,7 +52,7 @@ def mjml_to_html(
     keep_comments: bool = True,
     printer_support: bool = False,
 ) -> ParseResult:
-    register_core_components()
+    components = components_for_invocation(custom_components)
 
     if isinstance(xml_fp_or_json, Mapping):
         xml_fp = StringIO(json_to_xml(xml_fp_or_json))
@@ -79,9 +79,6 @@ def mjml_to_html(
     if skeleton_path:
         raise NotImplementedError('not yet implemented')
     skeleton_func = default_skeleton
-
-    if custom_components:
-        register_components(custom_components)
 
     fonts = {
       'Open Sans': 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700',
@@ -142,7 +139,7 @@ def mjml_to_html(
         _mjml_data = parseMJML(node) if parseMJML else applyAttributes(node)
         initialDatas = {**_mjml_data, 'context': context}
         node_tag = getattr(node, 'name', None)
-        component = initComponent(name=node_tag, **initialDatas)
+        component = initComponent(name=node_tag, components=components, **initialDatas)
         if not component:
             return None
         if isinstance(component, HeadComponent):
@@ -268,6 +265,7 @@ def mjml_to_html(
         globalDatas["componentsHeadStyle"].append(headStyle)
 
     bodyHelpers = dict(
+        components = components,
         addHeadStyle = addHeadStyle,
         addMediaQuery = addMediaQuery,
         addComponentHeadSyle = addComponentHeadSyle,
@@ -296,6 +294,7 @@ def mjml_to_html(
             current_attr_value[param_key] = param_values[0]
 
     headHelpers = dict(
+        components = components,
         add = _head_data_add,
     )
     globalDatas["headRaw"] = processing(mjHead, headHelpers)

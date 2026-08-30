@@ -2,7 +2,6 @@
 from collections.abc import Mapping
 from typing import Any, ClassVar, Optional, Union
 
-from mjml.core.registry import components
 from mjml.helpers.format_attributes import formatAttributes
 
 
@@ -10,6 +9,7 @@ __all__ = ['initComponent', 'Component']
 
 def initComponent(
     name: Optional[str],
+    components: Mapping[str, type["Component"]],
     **initialDatas: Any,
 ) -> Optional["Component"]:
     if name is None:
@@ -21,8 +21,9 @@ def initComponent(
     component = component_cls(**initialDatas)
     if getattr(component, 'headStyle', None):
         component.context['addHeadStyle'](name, component.headStyle)
-    if getattr(component, 'componentHeadStyle', None):
-        component.context['addComponentHeadSyle'](component.componentHeadStyle)
+    componentHeadStyle = getattr(component, 'componentHeadStyle', None)
+    if componentHeadStyle:
+        component.context['addComponentHeadSyle'](componentHeadStyle)
     return component
 
 

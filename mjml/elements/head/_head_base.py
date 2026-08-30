@@ -12,6 +12,7 @@ class HeadComponent(Component):
             tagName = children['tagName']
             component = initComponent(
                 name = tagName,
+                components = self.context['components'],
                 context = self.getChildContext(),
                 **children
             )

@@ -1,7 +1,11 @@
 
+from io import StringIO
+
+import pytest
 from htmlcompare import assert_same_html
 
 from mjml import mjml_to_html
+from mjml.core.registry import components_for_invocation
 from mjml.elements import MjText
 from mjml.testing_helpers import get_mjml_fp, load_expected_html
 
@@ -39,3 +43,23 @@ def test_custom_components():
     assert not result_list.errors
     list_actual_html = result_list.html
     assert_same_html(expected_html, list_actual_html, verbose=True)
+
+
+def test_custom_components_are_not_registered_globally():
+    assert 'mj-text-custom' in components_for_invocation([MjTextCustom])
+    assert 'mj-text-custom' not in components_for_invocation()
+
+
+def test_custom_components_do_not_leak_into_later_calls():
+    mjml = (
+        '<mjml><mj-body><mj-section><mj-column>'
+        '<mj-text-custom>text</mj-text-custom>'
+        '</mj-column></mj-section></mj-body></mjml>'
+    )
+    html = mjml_to_html(StringIO(mjml), custom_components=[MjTextCustom]).html
+    assert 'START CUSTOM WRAPPER' in html
+
+    # the next call must not know "mj-text-custom" any more. Unknown elements
+    # raise for now, upstream skips them instead.
+    with pytest.raises(KeyError):
+        mjml_to_html(StringIO(mjml))

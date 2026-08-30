@@ -3,7 +3,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 from ..core import Component, initComponent
-from ..core.registry import components
 from ..helpers import *
 
 
@@ -127,6 +126,7 @@ class BodyComponent(Component):
         # const nonRawSiblings = childrens.filter(
         #  child => !find(rawComponents, c => c.getTagName() === child.tagName),
         #).length
+        components = self.context['components']
         raw_tag_names = set()
         for tag_name, component_cls in components.items():
             if component_cls.isRawElement():
@@ -164,6 +164,7 @@ class BodyComponent(Component):
 
             component = initComponent(
                 name = children['tagName'],
+                components = components,
                 **initialDatas,
             )
             if component:
