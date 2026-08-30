@@ -1,0 +1,9 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text color="xx rgb(1,2,3) yy">text</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

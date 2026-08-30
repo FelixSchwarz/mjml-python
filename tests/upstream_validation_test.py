@@ -62,3 +62,26 @@ def test_the_snapshot_covers_every_template():
 def test_every_invalid_template_is_rejected(test_id):
     # a template nobody rejects does not belong in this corpus
     assert findings(test_id)
+
+
+# The values these templates use are rejected here although mjml js accepts
+# them: its matchers are unanchored or treat things like "1,2px" as a number.
+# The empty upstream finding list in the snapshot is the record of that.
+DEVIATIONS = {
+    'deviation-integer-unanchored': ('mj-table', 'valid-types', 'cellpadding'),
+    'deviation-rgb-unanchored': ('mj-text', 'valid-types', 'color'),
+    'deviation-rgba-unanchored': ('mj-text', 'valid-types', 'color'),
+    'deviation-unit-number': ('mj-text', 'valid-types', 'font-size'),
+    'deviation-unit-with-negative-number': ('mj-text', 'valid-types', 'letter-spacing'),
+}
+
+
+def test_the_deviations_are_the_documented_ones():
+    from_corpus = {test_id for test_id in UPSTREAM_FINDINGS if test_id.startswith('deviation-')}
+    assert from_corpus == set(DEVIATIONS)
+
+
+@pytest.mark.parametrize('test_id', sorted(DEVIATIONS))
+def test_upstream_accepts_what_we_reject(test_id):
+    assert UPSTREAM_FINDINGS[test_id] == []
+    assert findings(test_id) == [DEVIATIONS[test_id]]

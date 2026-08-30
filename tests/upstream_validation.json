@@ -1,4 +1,9 @@
 {
+  "deviation-integer-unanchored": [],
+  "deviation-rgb-unanchored": [],
+  "deviation-rgba-unanchored": [],
+  "deviation-unit-number": [],
+  "deviation-unit-with-negative-number": [],
   "invalid-color": [
     [
       "mj-section",
