@@ -1,14 +1,29 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
 
-__all__ = ['Include', 'Severity', 'ValidationError', 'ValidationRule']
+__all__ = [
+    'Include',
+    'MJMLValidationErrors',
+    'Severity',
+    'ValidationError',
+    'ValidationLevel',
+    'ValidationRule',
+]
 
 
 class Severity(Enum):
     ERROR = 'error'
     WARNING = 'warning'
+
+
+class ValidationLevel(Enum):
+    SKIP = 'skip'
+    # report problems but render anyway, the caller decides what to do
+    SOFT = 'soft'
+    STRICT = 'strict'
 
 
 class ValidationRule(Enum):
@@ -61,3 +76,13 @@ class ValidationError:
             location += f', included at {chain}' if location else f'Included at {chain}'
         prefix = f'{location} ' if location else ''
         return f'{prefix}({self.tag_name}) - {self.message}'
+
+
+class MJMLValidationErrors(Exception):
+    """Raised for "strict" validation, carrying every error which was found."""
+
+    def __init__(self, errors: Sequence[ValidationError]) -> None:
+        self.errors = tuple(errors)
+        messages = '\n'.join(error.formatted_message() for error in self.errors)
+        plural = '' if len(self.errors) == 1 else 's'
+        super().__init__(f'{len(self.errors)} validation error{plural}:\n{messages}')

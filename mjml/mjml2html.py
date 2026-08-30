@@ -1,3 +1,4 @@
+import dataclasses
 from collections.abc import Callable, Mapping, Sequence
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
@@ -6,12 +7,17 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
 from bs4 import BeautifulSoup, Comment
 from dotmap import DotMap
 
+from mjml._node_adapter import node_tree_from_soup
+from mjml.core import initComponent
+from mjml.core.registry import components_for_invocation
 from mjml.elements.head._head_base import HeadComponent
-
-from .core import initComponent
-from .core.registry import components_for_invocation
-from .errors import ValidationError
-from .helpers import (
+from mjml.errors import (
+    MJMLValidationErrors,
+    Severity,
+    ValidationError,
+    ValidationLevel,
+)
+from mjml.helpers import (
     convertBooleansOnAttrs,
     json_to_xml,
     mergeOutlookConditionals,
@@ -22,6 +28,7 @@ from .helpers import (
     resolve_include_path,
     skeleton_str as default_skeleton,
 )
+from mjml.validator import validate_tree
 
 
 if TYPE_CHECKING:
@@ -44,16 +51,16 @@ class CSSInclude(NamedTuple):
 FpOrJson = Union[Mapping[str, Any], str, bytes, "SupportsRead[str]", "SupportsRead[bytes]"]
 
 
-def mjml_to_html(
-    xml_fp_or_json: FpOrJson,
-    skeleton: Optional[str] = None,
-    template_dir: Optional["StrPath"] = None,
-    custom_components: Optional[Sequence[type["Component"]]] = None,
-    keep_comments: bool = True,
-    printer_support: bool = False,
-) -> ParseResult:
-    components = components_for_invocation(custom_components)
+class ParsedInput(NamedTuple):
+    root: Any
+    template_dir: Optional["StrPath"]
+    template_path: Optional[str]
+    # a template built from JSON has no source the caller could look at
+    from_json: bool
 
+
+def parse_input(xml_fp_or_json: FpOrJson, template_dir: Optional["StrPath"]) -> ParsedInput:
+    from_json = isinstance(xml_fp_or_json, Mapping)
     if isinstance(xml_fp_or_json, Mapping):
         xml_fp = StringIO(json_to_xml(xml_fp_or_json))
     elif isinstance(xml_fp_or_json, str):
@@ -63,7 +70,7 @@ def mjml_to_html(
     else:
         xml_fp = xml_fp_or_json
 
-    template_path = getattr(xml_fp, 'name', None)
+    template_path: Optional[str] = getattr(xml_fp, 'name', None)
     if (template_dir is None) and isinstance(template_path, (str, PurePath)):
         template_dir = Path(template_path).parent
 
@@ -74,6 +81,59 @@ def mjml_to_html(
             raise ValueError(f"Could not parse '{template_path}'")
         else:
             raise ValueError("Could not parse mjml input")
+    return ParsedInput(mjml_root, template_dir, template_path, from_json)
+
+
+def validate(
+    xml_fp_or_json: FpOrJson,
+    *,
+    template_dir: Optional["StrPath"] = None,
+    custom_components: Optional[Sequence[type["Component"]]] = None,
+) -> Sequence[ValidationError]:
+    components = components_for_invocation(custom_components)
+    parsed = parse_input(xml_fp_or_json, template_dir)
+    return _validation_errors(parsed, components)
+
+
+def _validation_errors(parsed: ParsedInput, components: Any) -> list[ValidationError]:
+    template_file = str(parsed.template_path) if parsed.template_path else None
+    node_tree = node_tree_from_soup(
+        parsed.root,
+        components,
+        file=template_file,
+        template_dir=parsed.template_dir,
+    )
+    errors = validate_tree(node_tree, components)
+    if parsed.from_json:
+        # mjml xml was generated dynamically from json so error positions are meaningless
+        # to the user.
+        errors = [dataclasses.replace(error, line=None, column=None) for error in errors]
+    return errors
+
+
+def mjml_to_html(
+    xml_fp_or_json: FpOrJson,
+    skeleton: Optional[str] = None,
+    template_dir: Optional["StrPath"] = None,
+    custom_components: Optional[Sequence[type["Component"]]] = None,
+    keep_comments: bool = True,
+    printer_support: bool = False,
+    validation_level: Union[str, ValidationLevel] = ValidationLevel.SKIP,
+) -> ParseResult:
+    components = components_for_invocation(custom_components)
+    level = ValidationLevel(validation_level)
+
+    parsed = parse_input(xml_fp_or_json, template_dir)
+    mjml_root = parsed.root
+    template_dir = parsed.template_dir
+
+    validation_errors: list[ValidationError] = []
+    if level is not ValidationLevel.SKIP:
+        validation_errors = _validation_errors(parsed, components)
+        if level is ValidationLevel.STRICT:
+            blocking = [e for e in validation_errors if e.severity is Severity.ERROR]
+            if blocking:
+                raise MJMLValidationErrors(blocking)
 
     skeleton_path = skeleton
     if skeleton_path:
@@ -113,11 +173,7 @@ def mjml_to_html(
         'title'              : '',
     })
 
-    # "validationLevel" is not used but available upstream - makes it easier to
-    # match the line of code with the upstream sources.
-    validationLevel = 'skip' # noqa: F841
-    errors: list[ValidationError] = []
-    # LATER: optional validation
+    errors: list[ValidationError] = validation_errors
 
     css_includes: list["CSSInclude"] = []
 

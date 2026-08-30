@@ -4,6 +4,9 @@
 
 - mjml v5.4.0 support
   - add `gutter` attribute for `mj-section` and the `gap` attribute for `mj-wrapper`
+- support template validation with configurable validation levels in `mjml_to_html()`
+- unknown elements no longer raise a `KeyError`; they are skipped during
+  rendering and reported when validation is enabled
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element
@@ -29,8 +32,6 @@
 - removed `register_components()` and `register_core_components()` from
   `mjml.core.registry`, use the `custom_components` parameter of
   `mjml_to_html()`
-- unknown elements no longer raise a `KeyError` but are skipped as in the JS
-  implementation
 
 
 0.12.0 (2025-12-27)
