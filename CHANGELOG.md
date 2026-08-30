@@ -17,6 +17,8 @@
   - combine `css-class` values from multiple `mj-class` definitions
 - normalize attributes declared as `color`: shorthand values like `#abc` are
   expanded to `#aabbcc` as in the JS implementation
+- convert the attribute values `true` and `false` to booleans as in the JS
+  implementation (e.g. `fluid-on-mobile="false"` was treated like `"true"`)
 - support `mj-include` with `type="css"` and `type="html"`
 - support `mj-include` of files which contain an `<mj-head>`
 - support `<mj-class>` with child elements (default attributes for nested elements)

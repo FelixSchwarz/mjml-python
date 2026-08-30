@@ -1,0 +1,19 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-image fluid-on-mobile="false" />
+      <mj-class name="fluid" fluid-on-mobile="true" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image src="from-mj-attributes.png" />
+        <mj-image src="from-mj-class.png" mj-class="fluid" />
+        <mj-image src="fluid.png" fluid-on-mobile="true" />
+        <mj-image src="rendered-values.png" alt="true" title="false" />
+        <mj-text font-family="false">text</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

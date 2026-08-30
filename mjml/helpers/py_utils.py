@@ -9,6 +9,7 @@ __all__ = [
     'is_empty',
     'is_not_empty',
     'is_not_nil',
+    'js_str',
     'omit',
     'parse_float',
     'parse_int',
@@ -61,6 +62,16 @@ def strip_unit(value_str: Union[str, int, float]) -> Union[int, float]:
     num = float(match.group(1))
     # Return int for whole numbers (like JS parseInt for "600px")
     return int(num) if num == int(num) else num
+
+def js_str(value: Any) -> str:
+    """
+    Return the string which JavaScript would use when the value is
+    interpolated into a string: booleans become "true"/"false" (not
+    "True"/"False" as in Python).
+    """
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    return str(value)
 
 def is_nil(v: Optional[Any]) -> bool:
     return (v is None)

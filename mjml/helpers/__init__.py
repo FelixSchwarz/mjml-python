@@ -1,5 +1,6 @@
 
 from .conditional_tag import *
+from .convert_booleans_on_attrs import *
 from .fonts import *
 from .format_attributes import *
 from .json_to_xml import *

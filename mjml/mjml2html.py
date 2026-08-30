@@ -10,7 +10,13 @@ from mjml.elements.head._head_base import HeadComponent
 
 from .core import initComponent
 from .core.registry import register_components, register_core_components
-from .helpers import json_to_xml, mergeOutlookConditionals, omit, skeleton_str as default_skeleton
+from .helpers import (
+    convertBooleansOnAttrs,
+    json_to_xml,
+    mergeOutlookConditionals,
+    omit,
+    skeleton_str as default_skeleton,
+)
 
 
 if TYPE_CHECKING:
@@ -159,7 +165,8 @@ def mjml_to_html(
             if not is_tag:
                 # could be NavigableString (text/whitespace), etc.
                 return None
-            attributes = _mjml.attrs
+            # js: mjml-parser-xml converts "true"/"false" while parsing the XML
+            attributes = convertBooleansOnAttrs(_mjml.attrs)
             children = [child for child in _mjml]
             classes = ignore_empty(attributes.get('mj-class', '').split(' '))
 

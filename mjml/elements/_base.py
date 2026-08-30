@@ -65,7 +65,7 @@ class BodyComponent(Component):
                     return None
             if value is None:
                 return None
-            return f'{key}="{value}"'
+            return f'{key}="{js_str(value)}"'
         serialized_attrs = [_to_str(k, v) for k, v in attrs.items()]
         return ' '.join(filter(None, serialized_attrs))
 
@@ -95,7 +95,7 @@ class BodyComponent(Component):
             _styles = {}
 
         def serializer(k: str, v: Any) -> Optional[str]:
-            return f'{k}:{v}' if is_not_empty(v) else None
+            return f'{k}:{js_str(v)}' if is_not_empty(v) else None
 
         style_attr_strs = filter(None, itertools.starmap(serializer, _styles.items()))
         style_str = ';'.join(style_attr_strs)
