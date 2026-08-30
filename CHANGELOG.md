@@ -14,6 +14,8 @@
   - inherit `font-family` from `mj-accordion-element`
   - `width="auto"` for `mj-table`
   - nonzero `cellspacing` for `mj-table`
+- normalize attributes declared as `color`: shorthand values like `#abc` are
+  expanded to `#aabbcc` as in the JS implementation
 - support `mj-include` with `type="css"` and `type="html"`
 - support `mj-include` of files which contain an `<mj-head>`
 - support `<mj-class>` with child elements (default attributes for nested elements)

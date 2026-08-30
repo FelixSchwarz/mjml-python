@@ -9,6 +9,15 @@ class MjGroup(BodyComponent):
     component_name = 'mj-group'
 
     @classmethod
+    def allowed_attrs(cls):
+        return {
+            'background-color' : 'color',
+            'direction'        : 'enum(ltr,rtl)',
+            'vertical-align'   : 'enum(top,bottom,middle)',
+            'width'            : 'unit(px,%)',
+        }
+
+    @classmethod
     def default_attrs(cls):
         return {
             'background-color' : '',

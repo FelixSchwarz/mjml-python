@@ -2,7 +2,8 @@
 from collections.abc import Mapping
 from typing import Any, ClassVar, Optional, Union
 
-from .registry import components
+from mjml.core.registry import components
+from mjml.helpers.format_attributes import formatAttributes
 
 
 __all__ = ['initComponent', 'Component']
@@ -47,12 +48,14 @@ class Component:
 
         self.props: dict[str, Any] = {**(props or {}), 'children': children, 'content': content}
 
-        # upstream also checks "self.allowed_attrs"
-        self.attrs = {
-            **self.default_attrs(),
-            **(globalAttributes or {}),
-            **(attributes or {}),
-        }
+        self.attrs = formatAttributes(
+            {
+                **self.default_attrs(),
+                **(globalAttributes or {}),
+                **(attributes or {}),
+            },
+            self.allowed_attrs(),
+        )
 
         # optional attributes (methods) for some components
         if headStyle:

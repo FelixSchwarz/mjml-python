@@ -1,6 +1,7 @@
 
 from .conditional_tag import *
 from .fonts import *
+from .format_attributes import *
 from .json_to_xml import *
 from .make_lower_breakpoint import *
 from .media_queries import *

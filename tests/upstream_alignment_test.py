@@ -89,6 +89,7 @@ TEST_IDS = (
     'mjml-owa-attribute',
     'missing-whitespace-before-tag',
     'mjml-comment-merging',
+    'shorthand-color-attributes',
 )
 @pytest.mark.parametrize('test_id', TEST_IDS)
 def test_ensure_same_html_as_upstream(test_id, fixed_random_seed):

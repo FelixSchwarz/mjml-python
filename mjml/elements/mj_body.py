@@ -11,7 +11,8 @@ class MjBody(BodyComponent):
     @classmethod
     def allowed_attrs(cls):
         return {
-            'background-color': '',
+            'background-color': 'color',
+            'width'           : 'unit(px)',
             'css-class'       : None,
             'id'              : 'string',
         }
