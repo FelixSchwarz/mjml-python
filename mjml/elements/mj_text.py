@@ -19,7 +19,7 @@ class MjText(BodyComponent):
             'font-style'       : 'string',
             'font-weight'      : 'string',
             'height'           : 'unit(px,%)',
-            'letter-spacing'   : 'unitWithNegative(px,%)',
+            'letter-spacing'   : 'unitWithNegative(px,em)',
             'line-height'      : 'unit(px,%,)',
             'padding-bottom'   : 'unit(px,%)',
             'padding-left'     : 'unit(px,%)',
