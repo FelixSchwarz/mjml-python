@@ -44,7 +44,6 @@ FpOrJson = Union[Mapping[str, Any], str, bytes, "SupportsRead[str]", "SupportsRe
 
 
 class ParsedInput(NamedTuple):
-    root: Any
     source: str
     template_dir: Optional["StrPath"]
     template_path: Optional[str]
@@ -70,14 +69,7 @@ def parse_input(xml_fp_or_json: FpOrJson, template_dir: Optional["StrPath"]) -> 
     source = xml_fp.read()
     if isinstance(source, bytes):
         source = source.decode('utf8')
-    mjml_doc = BeautifulSoup(source, 'html.parser')
-    mjml_root = mjml_doc.mjml
-    if mjml_root is None:
-        if template_path:
-            raise ValueError(f"Could not parse '{template_path}'")
-        else:
-            raise ValueError("Could not parse mjml input")
-    return ParsedInput(mjml_root, source, template_dir, template_path, from_json)
+    return ParsedInput(source, template_dir, template_path, from_json)
 
 
 def validate(
@@ -96,24 +88,27 @@ def _node_tree(
     parsed: ParsedInput,
     components: Any,
     report_include_errors: bool = False,
-) -> Optional[Node]:
+) -> Node:
     template_file = str(parsed.template_path) if parsed.template_path else None
-    return parse_document(
+    node_tree = parse_document(
         parsed.source,
         components,
         file=template_file,
         template_dir=parsed.template_dir,
         report_include_errors=report_include_errors,
     )
+    if node_tree is None:
+        if parsed.template_path:
+            raise ValueError(f"Could not parse '{parsed.template_path}'")
+        raise ValueError('Could not parse mjml input')
+    return node_tree
 
 
 def _validation_errors(
     parsed: ParsedInput,
     components: Any,
-    node_tree: Optional[Node],
+    node_tree: Node,
 ) -> list[ValidationError]:
-    if node_tree is None:
-        return []
     errors = validate_tree(node_tree, components)
     if parsed.from_json:
         # mjml xml was generated dynamically from json so error positions are meaningless
@@ -148,8 +143,6 @@ def mjml_to_html(
                 raise MJMLValidationErrors(blocking)
 
     mjml_root = _node_tree(parsed, components)
-    if mjml_root is None:
-        raise ValueError('Could not parse mjml input')
 
     skeleton_path = skeleton
     if skeleton_path:
