@@ -138,6 +138,44 @@ def test_reports_circular_include(tmp_path: Path):
     (error,) = raw.errors
     assert 'Circular inclusion' in error.message
 
+def test_head_of_an_included_file_joins_the_document_head(tmp_path: Path):
+    mjml_str = (
+        '<mjml>'
+        '<mj-head><mj-preview>p</mj-preview></mj-head>'
+        '<mj-body><mj-include path="./part.mjml" /></mj-body>'
+        '</mjml>'
+    )
+    path = tmp_path / 'template.mjml'
+    path.write_text(mjml_str)
+    included_mjml = (
+        '<mjml>'
+        '<mj-head><mj-title>from the include</mj-title></mj-head>'
+        '<mj-body><mj-section><mj-column /></mj-section></mj-body>'
+        '</mjml>'
+    )
+    (tmp_path / 'part.mjml').write_text(included_mjml)
+
+    head = _find(_parse_file(path), 'mj-head')
+
+    assert [child.tag_name for child in head.children] == ['mj-preview', 'mj-title']
+
+
+def test_document_without_a_head_gets_one_from_the_include(tmp_path: Path):
+    path = tmp_path / 'template.mjml'
+    mjml_str = '<mjml><mj-body><mj-include path="./part.mjml" /></mj-body></mjml>'
+    path.write_text(mjml_str)
+    included_mjml = (
+        '<mjml>'
+        '<mj-head><mj-title>from the include</mj-title></mj-head>'
+        '<mj-body><mj-section><mj-column /></mj-section></mj-body>'
+        '</mjml>'
+    )
+    (tmp_path / 'part.mjml').write_text(included_mjml)
+
+    head = _find(_parse_file(path), 'mj-head')
+
+    assert [child.tag_name for child in head.children] == ['mj-title']
+
 
 def _parse(source: str, file: Optional[str] = None) -> Node:
     root = parse_document(source, core_components(), file=file)

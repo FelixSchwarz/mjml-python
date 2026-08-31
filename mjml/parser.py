@@ -6,6 +6,7 @@ serialized back from a parsed tree. There is no decoding step, so there is no
 encoding step which could forget to escape again - escaped input stays escaped.
 """
 
+import dataclasses
 import re
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -49,7 +50,11 @@ def parse_document(
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
     )
-    return _parse(source, _Origin(ending_tags, file, template_dir, (), ()))
+    origin = _Origin(ending_tags, file, template_dir, (), (), [])
+    root = _parse(source, origin)
+    if (root is None) or not origin.included_heads:
+        return root
+    return _with_included_heads(root, tuple(origin.included_heads))
 
 
 @dataclass(frozen=True)
@@ -60,6 +65,8 @@ class _Origin:
     template_dir: Optional["StrPath"]
     included_in: Sequence[Include]
     include_chain: Sequence[Path]
+    # <mj-head> of every included file, collected for the document's own head
+    included_heads: list
 
 
 def _parse(source: str, origin: _Origin) -> Optional[Node]:
@@ -273,6 +280,7 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         template_dir=resolved.parent,
         included_in=(*origin.included_in, Include(file=origin.file, line=element.line)),
         include_chain=include_chain,
+        included_heads=origin.included_heads,
     )
     included_root = _parse(source, origin)
     if included_root is None:
@@ -281,8 +289,11 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         )
         return
     for child in included_root.children:
-        # <mj-head> of an included file is merged elsewhere
-        if child.tag_name == 'mj-body':
+        # the head of an included file belongs to the document's head, wherever
+        # in the document the include stands
+        if child.tag_name == 'mj-head':
+            origin.included_heads.extend(child.children)
+        elif child.tag_name == 'mj-body':
             yield from child.children
 
 
@@ -314,3 +325,18 @@ def _raw_node(element: _Element, origin: _Origin, content: str, errors: tuple = 
         content=content,
     )
     return replacement.as_node(origin, errors=errors)
+
+
+def _with_included_heads(root: Node, head_children: tuple) -> Node:
+    """Put the head elements of the included files into the document's head."""
+    children = list(root.children)
+    for index, child in enumerate(children):
+        if child.tag_name == 'mj-head':
+            children[index] = dataclasses.replace(
+                child, children=(*child.children, *head_children)
+            )
+            break
+    else:
+        # a document which has no head of its own gets one
+        children.insert(0, Node(tag_name='mj-head', children=head_children, file=root.file))
+    return dataclasses.replace(root, children=tuple(children))
