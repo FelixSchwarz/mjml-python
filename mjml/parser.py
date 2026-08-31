@@ -20,6 +20,7 @@ from mjml.helpers import (
     convertBooleansOnAttrs,
     guard_against_circular_include,
     include_source,
+    read_include_file,
     resolve_include_path,
 )
 from mjml.node import Node, NodeKind
@@ -50,11 +51,8 @@ def parse_document(
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
     )
-    origin = _Origin(ending_tags, file, template_dir, (), (), [])
-    root = _parse(source, origin)
-    if (root is None) or not origin.included_heads:
-        return root
-    return _with_included_heads(root, tuple(origin.included_heads))
+    origin = _Origin(ending_tags, file, template_dir, (), (), [], [])
+    return _parse(source, origin)
 
 
 @dataclass(frozen=True)
@@ -67,13 +65,18 @@ class _Origin:
     include_chain: Sequence[Path]
     # <mj-head> of every included file, collected for the document's own head
     included_heads: list
+    css_includes: list
 
 
 def _parse(source: str, origin: _Origin) -> Optional[Node]:
     builder = _NodeParser(source, origin)
     builder.feed(source)
     builder.close()
-    return builder.root
+    root = builder.root
+    head_children = (*origin.included_heads, *origin.css_includes)
+    if (root is None) or not head_children:
+        return root
+    return _with_included_heads(root, head_children)
 
 
 @dataclass
@@ -250,7 +253,11 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     include_type = element.attributes.get('type')
     resolved = resolve_include_path(path_value, template_dir=origin.template_dir)
     try:
-        source = include_source(path_value, template_dir=origin.template_dir)
+        if include_type in ('css', 'html'):
+            # only an mjml include is wrapped when the file has no <mjml>
+            source = read_include_file(path_value, template_dir=origin.template_dir)
+        else:
+            source = include_source(path_value, template_dir=origin.template_dir)
     except OSError:
         # js: mjml renders this comment in place of the include
         comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
@@ -263,7 +270,19 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         return
 
     if include_type == 'css':
-        # upstream turns this into an <mj-style> at the end of <mj-head>
+        # js: an included stylesheet becomes an <mj-style> at the end of the
+        # head, wherever in the document the include stands
+        is_inline = element.attributes.get('css-inline') == 'inline'
+        attributes = {'inline': 'inline'} if is_inline else {}
+        origin.css_includes.append(Node(
+            tag_name='mj-style',
+            attributes=attributes,
+            content=source,
+            line=element.line,
+            column=element.column,
+            file=origin.file,
+            included_in=tuple(origin.included_in),
+        ))
         return
     if include_type == 'html':
         yield _raw_node(element, origin, source)
@@ -274,15 +293,16 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     except CircularIncludeError as cycle:
         yield _failed_include(element, origin, str(cycle))
         return
-    origin = _Origin(
+    included_origin = _Origin(
         ending_tags=origin.ending_tags,
         file=str(resolved),
         template_dir=resolved.parent,
         included_in=(*origin.included_in, Include(file=origin.file, line=element.line)),
         include_chain=include_chain,
-        included_heads=origin.included_heads,
+        included_heads=[],
+        css_includes=[],
     )
-    included_root = _parse(source, origin)
+    included_root = _parse(source, included_origin)
     if included_root is None:
         yield _failed_include(
             element, origin, f'the included file "{path_value}" ({resolved}) contains no mjml'

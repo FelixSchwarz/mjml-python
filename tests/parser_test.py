@@ -177,6 +177,68 @@ def test_document_without_a_head_gets_one_from_the_include(tmp_path: Path):
     assert [child.tag_name for child in head.children] == ['mj-title']
 
 
+def test_html_include_is_not_parsed_as_mjml(tmp_path: Path):
+    path = tmp_path / 'template.mjml'
+    mjml_str = '<mjml><mj-body><mj-include path="./part.html" type="html" /></mj-body></mjml>'
+    path.write_text(mjml_str)
+    (tmp_path / 'part.html').write_text('<div class="raw">not mjml</div>')
+
+    (raw,) = _find(_parse_file(path), 'mj-body').children
+
+    assert raw.tag_name == 'mj-raw'
+    assert raw.content == '<div class="raw">not mjml</div>'
+
+
+def test_css_include_becomes_a_style_element_in_the_head(tmp_path: Path):
+    path = tmp_path / 'template.mjml'
+    mjml_str = (
+        '<mjml>'
+        '<mj-body>'
+          '<mj-include path="./part.css" type="css" css-inline="inline" />'
+          '<mj-section><mj-column /></mj-section>'
+        '</mj-body>'
+        '</mjml>'
+    )
+    path.write_text(mjml_str)
+    (tmp_path / 'part.css').write_text('.red { color: red; }')
+
+    head = _find(_parse_file(path), 'mj-head')
+
+    (style,) = head.children
+    assert style.tag_name == 'mj-style'
+    assert style.content == '.red { color: red; }'
+    # "css-inline" decides whether the rules are inlined into the elements
+    assert style.attributes == {'inline': 'inline'}
+
+
+@pytest.mark.parametrize('is_nested', [False, True])
+def test_css_includes_follow_the_heads_of_included_templates(tmp_path: Path, is_nested: bool):
+    mjml_str = (
+        '<mjml>'
+        '<mj-head><mj-include path="last.css" type="css" /></mj-head>'
+        '<mj-body><mj-include path="part.mjml" /></mj-body>'
+        '</mjml>'
+    )
+    (tmp_path / 'last.css').write_text('.x { color: red; }')
+    included_part_mjml = (
+        '<mjml>'
+          '<mj-head><mj-style>.x { color: blue; }</mj-style></mj-head>'
+          '<mj-body><mj-section /></mj-body>'
+        '</mjml>'
+    )
+    (tmp_path / 'part.mjml').write_text(included_part_mjml)
+    if is_nested:
+        (tmp_path / 'nested.mjml').write_text(mjml_str)
+        mjml_str = '<mjml><mj-body><mj-include path="nested.mjml" /></mj-body></mjml>'
+    path = tmp_path / 'template.mjml'
+    path.write_text(mjml_str)
+
+    head = _find(_parse_file(path), 'mj-head')
+
+    actual_css = [child.content for child in head.children]
+    assert actual_css == ['.x { color: blue; }', '.x { color: red; }']
+
+
 def _parse(source: str, file: Optional[str] = None) -> Node:
     root = parse_document(source, core_components(), file=file)
     assert root is not None
