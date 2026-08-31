@@ -48,3 +48,19 @@ def test_printer_support_style_precedes_the_owa_style():
 
     assert '[owa] ' in html
     assert html.index('@media only print') < html.index('[owa] ')
+
+
+def test_mj_class_with_boolean_like_value_does_not_break_rendering():
+    # The parser converts "true" and "false" to booleans. `mj-class` requires a
+    # string containing class names, so a boolean value must not break rendering.
+    mjml_str = (
+        '<mjml>'
+          '<mj-body>'
+            '<mj-section>'
+              '<mj-column>'
+                '<mj-text mj-class="true">text</mj-text>'
+              '</mj-column>'
+            '</mj-section>'
+        '</mj-body></mjml>'
+    )
+    assert 'text' in mjml_to_html(StringIO(mjml_str)).html

@@ -2,7 +2,7 @@ import dataclasses
 from collections.abc import Callable, Mapping, Sequence
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
 
 from bs4 import BeautifulSoup
 from dotmap import DotMap
@@ -229,8 +229,10 @@ def mjml_to_html(
                 }
             tagName = node.tag_name
             attributes = dict(node.attributes)
-            mj_class = cast(str, attributes.get('mj-class', ''))
-            classes = ignore_empty(mj_class.split(' '))
+            mj_class = attributes.get('mj-class')
+            # The parser converts "true"/"false" for mj-class to booleans.
+            mj_class = mj_class if isinstance(mj_class, str) else None
+            classes = ignore_empty(mj_class.split(' ')) if mj_class else ()
 
             attributesClasses = {}
             for css_class in classes:
@@ -252,7 +254,7 @@ def mjml_to_html(
             defaultAttributesForClasses = {}
             for parent_mj_class in parent_mj_classes:
                 defaultAttributesForClasses |= default_attr_classes(parent_mj_class)
-            nextParentMjClass = cast(str, attributes.get('mj-class', parentMjClass))
+            nextParentMjClass = mj_class if (mj_class is not None) else parentMjClass
 
             _attrs_omit = omit(attributes, 'mj-class')
             _returned_attributes = {
