@@ -4,20 +4,19 @@ from typing import Optional
 import pytest
 from bs4 import BeautifulSoup
 
+from mjml import Include, ValidationRule
 from mjml._node_adapter import node_tree_from_soup
 from mjml.core.registry import core_components
 from mjml.node import Node, NodeKind
 from mjml.parser import parse_document
 
 
-# "mj-include" is resolved by the adapter but not by the parser yet, so those
-# templates cannot be compared until the parser resolves includes as well
 CORPUS = {
     path.stem: path
     for directory in (Path(__file__).parent / 'testdata',
                       Path(__file__).parent / 'missing_functionality')
     for path in sorted(directory.glob('*.mjml'))
-    if not path.stem.startswith('_') and 'mj-include' not in path.read_text(encoding='utf8')
+    if not path.stem.startswith('_')
 }
 CORPUS_IDS = sorted(CORPUS)
 
@@ -122,7 +121,7 @@ def test_the_parser_and_the_adapter_agree(test_id):
     adapted = node_tree_from_soup(
         BeautifulSoup(source, 'html.parser').mjml, components, template_dir=path.parent
     )
-    parsed = parse_document(source, components)
+    parsed = parse_document(source, components, template_dir=path.parent)
 
     assert _shape(parsed) == _shape(adapted)
 
@@ -146,8 +145,50 @@ def test_unmatched_closing_tags_do_not_end_raw_content(content):
     assert raw.children == ()
 
 
+def test_an_included_body_is_spliced_in_with_its_provenance(tmp_path: Path):
+    path = _include_template(
+        tmp_path, '<mj-include path="./part.mjml" />',
+        part='<mj-section><mj-column /></mj-section>',
+    )
+    mj_body = _find(_parse_file(path), 'mj-body')
+
+    (section,) = mj_body.children
+    assert section.tag_name == 'mj-section'
+    assert section.file == str(tmp_path / 'part.mjml')
+    assert section.included_in == (Include(file=str(path), line=1),)
+
+
+def test_reports_unreadable_include(tmp_path: Path):
+    path = _include_template(tmp_path, '<mj-include path="./missing.mjml" />')
+    (raw,) = _find(_parse_file(path), 'mj-body').children
+
+    (error,) = raw.errors
+    assert error.rule is ValidationRule.INCLUDE_ERROR
+    assert 'could not read the included file' in error.message
+
+
+def test_reports_circular_include(tmp_path: Path):
+    path = _include_template(
+        tmp_path, '<mj-include path="./part.mjml" />',
+        part='<mj-include path="./part.mjml" />',
+    )
+    (raw,) = _find(_parse_file(path), 'mj-body').children
+
+    (error,) = raw.errors
+    assert 'Circular inclusion' in error.message
+
+
 def _parse(source: str, file: Optional[str] = None) -> Node:
     root = parse_document(source, core_components(), file=file)
+    assert root is not None
+    return root
+
+
+def _parse_file(path: Path, **kwargs) -> Node:
+    mjml_str = path.read_text(encoding='utf8')
+    root = parse_document(
+        mjml_str, core_components(), file=str(path), template_dir=path.parent, **kwargs
+    )
     assert root is not None
     return root
 
@@ -164,3 +205,11 @@ def _find(node: Node, tag_name: str) -> Node:
 
 def _body(inner: str) -> str:
     return f'<mjml><mj-body>{inner}</mj-body></mjml>'
+
+
+def _include_template(tmp_path: Path, include: str, **parts: str) -> Path:
+    for name, content in parts.items():
+        (tmp_path / f'{name}.mjml').write_text(content)
+    path = tmp_path / 'template.mjml'
+    path.write_text(f'<mjml><mj-body>{include}</mj-body></mjml>')
+    return path

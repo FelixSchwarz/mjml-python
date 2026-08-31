@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from io import BytesIO
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from bs4 import BeautifulSoup
 
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 __all__ = [
     'CircularIncludeError',
     'guard_against_circular_include',
+    'include_source',
     'parse_include_document',
     'read_include_file',
     'resolve_include_path',
@@ -39,12 +40,12 @@ def guard_against_circular_include(
     return (*include_chain, resolved)
 
 
-def resolve_include_path(path_value, *, template_dir) -> "StrPath":
+def resolve_include_path(path_value: "StrPath", *, template_dir: Optional["StrPath"]) -> PurePath:
     path = PurePath(path_value)
     if path.is_absolute():
         return path
     elif template_dir:
-        return template_dir / path
+        return PurePath(template_dir) / path
     return path
 
 
@@ -54,7 +55,12 @@ def read_include_file(path_value, *, template_dir) -> str:
         return fp.read().decode('utf8')
 
 
-def parse_include_document(path_value, *, template_dir) -> BeautifulSoup:
+def include_source(path_value, *, template_dir) -> str:
+    """The contents of an included file, wrapped in <mjml> if it has none."""
+    return _included_bytes(path_value, template_dir=template_dir).decode('utf8')
+
+
+def _included_bytes(path_value, *, template_dir) -> bytes:
     included_path = resolve_include_path(path_value, template_dir=template_dir)
     # Upstream mjml does not raise an error if the included file was not found.
     # Instead they generate a HTML comment with a failure notice.
@@ -67,6 +73,11 @@ def parse_include_document(path_value, *, template_dir) -> BeautifulSoup:
     # works for me at least for utf8 now.
     if b'<mjml>' not in included_bytes:
         included_bytes = b'<mjml><mj-body>' + included_bytes + b'</mj-body></mjml>'
+    return included_bytes
+
+
+def parse_include_document(path_value, *, template_dir) -> BeautifulSoup:
+    included_bytes = _included_bytes(path_value, template_dir=template_dir)
     # lxml does not like non-ascii StringIO input but utf8-encoded BytesIO works
     # seen with pypy3 7.3.1, lxml 4.6.3 (Fedora 34)
     fp_included = BytesIO(included_bytes)
