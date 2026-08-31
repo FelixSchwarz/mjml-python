@@ -1,15 +1,13 @@
-from bs4 import BeautifulSoup
-
 from mjml import ValidationRule
-from mjml._node_adapter import node_tree_from_soup
 from mjml.core.registry import core_components
+from mjml.parser import parse_document
 from mjml.validator import validate_tree
 
 
 def _validate(mjml_str, template_dir=None):
     components = core_components()
-    soup = BeautifulSoup(mjml_str, 'html.parser')
-    tree = node_tree_from_soup(soup.mjml, components, template_dir=template_dir)
+    tree = parse_document(mjml_str, components, template_dir=template_dir)
+    assert tree is not None
     return validate_tree(tree, components)
 
 
@@ -130,8 +128,8 @@ def test_formatted_message_of_a_real_error(tmp_path):
         '    </mj-section>\n  </mj-body>\n</mjml>'
     )
     components = core_components()
-    soup = BeautifulSoup(template.read_bytes(), 'html.parser')
-    tree = node_tree_from_soup(soup.mjml, components, file=str(template))
+    tree = parse_document(template.read_text(), components, file=str(template))
+    assert tree is not None
 
     (error,) = validate_tree(tree, components)
     expected = (
@@ -282,3 +280,11 @@ def test_mj_class_declarations_with_the_same_name_are_reported_as_repeated():
     (error,) = _validate(attributes(same))
     expected = 'mj-class name="a" is declared more than once.'
     assert error.message == expected
+
+
+def test_an_attribute_which_only_differs_in_case_is_reported():
+    # mjml keeps attribute names as written, so "Color" is not "color"
+    (error,) = _validate(_column('<mj-text Color="red">hi</mj-text>'))
+
+    assert error.rule is ValidationRule.VALID_ATTRIBUTES
+    assert error.message == 'Attribute Color is illegal'

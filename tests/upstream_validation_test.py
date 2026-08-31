@@ -3,11 +3,10 @@ import re
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 
-from mjml._node_adapter import node_tree_from_soup
 from mjml.core.registry import core_components
 from mjml.errors import ValidationRule
+from mjml.parser import parse_document
 from mjml.validator import validate_tree
 
 
@@ -24,8 +23,11 @@ def findings(test_id):
     """The findings of this port as (element, rule, attribute) rows."""
     components = core_components()
     template = TEMPLATE_DIR / f'{test_id}.mjml'
-    soup = BeautifulSoup(template.read_bytes(), 'html.parser')
-    tree = node_tree_from_soup(soup.mjml, components, file=str(template))
+    tree = parse_document(
+        template.read_text(encoding='utf8'), components,
+        file=str(template), template_dir=TEMPLATE_DIR,
+    )
+    assert tree is not None
 
     rows = []
     for error in validate_tree(tree, components):

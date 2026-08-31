@@ -1,11 +1,10 @@
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 
-from mjml._node_adapter import node_tree_from_soup
 from mjml.core.registry import components_for_invocation
 from mjml.elements import MjText
+from mjml.parser import parse_document
 from mjml.validator import validate_tree
 
 
@@ -24,9 +23,10 @@ def template_ids(directory):
 
 def validation_errors(path, directory):
     components = components_for_invocation([MjTextCustom])
-    soup = BeautifulSoup(path.read_bytes(), 'html.parser')
-    assert soup.mjml is not None, f'{path} has no <mjml> element'
-    tree = node_tree_from_soup(soup.mjml, components, file=str(path), template_dir=directory)
+    tree = parse_document(
+        path.read_text(encoding='utf8'), components, file=str(path), template_dir=directory
+    )
+    assert tree is not None, f'{path} has no <mjml> element'
     return validate_tree(tree, components)
 
 

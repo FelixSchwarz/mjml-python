@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
 from bs4 import BeautifulSoup, Comment
 from dotmap import DotMap
 
-from mjml._node_adapter import node_tree_from_soup
 from mjml.core import initComponent
 from mjml.core.registry import components_for_invocation
 from mjml.elements.head._head_base import HeadComponent
@@ -29,6 +28,7 @@ from mjml.helpers import (
     resolve_include_path,
     skeleton_str as default_skeleton,
 )
+from mjml.parser import parse_document
 from mjml.validator import validate_tree
 
 
@@ -54,6 +54,7 @@ FpOrJson = Union[Mapping[str, Any], str, bytes, "SupportsRead[str]", "SupportsRe
 
 class ParsedInput(NamedTuple):
     root: Any
+    source: str
     template_dir: Optional["StrPath"]
     template_path: Optional[str]
     # a template built from JSON has no source the caller could look at
@@ -75,14 +76,17 @@ def parse_input(xml_fp_or_json: FpOrJson, template_dir: Optional["StrPath"]) -> 
     if (template_dir is None) and isinstance(template_path, (str, PurePath)):
         template_dir = Path(template_path).parent
 
-    mjml_doc = BeautifulSoup(xml_fp.read(), 'html.parser')
+    source = xml_fp.read()
+    if isinstance(source, bytes):
+        source = source.decode('utf8')
+    mjml_doc = BeautifulSoup(source, 'html.parser')
     mjml_root = mjml_doc.mjml
     if mjml_root is None:
         if template_path:
             raise ValueError(f"Could not parse '{template_path}'")
         else:
             raise ValueError("Could not parse mjml input")
-    return ParsedInput(mjml_root, template_dir, template_path, from_json)
+    return ParsedInput(mjml_root, source, template_dir, template_path, from_json)
 
 
 def validate(
@@ -98,12 +102,14 @@ def validate(
 
 def _validation_errors(parsed: ParsedInput, components: Any) -> list[ValidationError]:
     template_file = str(parsed.template_path) if parsed.template_path else None
-    node_tree = node_tree_from_soup(
-        parsed.root,
+    node_tree = parse_document(
+        parsed.source,
         components,
         file=template_file,
         template_dir=parsed.template_dir,
     )
+    if node_tree is None:
+        return []
     errors = validate_tree(node_tree, components)
     if parsed.from_json:
         # mjml xml was generated dynamically from json so error positions are meaningless

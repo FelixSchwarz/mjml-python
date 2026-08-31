@@ -2,23 +2,11 @@ from pathlib import Path
 from typing import Optional
 
 import pytest
-from bs4 import BeautifulSoup
 
 from mjml import Include, ValidationRule
-from mjml._node_adapter import node_tree_from_soup
 from mjml.core.registry import core_components
 from mjml.node import Node, NodeKind
 from mjml.parser import parse_document
-
-
-CORPUS = {
-    path.stem: path
-    for directory in (Path(__file__).parent / 'testdata',
-                      Path(__file__).parent / 'missing_functionality')
-    for path in sorted(directory.glob('*.mjml'))
-    if not path.stem.startswith('_')
-}
-CORPUS_IDS = sorted(CORPUS)
 
 
 def test_can_build_tree_of_elements():
@@ -97,33 +85,6 @@ def test_text_of_a_non_ending_tag_becomes_its_content():
     section = _find(_parse(_body('<mj-section>stray text</mj-section>')), 'mj-section')
 
     assert section.content == 'stray text'
-
-
-def _shape(node):
-    # attribute names are compared lower-cased: only the parser keeps the case
-    # they were written in, which is the point of having it
-    return (
-        node.tag_name,
-        node.kind,
-        tuple(sorted((name.lower(), value) for name, value in node.attributes.items())),
-        tuple(_shape(child) for child in node.children),
-    )
-
-
-@pytest.mark.parametrize('test_id', CORPUS_IDS)
-def test_the_parser_and_the_adapter_agree(test_id):
-    # the adapter is what the validator runs on today, so the parser has to
-    # describe the same document before it can take over
-    path = CORPUS[test_id]
-    source = path.read_text(encoding='utf8')
-    components = core_components()
-
-    adapted = node_tree_from_soup(
-        BeautifulSoup(source, 'html.parser').mjml, components, template_dir=path.parent
-    )
-    parsed = parse_document(source, components, template_dir=path.parent)
-
-    assert _shape(parsed) == _shape(adapted)
 
 
 def test_an_attribute_without_a_value_is_an_empty_string():
