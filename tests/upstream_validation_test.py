@@ -25,7 +25,7 @@ def findings(test_id):
     template = TEMPLATE_DIR / f'{test_id}.mjml'
     tree = parse_document(
         template.read_text(encoding='utf8'), components,
-        file=str(template), template_dir=TEMPLATE_DIR,
+        file=str(template), template_dir=TEMPLATE_DIR, report_include_errors=True,
     )
     assert tree is not None
 

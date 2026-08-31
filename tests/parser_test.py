@@ -160,17 +160,33 @@ def test_head_of_an_included_file_joins_the_document_head(tmp_path: Path):
     assert [child.tag_name for child in head.children] == ['mj-preview', 'mj-title']
 
 
-def test_document_without_a_head_gets_one_from_the_include(tmp_path: Path):
-    path = tmp_path / 'template.mjml'
-    mjml_str = '<mjml><mj-body><mj-include path="./part.mjml" /></mj-body></mjml>'
-    path.write_text(mjml_str)
-    included_mjml = (
+def test_only_the_first_head_and_body_of_an_included_file_are_used(tmp_path: Path):
+    # js: findTag() stops at the first match
+    (tmp_path / 'part.mjml').write_text(
         '<mjml>'
-        '<mj-head><mj-title>from the include</mj-title></mj-head>'
-        '<mj-body><mj-section><mj-column /></mj-section></mj-body>'
+        '<mj-head><mj-title>first</mj-title></mj-head>'
+        '<mj-head><mj-title>second</mj-title></mj-head>'
+        '<mj-body><mj-section css-class="first" /></mj-body>'
+        '<mj-body><mj-section css-class="second" /></mj-body>'
         '</mjml>'
     )
-    (tmp_path / 'part.mjml').write_text(included_mjml)
+    path = tmp_path / 'template.mjml'
+    path.write_text('<mjml><mj-body><mj-include path="./part.mjml" /></mj-body></mjml>')
+    tree = _parse_file(path)
+
+    (title,) = _find(tree, 'mj-head').children
+    assert title.content == 'first'
+    (section,) = _find(tree, 'mj-body').children
+    assert section.attributes['css-class'] == 'first'
+
+
+def test_a_document_without_a_head_gets_one_from_the_include(tmp_path: Path):
+    (tmp_path / 'part.mjml').write_text(
+        '<mjml><mj-head><mj-title>from the include</mj-title></mj-head>'
+        '<mj-body><mj-section><mj-column /></mj-section></mj-body></mjml>'
+    )
+    path = tmp_path / 'template.mjml'
+    path.write_text('<mjml><mj-body><mj-include path="./part.mjml" /></mj-body></mjml>')
 
     head = _find(_parse_file(path), 'mj-head')
 
@@ -247,21 +263,29 @@ def _parse(source: str, file: Optional[str] = None) -> Node:
 
 def _parse_file(path: Path, **kwargs) -> Node:
     mjml_str = path.read_text(encoding='utf8')
+    # The tests below look at reported problems, so parsing must not raise.
     root = parse_document(
-        mjml_str, core_components(), file=str(path), template_dir=path.parent, **kwargs
+        mjml_str, core_components(), file=str(path), template_dir=path.parent,
+        report_include_errors=True, **kwargs
     )
     assert root is not None
     return root
 
 
 def _find(node: Node, tag_name: str) -> Node:
-    if node.tag_name == tag_name:
-        return node
-    for child in node.children:
-        match = _find(child, tag_name)
-        if match is not None:
-            return match
-    raise AssertionError(f'no node found with tag name {tag_name}')
+    def search(current: Node) -> Optional[Node]:
+        if current.tag_name == tag_name:
+            return current
+        for child in current.children:
+            match = search(child)
+            if match is not None:
+                return match
+        return None
+
+    match = search(node)
+    if match is None:
+        raise AssertionError(f'no node found with tag name {tag_name}')
+    return match
 
 
 def _body(inner: str) -> str:

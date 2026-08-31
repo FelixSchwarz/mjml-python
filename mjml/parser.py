@@ -46,12 +46,29 @@ def parse_document(
     *,
     file: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
+    report_include_errors: bool = False,
 ) -> Optional[Node]:
-    """The <mjml> element of "source", or None when there is none."""
+    """
+    The <mjml> element of "source", or `None` when there is none.
+
+    An include which cannot be read raises, so a template whose includes do not
+    resolve never renders. "report_include_errors" turns those into errors on
+    the node instead, which is what a validation run wants: it has to report
+    the problem rather than stop at the first one.
+    """
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
     )
-    origin = _Origin(ending_tags, file, template_dir, (), (), [], [])
+    origin = _Origin(
+        ending_tags=ending_tags,
+        file=file,
+        template_dir=template_dir,
+        included_in = (),
+        include_chain = (),
+        included_heads = [],
+        css_includes = [],
+        report_include_errors = report_include_errors,
+    )
     return _parse(source, origin)
 
 
@@ -66,6 +83,7 @@ class _Origin:
     # <mj-head> of every included file, collected for the document's own head
     included_heads: list
     css_includes: list
+    report_include_errors: bool
 
 
 def _parse(source: str, origin: _Origin) -> Optional[Node]:
@@ -248,6 +266,8 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     """The nodes an "mj-include" stands for, or one node carrying the error."""
     path_value = element.attributes.get('path')
     if not path_value:
+        if not origin.report_include_errors:
+            raise ValueError('mj-include has no "path" attribute')
         yield _failed_include(element, origin, 'mj-include has no "path" attribute')
         return
     include_type = element.attributes.get('type')
@@ -259,6 +279,8 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         else:
             source = include_source(path_value, template_dir=origin.template_dir)
     except OSError:
+        if not origin.report_include_errors:
+            raise
         # js: mjml renders this comment in place of the include
         comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
         yield _failed_include(
@@ -291,6 +313,8 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     try:
         include_chain = guard_against_circular_include(resolved, origin.include_chain)
     except CircularIncludeError as cycle:
+        if not origin.report_include_errors:
+            raise
         yield _failed_include(element, origin, str(cycle))
         return
     included_origin = _Origin(
@@ -301,20 +325,32 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         include_chain=include_chain,
         included_heads=[],
         css_includes=[],
+        report_include_errors=origin.report_include_errors,
     )
     included_root = _parse(source, included_origin)
     if included_root is None:
-        yield _failed_include(
-            element, origin, f'the included file "{path_value}" ({resolved}) contains no mjml'
-        )
+        message = f'the included file "{path_value}" ({resolved}) contains no mjml'
+        if not origin.report_include_errors:
+            raise ValueError(message)
+        yield _failed_include(element, origin, message)
         return
-    for child in included_root.children:
+    # js: findTag() stops at the first match, so a second head or body in an
+    # included file is not looked at
+    included_head = _first_child(included_root, 'mj-head')
+    included_body = _first_child(included_root, 'mj-body')
+    if included_head is not None:
         # the head of an included file belongs to the document's head, wherever
         # in the document the include stands
-        if child.tag_name == 'mj-head':
-            origin.included_heads.extend(child.children)
-        elif child.tag_name == 'mj-body':
-            yield from child.children
+        origin.included_heads.extend(included_head.children)
+    if included_body is not None:
+        yield from included_body.children
+
+
+def _first_child(node: Node, tag_name: str) -> Optional[Node]:
+    for child in node.children:
+        if child.tag_name == tag_name:
+            return child
+    return None
 
 
 def _failed_include(

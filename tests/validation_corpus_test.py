@@ -24,7 +24,8 @@ def template_ids(directory):
 def validation_errors(path, directory):
     components = components_for_invocation([MjTextCustom])
     tree = parse_document(
-        path.read_text(encoding='utf8'), components, file=str(path), template_dir=directory
+        path.read_text(encoding='utf8'), components, file=str(path),
+        template_dir=directory, report_include_errors=True,
     )
     assert tree is not None, f'{path} has no <mjml> element'
     return validate_tree(tree, components)

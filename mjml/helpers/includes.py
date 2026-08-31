@@ -1,9 +1,6 @@
 from collections.abc import Sequence
-from io import BytesIO
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Optional
-
-from bs4 import BeautifulSoup
 
 
 if TYPE_CHECKING:
@@ -14,7 +11,6 @@ __all__ = [
     'CircularIncludeError',
     'guard_against_circular_include',
     'include_source',
-    'parse_include_document',
     'read_include_file',
     'resolve_include_path',
 ]
@@ -74,11 +70,3 @@ def _included_bytes(path_value, *, template_dir) -> bytes:
     if b'<mjml>' not in included_bytes:
         included_bytes = b'<mjml><mj-body>' + included_bytes + b'</mj-body></mjml>'
     return included_bytes
-
-
-def parse_include_document(path_value, *, template_dir) -> BeautifulSoup:
-    included_bytes = _included_bytes(path_value, template_dir=template_dir)
-    # lxml does not like non-ascii StringIO input but utf8-encoded BytesIO works
-    # seen with pypy3 7.3.1, lxml 4.6.3 (Fedora 34)
-    fp_included = BytesIO(included_bytes)
-    return BeautifulSoup(fp_included, 'html.parser')

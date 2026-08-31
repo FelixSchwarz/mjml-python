@@ -2,9 +2,9 @@ import dataclasses
 from collections.abc import Callable, Mapping, Sequence
 from io import BytesIO, StringIO
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union, cast
 
-from bs4 import BeautifulSoup, Comment
+from bs4 import BeautifulSoup
 from dotmap import DotMap
 
 from mjml.core import initComponent
@@ -17,17 +17,13 @@ from mjml.errors import (
     ValidationLevel,
 )
 from mjml.helpers import (
-    convertBooleansOnAttrs,
-    guard_against_circular_include,
     json_to_xml,
     mergeOutlookConditionals,
     omit,
-    parse_include_document,
-    read_include_file,
     remove_important_from_inlined_styles,
-    resolve_include_path,
     skeleton_str as default_skeleton,
 )
+from mjml.node import Node, NodeKind
 from mjml.parser import parse_document
 from mjml.validator import validate_tree
 
@@ -42,11 +38,6 @@ if TYPE_CHECKING:
 class ParseResult(NamedTuple):
     html: str
     errors: Sequence[ValidationError]
-
-
-class CSSInclude(NamedTuple):
-    css_str: str
-    inline: bool
 
 
 FpOrJson = Union[Mapping[str, Any], str, bytes, "SupportsRead[str]", "SupportsRead[bytes]"]
@@ -97,17 +88,30 @@ def validate(
 ) -> Sequence[ValidationError]:
     components = components_for_invocation(custom_components)
     parsed = parse_input(xml_fp_or_json, template_dir)
-    return _validation_errors(parsed, components)
+    node_tree = _node_tree(parsed, components, report_include_errors=True)
+    return _validation_errors(parsed, components, node_tree)
 
 
-def _validation_errors(parsed: ParsedInput, components: Any) -> list[ValidationError]:
+def _node_tree(
+    parsed: ParsedInput,
+    components: Any,
+    report_include_errors: bool = False,
+) -> Optional[Node]:
     template_file = str(parsed.template_path) if parsed.template_path else None
-    node_tree = parse_document(
+    return parse_document(
         parsed.source,
         components,
         file=template_file,
         template_dir=parsed.template_dir,
+        report_include_errors=report_include_errors,
     )
+
+
+def _validation_errors(
+    parsed: ParsedInput,
+    components: Any,
+    node_tree: Optional[Node],
+) -> list[ValidationError]:
     if node_tree is None:
         return []
     errors = validate_tree(node_tree, components)
@@ -131,16 +135,21 @@ def mjml_to_html(
     level = ValidationLevel(validation_level)
 
     parsed = parse_input(xml_fp_or_json, template_dir)
-    mjml_root = parsed.root
     template_dir = parsed.template_dir
-
     validation_errors: list[ValidationError] = []
     if level is not ValidationLevel.SKIP:
-        validation_errors = _validation_errors(parsed, components)
+        # a validation run reports a broken include instead of stopping at it
+        validation_errors = _validation_errors(
+            parsed, components, _node_tree(parsed, components, True)
+        )
         if level is ValidationLevel.STRICT:
             blocking = [e for e in validation_errors if e.severity is Severity.ERROR]
             if blocking:
                 raise MJMLValidationErrors(blocking)
+
+    mjml_root = _node_tree(parsed, components)
+    if mjml_root is None:
+        raise ValueError('Could not parse mjml input')
 
     skeleton_path = skeleton
     if skeleton_path:
@@ -156,9 +165,9 @@ def mjml_to_html(
     }
     # LATER: ability to override fonts via **options
 
-    mjml_lang = mjml_root.attrs.get('lang', 'und')
-    mjml_dir = mjml_root.attrs.get('dir', 'auto')
-    mjml_owa = mjml_root.attrs.get('owa', 'mobile')
+    mjml_lang = mjml_root.attributes.get('lang', 'und')
+    mjml_dir = mjml_root.attributes.get('dir', 'auto')
+    mjml_owa = mjml_root.attributes.get('owa', 'mobile')
     globalDatas: Mapping[str, Any] = DotMap({
         'breakpoint'         : '480px',
         'classes'            : {},
@@ -182,14 +191,9 @@ def mjml_to_html(
 
     errors: list[ValidationError] = validation_errors
 
-    css_includes: list["CSSInclude"] = []
-
     mjBody = _find_child(mjml_root, 'mj-body')
     if not mjBody:
         raise ValueError('Did not find <mj-body>!')
-    # must run before <mj-head> is looked up: this can add a head to documents
-    # which do not have one.
-    merge_included_heads(mjml_root, template_dir=template_dir)
     mjHead = _find_child(mjml_root, 'mj-head')
 
     def processing(node: Optional[Any], context: dict[str, Any],
@@ -201,7 +205,7 @@ def mjml_to_html(
         # the right thing though...
         _mjml_data = parseMJML(node) if parseMJML else applyAttributes(node)
         initialDatas = {**_mjml_data, 'context': context}
-        node_tag = getattr(node, 'name', None)
+        node_tag = node.tag_name
         component = initComponent(name=node_tag, components=components, **initialDatas)
         if not component:
             return None
@@ -211,41 +215,24 @@ def mjml_to_html(
             raise AssertionError('component has no render() method')
         return component.render()
 
-    def applyAttributes(mjml_element: Any) -> dict[str, Any]:
-        if len(mjml_element) == 0:
-            return {}
-
-        def parse(
-            _mjml,
-            parentMjClass: str = '',
-            *,
-            template_dir: Optional["StrPath"],
-            include_chain: tuple = (),
-        ) -> Any:
-            tagName = _mjml.name
-            if isinstance(_mjml, Comment) and keep_comments:
-                comment_text = str(_mjml)
+    def applyAttributes(node: Node) -> dict[str, Any]:
+        def parse(node: Node, parentMjClass: str = '') -> Optional[dict[str, Any]]:
+            if node.kind is NodeKind.COMMENT:
+                if not keep_comments:
+                    return None
                 return {
                     'tagName': 'mj-raw',
-                    'content': f'<!--{comment_text}-->',
+                    'content': node.content,
                     'attributes': {},
                     'globalAttributes': {},
                     'children': [],
                 }
-            is_tag = isinstance(tagName, str)
-            if not is_tag:
-                # could be NavigableString (text/whitespace), etc.
-                return None
-            # js: mjml-parser-xml converts "true"/"false" while parsing the XML
-            attributes = convertBooleansOnAttrs(_mjml.attrs)
-            children = [child for child in _mjml]
-            classes = ignore_empty(attributes.get('mj-class', '').split(' '))
-
-            # upstream parses text contents (+ comments) in mjml-parser-xml/index.js
-            content = _mjml.decode_contents()
+            tagName = node.tag_name
+            attributes = dict(node.attributes)
+            mj_class = cast(str, attributes.get('mj-class', ''))
+            classes = ignore_empty(mj_class.split(' '))
 
             attributesClasses = {}
-
             for css_class in classes:
                 mjClassValues = globalDatas.get("classes").get(css_class)
                 if mjClassValues:
@@ -265,7 +252,7 @@ def mjml_to_html(
             defaultAttributesForClasses = {}
             for parent_mj_class in parent_mj_classes:
                 defaultAttributesForClasses |= default_attr_classes(parent_mj_class)
-            nextParentMjClass = attributes.get('mj-class', parentMjClass)
+            nextParentMjClass = cast(str, attributes.get('mj-class', parentMjClass))
 
             _attrs_omit = omit(attributes, 'mj-class')
             _returned_attributes = {
@@ -275,53 +262,20 @@ def mjml_to_html(
                 **_attrs_omit,
             }
 
-            if tagName == 'mj-include':
-                _include_path = attributes['path']
-                if attributes.get('type') == 'css':
-                    # Upstream collects all css includes while parsing and
-                    # appends them to <mj-head> afterwards, no matter where
-                    # they appeared in the document.
-                    css_includes.append(CSSInclude(
-                        css_str = read_include_file(_include_path, template_dir=template_dir),
-                        inline  = (attributes.get('css-inline') == 'inline'),
-                    ))
-                    return None
-                elif attributes.get('type') == 'html':
-                    # inject the html file contents verbatim, just like an "mj-raw" element.
-                    html_str = read_include_file(_include_path, template_dir=template_dir)
-                    return {
-                        'tagName': 'mj-raw',
-                        'content': html_str,
-                        'attributes': {},
-                        'globalAttributes': {},
-                        'children': [],
-                    }
-                mj_include_subtree = handle_include(
-                    _include_path,
-                    parse_mjml=parse,
-                    template_dir=template_dir,
-                    include_chain=include_chain,
-                )
-                return mj_include_subtree
-            result = {
+            children = []
+            for child in node.children:
+                child_result = parse(child, nextParentMjClass)
+                if child_result is not None:
+                    children.append(child_result)
+            return {
                 'tagName': tagName,
-                'content': content,
+                'content': node.content,
                 'attributes': _returned_attributes,
                 'globalAttributes': globalDatas.get("defaultAttributes").get('mj-all', {}).copy(),
-                'children': [], # will be set afterwards
+                'children': children,
             }
-            def _parse_mjml(mjml):
-                return parse(
-                    mjml, nextParentMjClass, template_dir=template_dir, include_chain=include_chain
-                )
-            for child_result in _map_to_tuple(children, _parse_mjml, filter_none=True):
-                if isinstance(child_result, (tuple, list)):
-                    result['children'].extend(child_result)
-                else:
-                    result['children'].append(child_result)
-            return result
 
-        return parse(mjml_element, template_dir=template_dir)
+        return parse(node) or {}
 
     def addHeadStyle(identifier, headStyle):
         globalDatas["headStyle"][identifier] = headStyle
@@ -374,9 +328,6 @@ def mjml_to_html(
     )
     globalDatas["headRaw"] = processing(mjHead, headHelpers)
     content = processing(mjBody, bodyHelpers, applyAttributes)
-    for css_include in css_includes:
-        style_attr = 'inlineStyle' if css_include.inline else 'style'
-        _head_data_add(style_attr, css_include.css_str)
     if not isinstance(content, str):
         # basically just a `None` check - only only head components might return a tuple
         raise ValueError('No <mj-body> content generated!')
@@ -426,10 +377,10 @@ def mjml_to_html(
     )
 
 
-def _find_child(parent, tagName: str) -> Optional[Any]:
+def _find_child(parent: Node, tagName: str) -> Optional[Node]:
     # upstream uses lodash's find() which only searches direct children
     for child in parent.children:
-        if getattr(child, 'name', None) == tagName:
+        if child.tag_name == tagName:
             return child
     return None
 
@@ -440,64 +391,3 @@ def ignore_empty(values: Sequence[Optional["T"]]) -> Sequence["T"]:
         if value:
             result.append(value)
     return tuple(result)
-
-
-def _map_to_tuple(items, map_fn, filter_none=None):
-    results = []
-    for item in items:
-        result = map_fn(item)
-        if filter_none and (result is None):
-            continue
-        results.append(result)
-    return tuple(results)
-
-
-def merge_included_heads(mjml_root, *, template_dir, include_chain=()) -> None:
-    """
-    Merge the <mj-head> of all included files (regardless of their position within
-    the mjml) into the document's own <mj-head>.
-    """
-    for include in mjml_root.find_all('mj-include'):
-        # "css" and "html" includes are not parsed as MJML, so they have no head
-        if include.attrs.get('type') in ('css', 'html'):
-            continue
-        path_value = include.attrs['path']
-        included_root = parse_include_document(path_value, template_dir=template_dir).mjml
-        if included_root is None:
-            continue
-        # nested includes contribute to the head of the file which includes them
-        included_path = resolve_include_path(path_value, template_dir=template_dir)
-        nested_chain = guard_against_circular_include(included_path, include_chain)
-        merge_included_heads(
-            included_root, template_dir=included_path.parent, include_chain=nested_chain
-        )
-
-        # upstream only looks at direct children of <mjml> here, so a stray
-        # <mj-head> inside <mj-body> is left alone.
-        included_head = _find_child(included_root, 'mj-head')
-        if included_head is None:
-            continue
-        head = _find_child(mjml_root, 'mj-head')
-        if head is None:
-            head = BeautifulSoup('', 'html.parser').new_tag('mj-head')
-            mjml_root.append(head)
-        for child in list(included_head.children):
-            head.append(child.extract())
-
-
-def handle_include(path_value, parse_mjml, *, template_dir, include_chain: Sequence[Path]=()):
-    included_path = resolve_include_path(path_value, template_dir=template_dir)
-    include_chain = guard_against_circular_include(included_path, include_chain)
-    mjml_doc = parse_include_document(path_value, template_dir=template_dir)
-    # <mj-head> was already merged into the document head by
-    # merge_included_heads(), only the body is spliced in at this point.
-    _body = mjml_doc('mj-body')
-    if not _body:
-        return ()
-
-    body_result = parse_mjml(
-        _body[0], template_dir=included_path.parent, include_chain=include_chain
-    )
-    assert body_result['tagName'] == 'mj-body'
-    included_items = body_result['children']
-    return included_items
