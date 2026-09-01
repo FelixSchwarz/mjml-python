@@ -32,6 +32,13 @@ def test_does_not_descend_into_ending_tags():
     assert mj_text.content == 'hello <b>world</b>'
 
 
+def test_repeated_attribute_keeps_its_first_value():
+    inner = '<mj-text color="red" color="blue">x</mj-text>'
+    mj_text = _find(_parse(_body(inner)), 'mj-text')
+
+    assert mj_text.attributes == {'color': 'red'}
+
+
 def test_copies_content_of_an_ending_tag_verbatim():
     # single quotes, attribute casing and entities all survive
     inner = '<mj-text>a &lt;script&gt; <B Class=\'x\'>c</B> &#233;</mj-text>'

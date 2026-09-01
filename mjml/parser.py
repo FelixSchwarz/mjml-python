@@ -257,9 +257,14 @@ def _attributes(raw: str, tag_name: str, attrs: _Attrs) -> dict:
     names = _ATTR_RE.findall(raw[1 + len(tag_name):].rstrip('>').rstrip('/'))
     if len(names) != len(attrs):
         # the fallback keeps a surprising start tag from losing attributes
-        return {name: value or '' for name, value in attrs}
-    # a valueless attribute is an empty string, not None
-    return {written: value or '' for written, (_, value) in zip(names, attrs)}
+        names = [name for name, _ in attrs]
+    attributes: dict = {}
+    for written, (_, value) in zip(names, attrs):
+        # behave like the js implementation: a repeated attribute keeps the value
+        # it was written with first, and a valueless attribute is an empty
+        # string rather than None
+        attributes.setdefault(written, value or '')
+    return attributes
 
 
 def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:

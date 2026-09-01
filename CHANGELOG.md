@@ -32,6 +32,8 @@
 - removed `register_components()` and `register_core_components()` from
   `mjml.core.registry`, use the `custom_components` parameter of
   `mjml_to_html()`
+- a repeated attribute on one element keeps its first value as in the JS
+  implementation, so `<mj-text color="red" color="blue">` renders red
 
 
 0.12.0 (2025-12-27)
