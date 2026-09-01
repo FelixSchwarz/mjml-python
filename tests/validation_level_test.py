@@ -62,6 +62,14 @@ def test_empty_default_declaration_does_not_collide_with_following_declaration()
     assert 'color:red' in result.html
 
 
+def test_unreadable_include_aborts_soft_rendering(tmp_path):
+    path = tmp_path / 'template.mjml'
+    path.write_text('<mjml><mj-body><mj-include path="./missing.mjml" /></mj-body></mjml>')
+
+    with path.open('rb') as mjml_fp, pytest.raises(OSError):
+        mjml_to_html(mjml_fp, validation_level='soft')
+
+
 def test_strict_raises_before_rendering():
     with pytest.raises(MJMLValidationErrors) as exc_info:
         mjml_to_html(StringIO(INVALID_MJML), validation_level='strict')

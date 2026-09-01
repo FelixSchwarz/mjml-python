@@ -15,6 +15,7 @@ from mjml.errors import (
     Severity,
     ValidationError,
     ValidationLevel,
+    ValidationRule,
 )
 from mjml.helpers import (
     json_to_xml,
@@ -132,17 +133,25 @@ def mjml_to_html(
     parsed = parse_input(xml_fp_or_json, template_dir)
     template_dir = parsed.template_dir
     validation_errors: list[ValidationError] = []
+    mjml_root: Optional[Node] = None
     if level is not ValidationLevel.SKIP:
         # a validation run reports a broken include instead of stopping at it
-        validation_errors = _validation_errors(
-            parsed, components, _node_tree(parsed, components, True)
-        )
+        node_tree = _node_tree(parsed, components, True)
+        validation_errors = _validation_errors(parsed, components, node_tree)
         if level is ValidationLevel.STRICT:
             blocking = [e for e in validation_errors if e.severity is Severity.ERROR]
             if blocking:
                 raise MJMLValidationErrors(blocking)
+        # An include which went wrong is the one thing the reporting changed,
+        # so only such a template is read a second time - and then it fails the
+        # way it would have without validation. Everything else renders from
+        # the tree which was just validated, so the findings describe the html
+        # the caller gets.
+        if not any(error.rule is ValidationRule.INCLUDE_ERROR for error in validation_errors):
+            mjml_root = node_tree
 
-    mjml_root = _node_tree(parsed, components)
+    if mjml_root is None:
+        mjml_root = _node_tree(parsed, components)
 
     skeleton_path = skeleton
     if skeleton_path:
