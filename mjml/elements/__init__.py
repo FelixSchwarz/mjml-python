@@ -1,4 +1,5 @@
 
+from ._base import *
 from .mj_accordion import *
 from .mj_accordion_element import *
 from .mj_accordion_text import *

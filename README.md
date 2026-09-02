@@ -172,12 +172,26 @@ All standard MJML v4 components are implemented. The project comes with no guara
 You can register your own components:
 
 ```py
-from mjml.core.api import Category, Component
+from mjml.core.api import ComponentCategory
+from mjml.elements import BodyComponent
 
-class MyComponent(Component):
+class MyComponent(BodyComponent):
     component_name = 'mj-my-component'
-    categories = frozenset({Category.BODY_ELEMENT})
-    # ...
+    categories = frozenset({ComponentCategory.BODY_ELEMENT})
+
+    @classmethod
+    def allowed_attrs(cls):
+        # the element it is placed in reads these from every child
+        return {
+            'padding'       : 'unit(px,%){1,4}',
+            'padding-top'   : 'unit(px,%)',
+            'padding-right' : 'unit(px,%)',
+            'padding-bottom': 'unit(px,%)',
+            'padding-left'  : 'unit(px,%)',
+        }
+
+    def render(self):
+        return '<p>whatever this component renders</p>'
 
 result = mjml_to_html(mjml_input, custom_components=[MyComponent])
 ```
