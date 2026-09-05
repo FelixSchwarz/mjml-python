@@ -1,7 +1,7 @@
 from collections.abc import Iterator, Mapping
 from typing import TYPE_CHECKING
 
-from mjml.core.api import ComponentCategory
+from mjml.core.api import GLOBAL_ATTRS, ComponentCategory
 from mjml.core.types import initialize_type
 from mjml.errors import ValidationError, ValidationRule
 from mjml.node import Node, NodeKind
@@ -15,8 +15,6 @@ __all__ = ['RULES']
 
 # tags without a component of their own which are valid all the same
 COMPONENTLESS_TAGS = frozenset({'mj-all', 'mj-class', 'mj-selector', 'mj-html-attribute'})
-# attributes every element accepts
-GLOBAL_ATTRS = frozenset({'mj-class', 'css-class'})
 
 Components = Mapping[str, type["Component"]]
 

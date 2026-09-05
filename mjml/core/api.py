@@ -6,7 +6,10 @@ from typing import Any, ClassVar, Optional, Union
 from mjml.helpers.format_attributes import formatAttributes
 
 
-__all__ = ['initComponent', 'ComponentCategory', 'Component']
+__all__ = ['initComponent', 'ComponentCategory', 'Component', 'GLOBAL_ATTRS']
+
+# attributes every element accepts, so no component declares them
+GLOBAL_ATTRS = frozenset({'mj-class', 'css-class'})
 
 
 class ComponentCategory(Enum):
@@ -116,7 +119,7 @@ class Component:
 
     # js: getAttribute(name)
     def get_attr(self, name: str, *, missing_ok: bool=False) -> Optional[Any]:
-        is_allowed_attr = name in self.allowed_attrs()
+        is_allowed_attr = (name in self.allowed_attrs()) or (name in GLOBAL_ATTRS)
         is_default_attr = name in self.default_attrs()
         if not missing_ok and (not is_allowed_attr) and (not is_default_attr):
             raise AssertionError(f'{self.__class__.__name__} has no declared attr {name}')

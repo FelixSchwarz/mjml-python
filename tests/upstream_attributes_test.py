@@ -13,19 +13,8 @@ UPSTREAM_ENDING_TAGS = set(_snapshot['ending_tags'])
 # `None` means the element accepts anything (`mj-attributes`)
 UPSTREAM_DEPENDENCIES = _snapshot['dependencies']
 
-_CSS_CLASS_IS_GLOBAL = (
-    'upstream whitelists "css-class" in its validator instead of declaring it '
-    'per component, we have to declare it so "get_attr()" does not raise'
-)
 ACCEPTED_DELTA = {
     ('missing', 'mj-raw', 'position'): 'position="file-start" is not implemented (#74)',
-    **{
-        ('extra', component_name, 'css-class'): _CSS_CLASS_IS_GLOBAL
-        for component_name in (
-            'mj-body', 'mj-button', 'mj-column', 'mj-divider',
-            'mj-image', 'mj-table', 'mj-text',
-        )
-    },
 }
 
 

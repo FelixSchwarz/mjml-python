@@ -48,8 +48,6 @@ class MjButton(BodyComponent):
             'vertical-align'   : 'enum(top,bottom,middle)',
             'text-align'       : 'enum(left,right,center)',
             'width'            : 'unit(px,%)',
-            # hidden
-            'css-class'        : 'string',
         }
 
 

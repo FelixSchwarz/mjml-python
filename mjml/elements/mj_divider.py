@@ -25,8 +25,6 @@ class MjDivider(BodyComponent):
             'padding-top'     : 'unit(px,%)',
             'width'           : 'unit(px,%)',
             'align'           : 'enum(left,center,right)',
-            # not declared upstream, MjHero reads it on its children
-            'css-class'       : 'string',
         }
 
     @classmethod

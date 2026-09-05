@@ -33,8 +33,6 @@ class MjText(BodyComponent):
             'text-decoration'  : 'string',
             'text-transform'   : 'string',
             'vertical-align'   : 'enum(top,bottom,middle)',
-            # other attrs
-            'css-class'        : 'string',
   }
 
     @classmethod

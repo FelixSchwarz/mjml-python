@@ -44,8 +44,6 @@ class MjColumn(BodyComponent):
             'padding'         : 'unit(px,%){1,4}',
             'vertical-align'  : 'enum(top,bottom,middle)',
             'width'           : 'unit(px,%)',
-            # "hidden" attributes
-            'css-class'       : 'string',
         }
 
     @classmethod
