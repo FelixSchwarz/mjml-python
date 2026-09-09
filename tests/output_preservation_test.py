@@ -45,10 +45,16 @@ def test_comments_can_be_dropped():
 
 
 def test_downlevel_revealed_conditional_comment_is_preserved():
-    # htmlcompare 0.4.1 treats this marker as a regular comment and ignores it.
-    # It must remain intact so non-Outlook clients reveal the enclosed HTML
-    # while Outlook recognizes the condition and hides it.
+    # The marker must remain intact so non-Outlook clients reveal the enclosed
+    # HTML while Outlook recognizes the condition and hides it. A malformed
+    # marker is revealed everywhere, Outlook included.
     assert '<!--[if !mso]><!-->' in _render('mj-style')
+
+
+def test_mso_negation_conditional_comment_is_well_formed():
+    html = _render('mj-navbar')
+
+    assert '<!--[if !mso]><!--><input type="checkbox"' in html
 
 
 def _render(test_id: str, **kwargs) -> str:

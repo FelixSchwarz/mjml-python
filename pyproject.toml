@@ -41,7 +41,7 @@ dependencies = [
 
 [project.optional-dependencies]
 testing = [
-    "HTMLCompare >= 0.4.0",  # >= 0.4.0 for enhanced whitespace detection
+    "HTMLCompare >= 0.5.0b1",  # >= 0.5.0b1 detects downlevel-revealed conditional comments
     "lxml",
     "pytest",
 ]
@@ -77,6 +77,9 @@ pattern = "(?P<version>.+)"
 
 [tool.uv]
 exclude-newer = "7 days"
+# htmlcompare is maintained by the mjml-python author, so the cooldown
+# above does not need to apply to it.
+exclude-newer-package = { htmlcompare = "0 days" }
 
 
 [tool.ruff]

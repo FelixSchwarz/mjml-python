@@ -10,6 +10,9 @@ resolution-markers = [
 exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
 exclude-newer-span = "P7D"
 
+[options.exclude-newer-package]
+htmlcompare = { timestamp = "0001-01-01T00:00:00Z", span = "PT0S" }
+
 [[package]]
 name = "beautifulsoup4"
 version = "4.15.0"
@@ -169,16 +172,16 @@ wheels = [
 
 [[package]]
 name = "htmlcompare"
-version = "0.4.1"
+version = "0.5.0b1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "html5lib" },
     { name = "tinycss2", version = "1.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "tinycss2", version = "1.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/5a/3746bbd342203df46c96f7409261acc97007cd80ec9e4c53ea120d925c05/htmlcompare-0.4.1.tar.gz", hash = "sha256:faa78519919e2b9036ae4574b401cc59667278c671827e1e2adb1d40d1a5d79a", size = 21354, upload-time = "2025-12-27T19:31:58.262Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/aa/e00c8cca1f5c622048f7342abe1518a951cfb610585d54cc4c1ac1d29dc8/htmlcompare-0.5.0b1.tar.gz", hash = "sha256:2a198ceb74f5dba47bb5f9057f4b36aa0f6cb5f48e0093554e34b678e9dc9f09", size = 58799, upload-time = "2026-09-09T19:13:10Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/6e/8e6247c25df493a5708e00ad795b807ac68fe577e7d11baadfd30420b79a/htmlcompare-0.4.1-py3-none-any.whl", hash = "sha256:50e0d0f44a5f037145792cfb184c10cae7172e68ba9fcf5c76b0324ec5c1c634", size = 25571, upload-time = "2025-12-27T19:31:57.181Z" },
+    { url = "https://files.pythonhosted.org/packages/44/ef/4f149a58abe327f0fdc59f5dabf6ed1aa5bf75ec357d38b9628fe35e7fa9/htmlcompare-0.5.0b1-py3-none-any.whl", hash = "sha256:4c49e6918ad9252a442068ecf3d296bac036d3c69d4eebd7f96dafd10f371ec3", size = 41539, upload-time = "2026-09-09T19:13:08.809Z" },
 ]
 
 [[package]]
@@ -528,7 +531,7 @@ requires-dist = [
     { name = "css-inline", marker = "extra == 'css-inlining'", specifier = ">=0.11" },
     { name = "docopt-ng" },
     { name = "dotmap" },
-    { name = "htmlcompare", marker = "extra == 'testing'", specifier = ">=0.4.0" },
+    { name = "htmlcompare", marker = "extra == 'testing'", specifier = ">=0.5.0b1" },
     { name = "jinja2" },
     { name = "lxml", marker = "extra == 'testing'" },
     { name = "pytest", marker = "extra == 'testing'" },

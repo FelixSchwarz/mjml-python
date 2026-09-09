@@ -35,6 +35,9 @@
   `mjml_to_html()`
 - a repeated attribute on one element keeps its first value as in the JS
   implementation, so `<mj-text color="red" color="blue">` renders red
+- fix the malformed conditional comment `<!--[if !mso><!-->` emitted by
+  `mj-carousel` and `mj-navbar`, which revealed the enclosed markup in
+  Outlook as well
 
 
 0.12.0 (2025-12-27)

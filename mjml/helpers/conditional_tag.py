@@ -9,7 +9,7 @@ startConditionalTag = '<!--[if mso | IE]>'
 startMsoConditionalTag = '<!--[if mso]>'
 endConditionalTag = '<![endif]-->'
 startNegationConditionalTag = '<!--[if !mso | IE]><!-->'
-startMsoNegationConditionalTag = '<!--[if !mso><!-->'
+startMsoNegationConditionalTag = '<!--[if !mso]><!-->'
 endNegationConditionalTag = '<!--<![endif]-->'
 
 
