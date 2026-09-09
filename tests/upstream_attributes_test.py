@@ -13,9 +13,7 @@ UPSTREAM_ENDING_TAGS = set(_snapshot['ending_tags'])
 # `None` means the element accepts anything (`mj-attributes`)
 UPSTREAM_DEPENDENCIES = _snapshot['dependencies']
 
-ACCEPTED_DELTA = {
-    ('missing', 'mj-raw', 'position'): 'position="file-start" is not implemented (#74)',
-}
+ACCEPTED_DELTA: dict[tuple[str, str, str], str] = {}
 
 
 def divergences_from_upstream():

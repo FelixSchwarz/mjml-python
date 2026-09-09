@@ -14,5 +14,11 @@ class MjRaw(BodyComponent):
 
     rawElement = True
 
+    @classmethod
+    def allowed_attrs(cls):
+        return {
+            'position': 'enum(file-start)',
+        }
+
     def render(self):
         return self.getContent()

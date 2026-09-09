@@ -5,7 +5,7 @@ from json import load as json_load
 from typing import TYPE_CHECKING, Union
 
 import pytest
-from htmlcompare import assert_same_html
+from htmlcompare import CompareOptions, assert_same_html
 
 from mjml import mjml_to_html
 from mjml.testing_helpers import get_mjml_fp, load_expected_html
@@ -77,6 +77,7 @@ TEST_IDS = (
     'mj-navbar',
     'mj-preview',
     'mj-raw',
+    'mj-raw-file-start',
     'mj-raw-with-tags',
     'mj-raw-head',
     'mj-raw-head-with-tags',
@@ -134,6 +135,7 @@ def test_accepts_also_plain_strings_as_input():
 
 CSS_INLINING_TEST_IDS = (
     'css-inlining',
+    'css-inlining-file-start',
     'css-inlining-important',
     'mj-style-with-attributes',
 )
@@ -151,6 +153,11 @@ def _render_html(test_id: str, keep_comments: bool = True) -> ParseResult:
         return mjml_to_html(mjml_fp, keep_comments=keep_comments)
 
 
+# `mj-raw position="file-start"` renders in front of the doctype, which is not
+# part of the parsed document and therefore compared only on request.
+COMPARE_OPTIONS = CompareOptions(compare_document_prefix=True)
+
+
 def _assert_same_html(actual_html: str, test_id: str, suffix: Union[str, None] = None) -> None:
     expected_html = load_expected_html(test_id, suffix=suffix)
-    assert_same_html(expected_html, actual_html, verbose=True)
+    assert_same_html(expected_html, actual_html, verbose=True, options=COMPARE_OPTIONS)

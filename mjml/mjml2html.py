@@ -197,6 +197,11 @@ def mjml_to_html(
     if not mjBody:
         raise ValueError('Did not find <mj-body>!')
     mjHead = _find_child(mjml_root, 'mj-head')
+    beforeDoctype = '\n'.join(
+        raw.content
+        for raw in _find_children(mjml_root, 'mj-raw')
+        if raw.attributes.get('position') == 'file-start'
+    )
 
     def processing(node: Optional[Any], context: dict[str, Any],
                    parseMJML: Optional[Callable[[Any], Any]]=None) -> "HandlerResult":
@@ -375,6 +380,11 @@ def mjml_to_html(
 
     content = mergeOutlookConditionals(content)
 
+    if beforeDoctype:
+        # upstream prepends this in its skeleton, but the content is not part of
+        # the document and "css_inline" would move it into the body.
+        content = f'{beforeDoctype}\n{content}'
+
     return ParseResult(
         html=content,
         errors=errors,
@@ -387,6 +397,10 @@ def _find_child(parent: Node, tagName: str) -> Optional[Node]:
         if child.tag_name == tagName:
             return child
     return None
+
+
+def _find_children(parent: Node, tagName: str) -> Sequence[Node]:
+    return tuple(child for child in parent.children if child.tag_name == tagName)
 
 
 def ignore_empty(values: Sequence[Optional["T"]]) -> Sequence["T"]:

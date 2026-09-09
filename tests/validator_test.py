@@ -157,12 +157,14 @@ def test_formatted_message_names_the_included_file(tmp_path):
     )
 
 
-def test_unsupported_attribute_says_so_instead_of_illegal():
-    inner = '<mj-raw position="file-start">x</mj-raw><mj-section><mj-column /></mj-section>'
+def test_mj_raw_position_accepts_only_file_start():
+    inner = '<mj-raw position="bogus">x</mj-raw><mj-section><mj-column /></mj-section>'
     (error,) = _validate(_body(inner))
 
-    assert error.rule is ValidationRule.NOT_IMPLEMENTED
-    assert error.message == 'position is not implemented by this port (#74)'
+    assert error.rule is ValidationRule.VALID_TYPES
+    assert error.message == (
+        'Attribute position has invalid value: bogus for type Enum, only accepts file-start'
+    )
 
 
 def test_repeated_declaration_in_mj_attributes_is_reported():

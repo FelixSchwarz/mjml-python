@@ -26,6 +26,7 @@
 - CSS inlining: remove `!important` from all style attributes modified by the
   inliner as the JS implementation does (Juice's `preserveImportant` is false)
 - support `mj-include` with `type="css"` and `type="html"`
+- support `mj-raw position="file-start"` which puts content in front of the doctype
 - support `mj-include` of files which contain an `<mj-head>`
 - support `<mj-class>` with child elements (default attributes for nested elements)
 - add `printer_support` parameter to `mjml_to_html()` (same as upstream's `printerSupport` option)

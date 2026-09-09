@@ -1,0 +1,17 @@
+<mjml>
+  <mj-raw position="file-start">{# subject: {{ subject }} #}</mj-raw>
+  <mj-head>
+    <mj-style inline="inline">
+      .box {
+        border: 5px solid red;
+      }
+    </mj-style>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text css-class="box">Hello World!</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

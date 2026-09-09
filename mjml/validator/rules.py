@@ -41,13 +41,6 @@ DECLARATION_CONTAINERS = frozenset({
     'mj-html-attributes',
 })
 
-# Attributes which we do not support yet.
-# These will be accepted by `valid_attributes` so the specialized check for
-# `report_unsupported_features` can build a more helpful error message.
-UNSUPPORTED_ATTRS = {
-    ('mj-raw', 'position'): 'position is not implemented by this port (#74)',
-}
-
 
 def _error(node: Node, message: str, rule: ValidationRule) -> ValidationError:
     return ValidationError(
@@ -73,10 +66,7 @@ def valid_attributes(node: Node, components: Components) -> Iterator[ValidationE
     if component_cls is None:
         return
     allowed = set(component_cls.allowed_attrs()) | GLOBAL_ATTRS
-    unknown = [
-        attr for attr in node.attributes
-        if (attr not in allowed) and ((node.tag_name, attr) not in UNSUPPORTED_ATTRS)
-    ]
+    unknown = [attr for attr in node.attributes if attr not in allowed]
     if not unknown:
         return
     if len(unknown) == 1:
@@ -129,11 +119,6 @@ def include_errors(node: Node, components: Components) -> Iterator[ValidationErr
 
 
 def report_unsupported_features(node: Node, components: Components) -> Iterator[ValidationError]:
-    for attr in node.attributes:
-        message = UNSUPPORTED_ATTRS.get((node.tag_name, attr))
-        if message:
-            yield _error(node, message, ValidationRule.NOT_IMPLEMENTED)
-
     if node.tag_name == 'mj-head':
         yield from _colliding_declarations(node)
 
