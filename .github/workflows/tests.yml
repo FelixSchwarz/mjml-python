@@ -62,8 +62,7 @@ jobs:
       run: uv run --locked --python python --group quality prek run --all-files
 
     - name: Run ty
-      continue-on-error: true
-      run: uv run --locked --python python --group quality --extra testing ty check mjml tests
+      run: uv run --locked --python python --group quality --all-extras ty check mjml tests
 
   tests_cpython:
     runs-on: ubuntu-latest

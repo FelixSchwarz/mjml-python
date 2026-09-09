@@ -173,7 +173,7 @@ def _declaration(parent_tag: str, node: Node) -> Optional[_Declaration]:
     if destination_and_key_attribute is not None:
         destination, key_attribute = destination_and_key_attribute
         key_value = node.attributes.get(key_attribute)
-        if key_value is None:
+        if not isinstance(key_value, str):
             # a declaration without its key never gets that far
             return None
 
