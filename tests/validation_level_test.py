@@ -22,8 +22,16 @@ INVALID_MJML = """
 VALID_MJML = re.sub(r'<p>bug</p>', '', INVALID_MJML, flags=re.MULTILINE)
 
 
-def test_validation_is_skipped_by_default():
+def test_soft_validation_is_enabled_by_default():
     result = mjml_to_html(StringIO(INVALID_MJML))
+
+    (error,) = result.errors
+    assert error.rule is ValidationRule.VALID_TAG
+    assert 'Hello World' in result.html
+
+
+def test_skip_explicitly_disables_validation():
+    result = mjml_to_html(StringIO(INVALID_MJML), validation_level='skip')
 
     assert result.errors == []
     assert 'Hello World' in result.html

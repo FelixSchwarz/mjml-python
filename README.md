@@ -41,7 +41,7 @@ The `mjml_to_html()` function accepts several optional parameters:
 - `template_dir` - base directory for resolving `<mj-include>` paths
 - `keep_comments` - preserve HTML comments in output (default: `True`)
 - `custom_components` - list of custom component classes to register
-- `validation_level` - `'skip'` (default), `'soft'` or `'strict'`, see [Validation](#validation)
+- `validation_level` - `'skip'`, `'soft'` (default), or `'strict'`, see [Validation](#validation)
 
 ### CLI
 
@@ -62,7 +62,7 @@ CLI options:
 - `--config.keepComments=False` - strip HTML comments from output
 - `--validate` - report problems in the template, generate no HTML and exit
   nonzero when something was found
-- `--validation-level=<level>` - `skip` (default), `soft` or `strict`
+- `--validation-level=<level>` - `skip`, `soft` (default), or `strict`
 
 ## Validation
 
@@ -77,8 +77,8 @@ port cannot reproduce correctly.
 
 | Level            | Behavior                                                                                              |
 | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `skip` (default) | Generate HTML without validating the template.                                                        |
-| `soft`           | Validate and generate HTML. Problems are returned in `result.errors`.                                 |
+| `skip`           | Generate HTML without validating the template.                                                        |
+| `soft` (default) | Validate and generate HTML. Problems are returned in `result.errors`.                                 |
 | `strict`         | Validate first. Generate HTML only when no errors were found; otherwise raise `MJMLValidationErrors`. |
 
 ### Command line
@@ -86,8 +86,7 @@ port cannot reproduce correctly.
 Use `--validation-level` to validate while converting a template:
 
 ```sh
-# Report problems (on stderr) and generate HTML anyway
-mjml --validation-level=soft my_email.mjml
+# Report problems (on stderr) but generate HTML anyway if at all possible
 
 # Refuse to generate HTML when validation fails
 mjml --validation-level=strict my_email.mjml
@@ -148,9 +147,6 @@ location when available, and the rule which reported it. Included templates
 also retain information about the chain of files through which they were
 included. `formatted_message()` combines this information into a
 human-readable line.
-
-Validation currently defaults to `skip`. The default is planned to change to
-`soft` in version 1.0.
 
 
 ## Supported Components

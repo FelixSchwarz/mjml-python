@@ -5,8 +5,9 @@
 - mjml v5.4.0 support
   - add `gutter` attribute for `mj-section` and the `gap` attribute for `mj-wrapper`
 - Support template validation with configurable validation levels in `mjml_to_html()`. The `mjml` cli command got a new `--validate` parameter as well.
-- unknown elements no longer raise a `KeyError`; they are skipped during
-  rendering and reported when validation is enabled
+- added mjml validation: unknown mjml elements, attributes or attribute values
+  will be detected. By default, mjml just reports errors (via stderr or `result.errors`)
+  but renders them anyway.
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element

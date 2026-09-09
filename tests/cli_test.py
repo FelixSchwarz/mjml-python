@@ -100,7 +100,7 @@ def test_strict_exits_nonzero_and_writes_no_html(
     assert not out_path.exists()
 
 
-def test_validation_is_off_by_default(
+def test_soft_validation_is_enabled_by_default(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -109,5 +109,5 @@ def test_validation_is_off_by_default(
     exit_code = _run_cli(monkeypatch, _template(tmp_path, INVALID_MJML), '-o', str(out_path))
 
     assert exit_code == 0
-    assert capsys.readouterr().err == ''
+    assert 'Attribute nonexistent is illegal' in capsys.readouterr().err
     assert '<html' in out_path.read_text()

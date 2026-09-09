@@ -11,7 +11,7 @@ Options:
   --template-dir=<path>    base dir for mj-include (default: path of mjml file)
   --config.keepComments=False  whether comments in mjml should be present in the generated html (default: true)
   --validate               report problems in the template and generate no html, exits nonzero when something was found
-  --validation-level=<level>  "skip" (default), "soft" to report problems and generate html anyway or "strict" to refuse rendering
+  --validation-level=<level>  "skip" to disable validation, "soft" (default) to report problems and generate html anyway or "strict" to refuse rendering
 """
 # ruff: noqa: E501
 
@@ -82,7 +82,7 @@ def _parse_command(argv: Optional[list[str]]) -> Command:
             'value for --config.keepComments should be either true or false'
         )
 
-    level_str = arguments['--validation-level'] or ValidationLevel.SKIP.value
+    level_str = arguments['--validation-level'] or ValidationLevel.SOFT.value
     try:
         validation_level = ValidationLevel(level_str)
     except ValueError:

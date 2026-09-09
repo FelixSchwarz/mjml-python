@@ -125,7 +125,7 @@ def mjml_to_html(
     custom_components: Optional[Sequence[type["Component"]]] = None,
     keep_comments: bool = True,
     printer_support: bool = False,
-    validation_level: Union[str, ValidationLevel] = ValidationLevel.SKIP,
+    validation_level: Union[str, ValidationLevel] = ValidationLevel.SOFT,
 ) -> ParseResult:
     components = components_for_invocation(custom_components)
     level = ValidationLevel(validation_level)
