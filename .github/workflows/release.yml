@@ -5,6 +5,8 @@ on:
     tags:
       - "v*"
 
+# Kept read-only because the reusable test workflow inherits these. Jobs which
+# need write access declare it themselves.
 permissions:
   contents: read
 
@@ -24,12 +26,13 @@ jobs:
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Write access only for this job so the test workflow only inherits the
-    # (read-only) permissions declared above.
     permissions:
-      contents: write
+      contents: read
       id-token: write
       attestations: write
+    outputs:
+      release_name: ${{ steps.release-metadata.outputs.release_name }}
+      is_prerelease: ${{ steps.release-metadata.outputs.is_prerelease }}
 
     steps:
     - name: checkout code
@@ -38,6 +41,24 @@ jobs:
     - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       with:
         version: "latest-known"
+
+    - name: Prepare release metadata
+      id: release-metadata
+      run: |
+        release_name=${GITHUB_REF_NAME#v}
+        package_version=$(tr -d '\n' < VERSION.txt)
+        if [ "$release_name" != "$package_version" ]; then
+          echo "tag version $release_name does not match package version $package_version" >&2
+          exit 1
+        fi
+
+        is_prerelease=false
+        if [[ "$release_name" =~ (^|[0-9._-])(a|alpha|b|beta|c|rc|pre|preview)[._-]?[0-9]+([.+-]|$)|\.dev[0-9]+([.+-]|$) ]]; then
+          is_prerelease=true
+        fi
+
+        echo "release_name=$release_name" >> "$GITHUB_OUTPUT"
+        echo "is_prerelease=$is_prerelease" >> "$GITHUB_OUTPUT"
 
     - name: Build wheel and sdist
       run: |
@@ -56,16 +77,48 @@ jobs:
         path: dist/*
         if-no-files-found: error
 
-    - name: Prepare release metadata
-      run: |
-        echo "TAG_NAME=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
-        echo "RELEASE_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+  publish:
+    needs: artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # This single environment approval guards both pypi + GitHub releases.
+    # It also identifies the job to the trusted publisher configured on pypi.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mjml
+    permissions:
+      contents: write
+      id-token: write
 
-    - name: Create or update GitHub release
+    steps:
+    - name: download release artifacts
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: "release-artifacts"
+        path: dist
+
+    # Immutable releases freeze their assets at publication, so attach the
+    # artifacts to a draft first. Publish that draft only after the PyPI upload
+    # step completes successfully.
+    - name: Create draft GitHub release
       uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       with:
-        tag_name: ${{ env.TAG_NAME }}
-        name: ${{ env.RELEASE_NAME }}
+        tag_name: ${{ github.ref_name }}
+        name: ${{ needs.artifacts.outputs.release_name }}
+        prerelease: ${{ needs.artifacts.outputs.is_prerelease }}
+        draft: true
         files: dist/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish pypi release
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+
+    - name: Publish GitHub release
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+      with:
+        tag_name: ${{ github.ref_name }}
+        prerelease: ${{ needs.artifacts.outputs.is_prerelease }}
+        draft: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
