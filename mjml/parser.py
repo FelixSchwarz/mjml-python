@@ -17,12 +17,17 @@ from typing import TYPE_CHECKING, Optional
 from mjml.errors import Include, Severity, ValidationError, ValidationRule
 from mjml.helpers import (
     CircularIncludeError,
+    IncludeAccess,
+    IncludeDenial,
+    IncludeDenied,
     IncludePolicy,
     convertBooleansOnAttrs,
     guard_against_circular_include,
+    include_access,
     include_source,
+    is_regular_file,
     read_include_file,
-    resolve_include_path,
+    resolve_include,
 )
 from mjml.node import Node, NodeKind
 
@@ -51,6 +56,7 @@ def parse_document(
     file: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
     includes: Optional[IncludePolicy] = None,
+    include_policy_events: Optional[list[ValidationError]] = None,
 ) -> Optional[Node]:
     """
     The <mjml> element of "source", or `None` when there is none.
@@ -61,20 +67,27 @@ def parse_document(
     decides whether an error-carrying tree may be rendered.
 
     Without "includes" every "mj-include" is such a node: the element is
-    dropped, as mjml js does, and reported with a warning.
+    dropped, as mjml js does, and reported with a warning. With a policy, the
+    directories it allows are fixed here for the whole tree: a nested include
+    resolves its path relative to the file it stands in, but may not reach
+    further than the top-level template could.
     """
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
     )
+    access = include_access(includes, template_dir) if includes is not None else None
+    if include_policy_events is None:
+        include_policy_events = []
     origin = _Origin(
         ending_tags=ending_tags,
         file=file,
         template_dir=template_dir,
-        includes=includes,
+        includes=access,
         included_in = (),
         include_chain = (),
         included_heads = [],
         css_includes = [],
+        include_policy_events=include_policy_events,
     )
     return _parse(source, origin)
 
@@ -85,12 +98,14 @@ class _Origin:
     ending_tags: frozenset
     file: Optional[str]
     template_dir: Optional["StrPath"]
-    includes: Optional[IncludePolicy]
+    includes: Optional[IncludeAccess]
     included_in: Sequence[Include]
     include_chain: Sequence[Path]
     # <mj-head> of every included file, collected for the document's own head
     included_heads: list
     css_includes: list
+    # Unlike nodes, this collection survives include expansion and discarded markup.
+    include_policy_events: list[ValidationError]
 
 
 def _parse(source: str, origin: _Origin) -> Optional[Node]:
@@ -305,13 +320,33 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         yield _failed_include(element, origin, _msg)
         include_type = None
 
-    resolved = resolve_include_path(path_value, template_dir=origin.template_dir)
+    # a template which was not read from a file includes relative to the
+    # working directory, as mjml js does
+    base_dir = origin.template_dir or Path.cwd()
+    resolved = resolve_include(path_value, template_dir=base_dir, access=origin.includes)
+    if isinstance(resolved, IncludeDenial):
+        # js: this comment stands in for the include, nothing is reported
+        yield _failed_include(
+            element,
+            origin,
+            f'mj-include "{path_value}" was denied: {resolved.reason}',
+            content='<!-- mj-include denied -->',
+            rule=ValidationRule.INCLUDE_DENIED,
+            severity=_DENIAL_SEVERITY[origin.includes.on_denied],
+            tag_name='mj-include',
+        )
+        return
+    if not is_regular_file(resolved):
+        message = f'the included file "{path_value}" ({resolved}) is not a regular file'
+        comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
+        yield _failed_include(element, origin, message, content=comment)
+        return
     try:
         if include_type in ('css', 'html'):
             # only an mjml include is wrapped when the file has no <mjml>
-            source = read_include_file(path_value, template_dir=origin.template_dir)
+            source = read_include_file(resolved)
         else:
-            source = include_source(path_value, template_dir=origin.template_dir)
+            source = include_source(resolved)
     except (OSError, UnicodeDecodeError) as error:
         # js: mjml renders this comment in place of the include
         comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
@@ -360,6 +395,7 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         include_chain=include_chain,
         included_heads=[],
         css_includes=[],
+        include_policy_events=origin.include_policy_events,
     )
     included_root = _parse(source, included_origin)
     if included_root is None:
@@ -376,6 +412,12 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         origin.included_heads.extend(included_head.children)
     if included_body is not None:
         yield from included_body.children
+
+
+_DENIAL_SEVERITY = {
+    IncludeDenied.WARN: Severity.WARNING,
+    IncludeDenied.ERROR: Severity.ERROR,
+}
 
 
 def _first_child(node: Node, tag_name: str) -> Optional[Node]:
@@ -404,6 +446,8 @@ def _failed_include(
         file=origin.file,
         included_in=tuple(origin.included_in),
     )
+    if rule in (ValidationRule.INCLUDE_DISABLED, ValidationRule.INCLUDE_DENIED):
+        origin.include_policy_events.append(error)
     return _raw_node(element, origin, content, errors=(error,))
 
 

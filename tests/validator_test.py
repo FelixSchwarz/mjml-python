@@ -116,7 +116,9 @@ def test_comments_are_skipped():
 
 
 def test_unreadable_include_is_reported(tmp_path):
-    errors = _validate(_body('<mj-include path="./missing.mjml" />'), template_dir=tmp_path)
+    # a directory passes the path check but cannot be read
+    (tmp_path / 'part').mkdir()
+    errors = _validate(_body('<mj-include path="./part" />'), template_dir=tmp_path)
 
     (error,) = errors
     assert error.rule is ValidationRule.INCLUDE_ERROR

@@ -215,9 +215,7 @@ content does not go unnoticed. The warning is reported for every validation
 level, `strict` included, because the template itself is valid.
 
 To enable includes, pass an `IncludePolicy` to `mjml_to_html()` or
-`validate()`, or `--allow-includes` to the CLI. Paths are resolved relative to
-the including file; `template_dir` sets that directory for a template which was
-not read from a file.
+`validate()`, or `--allow-includes` to the CLI.
 
 ```py
 from mjml import IncludePolicy, mjml_to_html
@@ -225,6 +223,56 @@ from mjml import IncludePolicy, mjml_to_html
 # mj-include is enabled because of the include policy here
 result = mjml_to_html(mjml_input, includes=IncludePolicy())
 ```
+
+### Allowed directories
+
+An enabled include may only read files below the directory of the template
+(`template_dir`, or the working directory for a template which was not read
+from a file). Further directories can be allowed:
+
+```py
+result = mjml_to_html(mjml_input, includes=IncludePolicy(roots=['/app/code/shared-layouts']))
+```
+
+A relative root is resolved against the working directory; a root which does
+not exist raises `ValueError`. Include paths are literal filesystem paths after
+normal markup parsing, so `path="part%20one.mjml"` names a file containing `%20`, while
+`path="part one.mjml"` names a file containing a space. This deliberately
+differs from MJML's repeated URL decoding because the Python filesystem reader
+does not perform a later decoding step either. Absolute paths, Windows drive
+and UNC paths and paths containing a raw NUL byte are refused on every
+platform, symlinks are resolved before the target is compared with the allowed
+directories, and a target which does not exist is denied as well, with the
+same message as a target outside of the allowed directories: a template must
+not be able to probe which files exist. A nested include resolves its path
+relative to the file it stands in but may not reach further than the top-level
+template could. A target which is not a regular file (a directory, a FIFO, a
+device) is not opened and reported with rule `include-error`.
+
+No directory on the way to an included file, below the allowed directories or
+above them, may be writable by whoever writes the templates while rendering
+runs; the check does not defend against a directory being swapped for a
+symlink in between.
+
+### Denied includes
+
+A denied include renders as `<!-- mj-include denied -->`, the same output as
+MJML, and is reported with rule `include-denied`. What else happens depends on
+`on_denied`:
+
+| `on_denied`        | `mjml_to_html()`                                                 | `validate()`       |
+| ------------------ | ---------------------------------------------------------------- | ------------------ |
+| `'warn'` (default) | renders the comment, warning in `result.errors`                  | reports a warning  |
+| `'error'`          | raises `IncludeAccessError` before rendering, for every level    | reports an error   |
+
+Like the `include-disabled` warning, a denial is reported even with
+`validation_level='skip'`: it is a policy event, not malformed MJML. Strict
+validation blocks errors, not warnings, so with the default it renders the
+comment as MJML does. MJML itself does not report a denied include at all.
+
+An include which was allowed but could not be used (unreadable, not a regular
+file, circular, without `path`, a file without `<mjml>`) is reported with rule
+`include-error` as before.
 
 
 ## Limitations

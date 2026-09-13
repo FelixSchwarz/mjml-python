@@ -6,6 +6,7 @@ from typing import Optional
 
 __all__ = [
     'Include',
+    'IncludeAccessError',
     'MJMLValidationErrors',
     'Severity',
     'ValidationError',
@@ -34,6 +35,8 @@ class ValidationRule(Enum):
     INCLUDE_ERROR = 'include-error'
     # an mj-include met while includes are disabled
     INCLUDE_DISABLED = 'include-disabled'
+    # an mj-include which names a file outside of the allowed directories
+    INCLUDE_DENIED = 'include-denied'
     # unsupported in our implementation but it is valid in mjml js
     NOT_IMPLEMENTED = 'not-implemented'
 
@@ -90,3 +93,13 @@ class MJMLValidationErrors(Exception):
         messages = '\n'.join(error.formatted_message() for error in self.errors)
         plural = '' if len(self.errors) == 1 else 's'
         super().__init__(f'{len(self.errors)} validation error{plural}:\n{messages}')
+
+
+class IncludeAccessError(Exception):
+    """Raised instead of rendering when an include was denied under `IncludeDenied.ERROR`."""
+
+    def __init__(self, errors: Sequence[ValidationError]) -> None:
+        self.errors = tuple(errors)
+        messages = '\n'.join(error.formatted_message() for error in self.errors)
+        plural = '' if len(self.errors) == 1 else 's'
+        super().__init__(f'{len(self.errors)} denied include{plural}:\n{messages}')

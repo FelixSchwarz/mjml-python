@@ -10,7 +10,8 @@
   but renders them anyway.
 - `mj-include` follows the security model of MJML 5:
   - disabled by default, enable it with `includes=IncludePolicy()` (CLI: `--allow-includes`)
-  - a disabled include is reported as a warning
+  - reads only files below the template directory or `IncludePolicy(roots=...)`
+  - a disabled or denied include is reported as a warning, `IncludePolicy(on_denied='error')` refuses to render instead
   - a broken include no longer raises for `soft` and `skip`; `soft` reports it in
     `result.errors`, while `skip` continues to omit validation errors
 - add py.typed marker (contributed by @sh-at-cs)

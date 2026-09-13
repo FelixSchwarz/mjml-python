@@ -11,6 +11,7 @@ from mjml.core import initComponent
 from mjml.core.registry import components_for_invocation
 from mjml.elements.head._head_base import HeadComponent
 from mjml.errors import (
+    IncludeAccessError,
     MJMLValidationErrors,
     Severity,
     ValidationError,
@@ -83,11 +84,17 @@ def validate(
 ) -> Sequence[ValidationError]:
     components = components_for_invocation(custom_components)
     parsed = parse_input(xml_fp_or_json, template_dir)
-    node_tree = _node_tree(parsed, components, includes)
-    return _validation_errors(parsed, components, node_tree)
+    include_policy_events: list[ValidationError] = []
+    node_tree = _node_tree(parsed, components, includes, include_policy_events)
+    return _validation_errors(parsed, components, node_tree, include_policy_events)
 
 
-def _node_tree(parsed: ParsedInput, components: Any, includes: Optional[IncludePolicy]) -> Node:
+def _node_tree(
+    parsed: ParsedInput,
+    components: Any,
+    includes: Optional[IncludePolicy],
+    include_policy_events: list[ValidationError],
+) -> Node:
     template_file = str(parsed.template_path) if parsed.template_path else None
     node_tree = parse_document(
         parsed.source,
@@ -95,6 +102,7 @@ def _node_tree(parsed: ParsedInput, components: Any, includes: Optional[IncludeP
         file=template_file,
         template_dir=parsed.template_dir,
         includes=includes,
+        include_policy_events=include_policy_events,
     )
     if node_tree is None:
         if parsed.template_path:
@@ -107,25 +115,23 @@ def _validation_errors(
     parsed: ParsedInput,
     components: Any,
     node_tree: Node,
+    include_policy_events: Sequence[ValidationError] = (),
 ) -> list[ValidationError]:
-    return _located(parsed, validate_tree(node_tree, components))
-
-
-# An include the policy did not let through is not malformed mjml, so the
-# caller hears about it even when the mjml validation is skipped.
-_POLICY_RULES = frozenset({ValidationRule.INCLUDE_DISABLED})
-
-
-def _include_policy_errors(parsed: ParsedInput, node_tree: Node) -> list[ValidationError]:
-    errors: list[ValidationError] = []
-
-    def collect(node: Node) -> None:
-        errors.extend(error for error in node.errors if error.rule in _POLICY_RULES)
-        for child in node.children:
-            collect(child)
-
-    collect(node_tree)
+    errors = validate_tree(node_tree, components)
+    retained_error_ids = {id(error) for error in errors}
+    errors.extend(
+        error for error in include_policy_events if id(error) not in retained_error_ids
+    )
     return _located(parsed, errors)
+
+
+def _include_policy_errors(
+    parsed: ParsedInput,
+    include_policy_events: Sequence[ValidationError],
+) -> list[ValidationError]:
+    # Include policy applies to every element the parser encountered, including
+    # markup which does not survive expansion into the final node tree.
+    return _located(parsed, list(include_policy_events))
 
 
 def _located(parsed: ParsedInput, errors: list[ValidationError]) -> list[ValidationError]:
@@ -150,11 +156,23 @@ def mjml_to_html(
     level = ValidationLevel(validation_level)
 
     parsed = parse_input(xml_fp_or_json, template_dir)
-    mjml_root = _node_tree(parsed, components, includes)
+    include_policy_events: list[ValidationError] = []
+    mjml_root = _node_tree(parsed, components, includes, include_policy_events)
+    policy_errors = _include_policy_errors(parsed, include_policy_events)
+    denied = [
+        error for error in policy_errors
+        if (error.rule is ValidationRule.INCLUDE_DENIED) and (error.severity is Severity.ERROR)
+    ]
+    if denied:
+        # "IncludeDenied.ERROR" is a policy, not a validation rule: no
+        # validation level may render past it
+        raise IncludeAccessError(denied)
     if level is ValidationLevel.SKIP:
-        validation_errors = _include_policy_errors(parsed, mjml_root)
+        validation_errors = policy_errors
     else:
-        validation_errors = _validation_errors(parsed, components, mjml_root)
+        validation_errors = _validation_errors(
+            parsed, components, mjml_root, include_policy_events
+        )
         if level is ValidationLevel.STRICT:
             blocking = [e for e in validation_errors if e.severity is Severity.ERROR]
             if blocking:

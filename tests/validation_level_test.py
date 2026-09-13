@@ -71,8 +71,10 @@ def test_empty_default_declaration_does_not_collide_with_following_declaration()
 
 
 def test_unreadable_include_is_reported_and_leaves_a_comment(tmp_path):
+    # a directory passes the path check but cannot be read
+    (tmp_path / 'part').mkdir()
     path = tmp_path / 'template.mjml'
-    path.write_text('<mjml><mj-body><mj-include path="./missing.mjml" /></mj-body></mjml>')
+    path.write_text('<mjml><mj-body><mj-include path="./part" /></mj-body></mjml>')
 
     with path.open('rb') as mjml_fp:
         result = mjml_to_html(mjml_fp, validation_level='soft', includes=IncludePolicy())
@@ -80,7 +82,7 @@ def test_unreadable_include_is_reported_and_leaves_a_comment(tmp_path):
     (error,) = result.errors
     assert error.rule is ValidationRule.INCLUDE_ERROR
     # js: the comment stands where the include was
-    assert '<!-- mj-include fails to read file : ./missing.mjml' in result.html
+    assert '<!-- mj-include fails to read file : ./part' in result.html
 
 
 def test_strict_raises_before_rendering():
