@@ -126,6 +126,17 @@ def test_an_included_body_is_spliced_in_with_its_provenance(tmp_path: Path):
     assert section.included_in == (Include(file=str(path), line=1),)
 
 
+@pytest.mark.parametrize('path_value', ['true', 'false'])
+def test_include_path_is_not_converted_to_a_boolean(tmp_path: Path, path_value: str):
+    (tmp_path / path_value).write_text('<mj-section css-class="included" />')
+    path = _include_template(tmp_path, f'<mj-include path="{path_value}" />')
+
+    mj_body = _find(_parse_file(path), 'mj-body')
+
+    (section,) = mj_body.children
+    assert section.attributes['css-class'] == 'included'
+
+
 def test_reports_unreadable_include(tmp_path: Path):
     path = _include_template(tmp_path, '<mj-include path="./missing.mjml" />')
     (raw,) = _find(_parse_file(path), 'mj-body').children
@@ -146,25 +157,16 @@ def test_reports_circular_include(tmp_path: Path):
     assert 'Circular inclusion' in error.message
 
 
-def test_reports_unknown_include_type(tmp_path: Path):
+def test_reports_unknown_include_type_but_expands_it_as_mjml(tmp_path: Path):
     path = _include_template(
         tmp_path, '<mj-include path="./part.mjml" type="bogus" />',
         part='<mj-section><mj-column /></mj-section>',
     )
-    (raw,) = _find(_parse_file(path), 'mj-body').children
+    raw, section = _find(_parse_file(path), 'mj-body').children
 
     (error,) = raw.errors
     assert error.message.startswith('unknown mj-include type')
-
-
-def test_renders_unknown_include_type_as_an_mjml_include(tmp_path: Path):
-    path = _include_template(
-        tmp_path, '<mj-include path="./part.mjml" type="bogus" />',
-        part='<mj-section><mj-column /></mj-section>',
-    )
-    tree = _parse_file(path, report_include_errors=False)
-
-    (section,) = _find(tree, 'mj-body').children
+    # js: an unknown type is treated as "mjml"
     assert section.tag_name == 'mj-section'
 
 
@@ -291,15 +293,13 @@ def _parse(source: str, file: Optional[str] = None) -> Node:
     return root
 
 
-def _parse_file(path: Path, *, report_include_errors: bool = True, **kwargs) -> Node:
+def _parse_file(path: Path, **kwargs) -> Node:
     mjml_str = path.read_text(encoding='utf8')
-    # The tests below look at reported problems, so parsing must not raise.
     root = parse_document(
         mjml_str,
         core_components(),
         file=str(path),
         template_dir=path.parent,
-        report_include_errors=report_include_errors,
         **kwargs,
     )
     assert root is not None

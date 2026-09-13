@@ -49,15 +49,14 @@ def parse_document(
     *,
     file: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
-    report_include_errors: bool = False,
 ) -> Optional[Node]:
     """
     The <mjml> element of "source", or `None` when there is none.
 
-    An include which cannot be read raises, so a template whose includes do not
-    resolve never renders. "report_include_errors" turns those into errors on
-    the node instead, which is what a validation run wants: it has to report
-    the problem rather than stop at the first one.
+    An include which cannot be used does not stop the parsing. Its place is
+    taken by a node which carries the problem as a validation error, so a
+    single tree serves both the validation and the rendering: the caller
+    decides whether an error-carrying tree may be rendered.
     """
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
@@ -70,7 +69,6 @@ def parse_document(
         include_chain = (),
         included_heads = [],
         css_includes = [],
-        report_include_errors = report_include_errors,
     )
     return _parse(source, origin)
 
@@ -86,7 +84,6 @@ class _Origin:
     # <mj-head> of every included file, collected for the document's own head
     included_heads: list
     css_includes: list
-    report_include_errors: bool
 
 
 def _parse(source: str, origin: _Origin) -> Optional[Node]:
@@ -214,9 +211,14 @@ class _NodeParser(HTMLParser):
 
     def _element(self, tag_name: str, attrs: _Attrs, raw: str) -> _Element:
         line, column = self.getpos()
+        attributes = _attributes(raw, tag_name, attrs)
+        # Upstream handles includes before boolean conversion, so filesystem
+        # names such as "true" and "false" remain strings.
+        if tag_name != 'mj-include':
+            attributes = convertBooleansOnAttrs(attributes)
         return _Element(
             tag_name=tag_name,
-            attributes=convertBooleansOnAttrs(_attributes(raw, tag_name, attrs)),
+            attributes=attributes,
             line=line,
             column=column,
         )
@@ -274,17 +276,14 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     """The nodes an "mj-include" stands for, or one node carrying the error."""
     path_value = element.attributes.get('path')
     if not path_value:
-        if not origin.report_include_errors:
-            raise ValueError('mj-include has no "path" attribute')
         yield _failed_include(element, origin, 'mj-include has no "path" attribute')
         return
     include_type = element.attributes.get('type')
     if include_type and (include_type not in INCLUDE_TYPES):
-        if origin.report_include_errors:
-            known_include_types = ', '.join(sorted(INCLUDE_TYPES))
-            _msg = f'unknown mj-include type "{include_type}", use one of {known_include_types}'
-            yield _failed_include(element, origin, _msg)
-            return
+        # MJML js treats an unknown type silently as "mjml". We flag unknown include types.
+        known_include_types = ', '.join(sorted(INCLUDE_TYPES))
+        _msg = f'unknown mj-include type "{include_type}", use one of {known_include_types}'
+        yield _failed_include(element, origin, _msg)
         include_type = None
 
     resolved = resolve_include_path(path_value, template_dir=origin.template_dir)
@@ -294,15 +293,17 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
             source = read_include_file(path_value, template_dir=origin.template_dir)
         else:
             source = include_source(path_value, template_dir=origin.template_dir)
-    except OSError:
-        if not origin.report_include_errors:
-            raise
+    except (OSError, UnicodeDecodeError) as error:
         # js: mjml renders this comment in place of the include
         comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
+        if isinstance(error, UnicodeDecodeError):
+            message = f'could not decode the included file "{path_value}" ({resolved}) as UTF-8'
+        else:
+            message = f'could not read the included file "{path_value}" ({resolved})'
         yield _failed_include(
             element,
             origin,
-            f'could not read the included file "{path_value}" ({resolved})',
+            message,
             content=comment,
         )
         return
@@ -329,8 +330,6 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     try:
         include_chain = guard_against_circular_include(resolved, origin.include_chain)
     except CircularIncludeError as cycle:
-        if not origin.report_include_errors:
-            raise
         yield _failed_include(element, origin, str(cycle))
         return
     included_origin = _Origin(
@@ -341,13 +340,10 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         include_chain=include_chain,
         included_heads=[],
         css_includes=[],
-        report_include_errors=origin.report_include_errors,
     )
     included_root = _parse(source, included_origin)
     if included_root is None:
         message = f'the included file "{path_value}" ({resolved}) contains no mjml'
-        if not origin.report_include_errors:
-            raise ValueError(message)
         yield _failed_include(element, origin, message)
         return
     # js: findTag() stops at the first match, so a second head or body in an

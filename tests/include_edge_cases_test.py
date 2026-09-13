@@ -61,11 +61,14 @@ def _render(tmp_path: Path, template, **parts) -> str:
 
 @pytest.mark.parametrize('include', ['<mj-include />', '<mj-include path="" />'])
 @pytest.mark.parametrize('level', ['skip', 'soft'])
-def test_aborts_rendering_on_missing_include_paths(include: str, level: str):
+def test_renders_without_an_include_which_has_no_path(include: str, level: str):
     source = f'<mjml><mj-body>{include}<mj-section /></mj-body></mjml>'
 
-    with pytest.raises(ValueError, match='has no "path" attribute'):
-        mjml_to_html(source, validation_level=level)
+    result = mjml_to_html(source, validation_level=level)
+
+    assert '<table' in result.html
+    expected_rules = [ValidationRule.INCLUDE_ERROR] if level == 'soft' else []
+    assert [error.rule for error in result.errors] == expected_rules
 
 
 @pytest.mark.parametrize('include', ['<mj-include />', '<mj-include path="" />'])
@@ -79,9 +82,7 @@ def test_missing_include_paths_are_validation_errors(include: str):
 
 
 @pytest.mark.parametrize('level', ValidationLevel)
-def test_aborts_rendering_on_include_without_a_parseable_root(
-        tmp_path: Path, level: ValidationLevel,
-):
+def test_reports_an_include_without_a_parseable_root(tmp_path: Path, level: ValidationLevel):
     (tmp_path / 'part.mjml').write_text('<!-- <mjml> -->')
     source = (
         '<mjml><mj-body><mj-include path="part.mjml" />'
@@ -90,6 +91,10 @@ def test_aborts_rendering_on_include_without_a_parseable_root(
 
     (error,) = validate(source, template_dir=tmp_path)
     assert error.rule is ValidationRule.INCLUDE_ERROR
-    exception = MJMLValidationErrors if level is ValidationLevel.STRICT else ValueError
-    with pytest.raises(exception, match='contains no mjml'):
-        mjml_to_html(source, template_dir=tmp_path, validation_level=level)
+    assert 'contains no mjml' in error.message
+    if level is ValidationLevel.STRICT:
+        with pytest.raises(MJMLValidationErrors, match='contains no mjml'):
+            mjml_to_html(source, template_dir=tmp_path, validation_level=level)
+    else:
+        # the rest of the template still renders
+        assert '<table' in mjml_to_html(source, template_dir=tmp_path, validation_level=level).html

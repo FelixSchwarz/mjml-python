@@ -70,12 +70,17 @@ def test_empty_default_declaration_does_not_collide_with_following_declaration()
     assert 'color:red' in result.html
 
 
-def test_unreadable_include_aborts_soft_rendering(tmp_path):
+def test_unreadable_include_is_reported_and_leaves_a_comment(tmp_path):
     path = tmp_path / 'template.mjml'
     path.write_text('<mjml><mj-body><mj-include path="./missing.mjml" /></mj-body></mjml>')
 
-    with path.open('rb') as mjml_fp, pytest.raises(OSError):
-        mjml_to_html(mjml_fp, validation_level='soft')
+    with path.open('rb') as mjml_fp:
+        result = mjml_to_html(mjml_fp, validation_level='soft')
+
+    (error,) = result.errors
+    assert error.rule is ValidationRule.INCLUDE_ERROR
+    # js: the comment stands where the include was
+    assert '<!-- mj-include fails to read file : ./missing.mjml' in result.html
 
 
 def test_strict_raises_before_rendering():
