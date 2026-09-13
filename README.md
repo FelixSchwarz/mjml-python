@@ -60,6 +60,8 @@ $ cat my_email.mjml | mjml -
 CLI options:
 
 - `--allow-includes` - enable `<mj-include>`, see [Includes](#includes)
+- `--include-path=<dir>` - additional directory `<mj-include>` may read from, repeatable
+- `--include-denied=<mode>` - `warn` (default) or `error`, see [Denied includes](#denied-includes)
 - `--template-dir=<path>` - base directory for `<mj-include>` (default: directory of the input file)
 - `--config.keepComments=False` - strip HTML comments from output
 - `--validate` - report problems in the template, generate no HTML and exit
@@ -235,8 +237,9 @@ result = mjml_to_html(mjml_input, includes=IncludePolicy(roots=['/app/code/share
 ```
 
 A relative root is resolved against the working directory; a root which does
-not exist raises `ValueError`. Include paths are literal filesystem paths after
-normal markup parsing, so `path="part%20one.mjml"` names a file containing `%20`, while
+not exist raises `ValueError`. The CLI takes `--include-path=<dir>`, which may
+be repeated. Include paths are literal filesystem paths after normal markup
+parsing, so `path="part%20one.mjml"` names a file containing `%20`, while
 `path="part one.mjml"` names a file containing a space. This deliberately
 differs from MJML's repeated URL decoding because the Python filesystem reader
 does not perform a later decoding step either. Absolute paths, Windows drive
@@ -269,6 +272,9 @@ Like the `include-disabled` warning, a denial is reported even with
 `validation_level='skip'`: it is a policy event, not malformed MJML. Strict
 validation blocks errors, not warnings, so with the default it renders the
 comment as MJML does. MJML itself does not report a denied include at all.
+
+The CLI option is `--include-denied=warn|error`. With `error` it prints the
+denied include, exits with status 1 and does not write the output file.
 
 An include which was allowed but could not be used (unreadable, not a regular
 file, circular, without `path`, a file without `<mjml>`) is reported with rule

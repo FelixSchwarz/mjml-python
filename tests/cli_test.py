@@ -20,6 +20,23 @@ INVALID_MJML = (
 VALID_MJML = re.sub(r'\s*nonexistent="1"', '', INVALID_MJML)
 
 
+@pytest.fixture
+def template_with_discarded_denial(tmp_path: Path) -> str:
+    templates = tmp_path / 'templates'
+    templates.mkdir()
+    (templates / 'part.mjml').write_text('<mj-section />')
+    main_mjml = (
+        '<mjml>'
+          '<mj-body>'
+            '<mj-include path="part.mjml">'
+              '<mj-include path="/denied" />'
+            '</mj-include>'
+          '</mj-body>'
+        '</mjml>'
+    )
+    return _template(templates, main_mjml)
+
+
 def test_validate_exits_nonzero_and_writes_no_html(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -127,13 +144,132 @@ def test_allow_includes_enables_includes(
     assert captured.err == ''
 
 
-def _template_with_include(tmp_path: Path) -> str:
-    (tmp_path / 'part.mjml').write_text(
-        '<mj-section><mj-column><mj-text>included</mj-text></mj-column></mj-section>'
+def test_denied_include_renders_a_comment_and_warns_by_default(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = _template_with_include(tmp_path, '../part.mjml')
+
+    exit_code = _run_cli(monkeypatch, '--allow-includes', template)
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert '<!-- mj-include denied -->' in captured.out
+    assert 'included' not in captured.out
+    assert 'was denied' in captured.err
+
+
+def test_include_denied_error_refuses_to_render(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = _template_with_include(tmp_path, '../part.mjml')
+    out_path = tmp_path / 'out.html'
+    out_path.write_text('previous output')
+
+    exit_code = _run_cli(
+        monkeypatch, '--allow-includes', '--include-denied=error', template, '-o', str(out_path),
     )
-    return _template(
-        tmp_path, '<mjml><mj-body><mj-include path="./part.mjml" /></mj-body></mjml>'
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'was denied' in captured.err
+    assert 'Traceback' not in captured.err
+    # a refused rendering must not touch the requested output
+    assert out_path.read_text() == 'previous output'
+
+
+def test_discarded_fatal_denial_does_not_truncate_existing_output(
+    tmp_path: Path,
+    template_with_discarded_denial: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = template_with_discarded_denial
+    out_path = tmp_path / 'out.html'
+    out_path.write_text('previous output')
+
+    exit_code = _run_cli(
+        monkeypatch, '--allow-includes', '--include-denied=error', template, '-o', str(out_path),
     )
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'was denied' in captured.err
+    assert out_path.read_text() == 'previous output'
+
+
+def test_include_path_allows_a_further_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = _template_with_include(tmp_path, '../part.mjml')
+
+    exit_code = _run_cli(
+        monkeypatch, '--allow-includes', f'--include-path={tmp_path}', template,
+    )
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert 'included' in captured.out
+    assert captured.err == ''
+
+
+def test_include_path_is_repeatable_and_relative_to_the_working_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = _template_with_include(tmp_path, '../part.mjml')
+    (tmp_path / 'other').mkdir()
+    monkeypatch.chdir(tmp_path)
+
+    exit_code = _run_cli(
+        monkeypatch, '--allow-includes', '--include-path=other', '--include-path=.', template,
+    )
+
+    assert exit_code == 0
+    assert 'included' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('args', [
+    ('--include-path=.',),
+    ('--include-denied=error',),
+    ('--allow-includes', '--include-denied=explode'),
+    ('--allow-includes', '--include-path=nowhere'),
+])
+def test_include_options_are_checked(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    args: tuple,
+):
+    template = _template_with_include(tmp_path)
+
+    exit_code = _run_cli(monkeypatch, *args, template)
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'include' in captured.err
+
+
+def test_validate_reports_a_denied_include(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = _template_with_include(tmp_path, '../part.mjml')
+
+    exit_code = _run_cli(monkeypatch, '--validate', '--allow-includes', template)
+
+    assert exit_code == 1
+    assert 'was denied' in capsys.readouterr().err
 
 
 def test_soft_validation_is_enabled_by_default(
@@ -147,3 +283,22 @@ def test_soft_validation_is_enabled_by_default(
     assert exit_code == 0
     assert 'Attribute nonexistent is illegal' in capsys.readouterr().err
     assert '<html' in out_path.read_text()
+
+
+def _template_with_include(tmp_path: Path, include_path: str = './part.mjml') -> str:
+    """The template in "templates/", a part next to it and one outside of it."""
+    included_mjml = '<mj-section><mj-column><mj-text>included</mj-text></mj-column></mj-section>'
+    templates = tmp_path / 'templates'
+    templates.mkdir(exist_ok=True)
+    (tmp_path / 'part.mjml').write_text(included_mjml)
+    (templates / 'part.mjml').write_text(included_mjml)
+    path = templates / 'template.mjml'
+    main_mjml = (
+        '<mjml>'
+          '<mj-body>'
+            f'<mj-include path="{include_path}" />'
+          '</mj-body>'
+        '</mjml>'
+    )
+    path.write_text(main_mjml)
+    return str(path)

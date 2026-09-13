@@ -2,13 +2,17 @@
 mjml.
 
 Usage:
-  mjml --validate [--template-dir=<path>] [--allow-includes] <MJML-FILE>
-  mjml [--template-dir=<path>] [--allow-includes] [--config.keepComments=False]
+  mjml --validate [--template-dir=<path>] [--allow-includes] [--include-path=<dir>...]
+       [--include-denied=<mode>] <MJML-FILE>
+  mjml [--template-dir=<path>] [--allow-includes] [--include-path=<dir>...]
+       [--include-denied=<mode>] [--config.keepComments=False]
        [--validation-level=<level>] <MJML-FILE> [-o <OUTPUT-FILE>]
 
 Options:
   --template-dir=<path>    base dir for mj-include (default: path of mjml file)
   --allow-includes         enable mj-include, which is disabled by default as in MJML
+  --include-path=<dir>     additional directory mj-include may read from (repeatable, relative to the working directory)
+  --include-denied=<mode>  "warn" (default) renders "<!-- mj-include denied -->" and reports the include, "error" refuses to render
   --config.keepComments=False  whether comments in mjml should be present in the generated html (default: true)
   --validate               report problems in the template and generate no html, exits nonzero when something was found
   --validation-level=<level>  "skip" to disable validation, "soft" (default) to report problems and generate html anyway or "strict" to refuse rendering
@@ -24,8 +28,14 @@ from typing import BinaryIO, Optional, Union
 
 from docopt import DocoptExit, docopt
 
-from mjml.errors import MJMLValidationErrors, ValidationError, ValidationLevel, ValidationRule
-from mjml.helpers.includes import IncludePolicy
+from mjml.errors import (
+    IncludeAccessError,
+    MJMLValidationErrors,
+    ValidationError,
+    ValidationLevel,
+    ValidationRule,
+)
+from mjml.helpers.includes import IncludeDenied, IncludePolicy
 from mjml.mjml2html import mjml_to_html, validate
 
 
@@ -72,7 +82,7 @@ class _ArgumentError(ValueError):
 
 def _parse_command(argv: Optional[list[str]]) -> Command:
     arguments = docopt(__doc__, argv=argv)
-    includes = IncludePolicy() if arguments['--allow-includes'] else None
+    includes = _parse_include_policy(arguments)
 
     if arguments['--validate']:
         return ValidateCommand(
@@ -106,6 +116,26 @@ def _parse_command(argv: Optional[list[str]]) -> Command:
     )
 
 
+def _parse_include_policy(arguments: dict) -> Optional[IncludePolicy]:
+    roots = arguments['--include-path']
+    denied_str = arguments['--include-denied']
+    if not arguments['--allow-includes']:
+        # an option which looks like a path setting must not enable file reads
+        if roots or denied_str:
+            raise _ArgumentError('--include-path and --include-denied need --allow-includes')
+        return None
+    for root in roots:
+        if not Path(root).is_dir():
+            raise _ArgumentError(f'--include-path "{root}" is not a directory')
+    try:
+        on_denied = IncludeDenied(denied_str or IncludeDenied.WARN.value)
+    except ValueError:
+        modes = ', '.join(mode.value for mode in IncludeDenied)
+        msg = f'unknown value "{denied_str}" for --include-denied, use one of {modes}'
+        raise _ArgumentError(msg) from None
+    return IncludePolicy(roots=roots, on_denied=on_denied)
+
+
 def _run_validation(command: ValidateCommand) -> int:
     with _open_input(command.input_filename) as mjml_fp:
         errors = validate(mjml_fp, template_dir=command.template_dir, includes=command.includes)
@@ -126,6 +156,9 @@ def _run_render(command: RenderCommand) -> int:
             )
     except MJMLValidationErrors as validation_error:
         _report(validation_error.errors)
+        return 1
+    except IncludeAccessError as denial:
+        _report(denial.errors)
         return 1
 
     _report(result.errors)
