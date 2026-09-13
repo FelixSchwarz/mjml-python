@@ -151,7 +151,7 @@ human-readable line.
 
 ## Supported Components
 
-All standard MJML v4 components are implemented. The project comes with no guarantee that additions or changes to the standard are implemented, or in which timing -- but coverage of the standard is a principal objective of the project.
+All standard MJML v5.4 components are implemented. The project comes with no guarantee that additions or changes to the standard are implemented, or in which timing -- but coverage of the standard is a principal objective of the project.
 
 **Layout:** mj-body, mj-section, mj-column, mj-group, mj-wrapper, mj-hero
 
