@@ -3,7 +3,7 @@ import os
 from contextlib import contextmanager
 from io import StringIO
 
-from mjml import mjml_to_html
+from mjml import IncludePolicy, mjml_to_html
 
 
 # could use "contextlib.chdir" in Python 3.11+
@@ -38,7 +38,7 @@ def test_can_properly_handle_include_umlauts(tmp_path):
     path_footer.write_text(included_mjml, encoding='utf8')
 
     with chdir(tmp_path):
-        result = mjml_to_html(StringIO(mjml))
+        result = mjml_to_html(StringIO(mjml), includes=IncludePolicy())
     html = result.html
 
     assert ('äöüß' in html)

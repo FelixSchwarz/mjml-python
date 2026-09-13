@@ -15,8 +15,10 @@ from mjml.errors import (
     Severity,
     ValidationError,
     ValidationLevel,
+    ValidationRule,
 )
 from mjml.helpers import (
+    IncludePolicy,
     json_to_xml,
     mergeOutlookConditionals,
     omit,
@@ -77,20 +79,22 @@ def validate(
     *,
     template_dir: Optional["StrPath"] = None,
     custom_components: Optional[Sequence[type["Component"]]] = None,
+    includes: Optional[IncludePolicy] = None,
 ) -> Sequence[ValidationError]:
     components = components_for_invocation(custom_components)
     parsed = parse_input(xml_fp_or_json, template_dir)
-    node_tree = _node_tree(parsed, components)
+    node_tree = _node_tree(parsed, components, includes)
     return _validation_errors(parsed, components, node_tree)
 
 
-def _node_tree(parsed: ParsedInput, components: Any) -> Node:
+def _node_tree(parsed: ParsedInput, components: Any, includes: Optional[IncludePolicy]) -> Node:
     template_file = str(parsed.template_path) if parsed.template_path else None
     node_tree = parse_document(
         parsed.source,
         components,
         file=template_file,
         template_dir=parsed.template_dir,
+        includes=includes,
     )
     if node_tree is None:
         if parsed.template_path:
@@ -104,7 +108,27 @@ def _validation_errors(
     components: Any,
     node_tree: Node,
 ) -> list[ValidationError]:
-    errors = validate_tree(node_tree, components)
+    return _located(parsed, validate_tree(node_tree, components))
+
+
+# An include the policy did not let through is not malformed mjml, so the
+# caller hears about it even when the mjml validation is skipped.
+_POLICY_RULES = frozenset({ValidationRule.INCLUDE_DISABLED})
+
+
+def _include_policy_errors(parsed: ParsedInput, node_tree: Node) -> list[ValidationError]:
+    errors: list[ValidationError] = []
+
+    def collect(node: Node) -> None:
+        errors.extend(error for error in node.errors if error.rule in _POLICY_RULES)
+        for child in node.children:
+            collect(child)
+
+    collect(node_tree)
+    return _located(parsed, errors)
+
+
+def _located(parsed: ParsedInput, errors: list[ValidationError]) -> list[ValidationError]:
     if parsed.from_json:
         # mjml xml was generated dynamically from json so error positions are meaningless
         # to the user.
@@ -120,14 +144,16 @@ def mjml_to_html(
     keep_comments: bool = True,
     printer_support: bool = False,
     validation_level: Union[str, ValidationLevel] = ValidationLevel.SOFT,
+    includes: Optional[IncludePolicy] = None,
 ) -> ParseResult:
     components = components_for_invocation(custom_components)
     level = ValidationLevel(validation_level)
 
     parsed = parse_input(xml_fp_or_json, template_dir)
-    mjml_root = _node_tree(parsed, components)
-    validation_errors: list[ValidationError] = []
-    if level is not ValidationLevel.SKIP:
+    mjml_root = _node_tree(parsed, components, includes)
+    if level is ValidationLevel.SKIP:
+        validation_errors = _include_policy_errors(parsed, mjml_root)
+    else:
         validation_errors = _validation_errors(parsed, components, mjml_root)
         if level is ValidationLevel.STRICT:
             blocking = [e for e in validation_errors if e.severity is Severity.ERROR]

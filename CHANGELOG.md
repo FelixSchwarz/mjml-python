@@ -8,8 +8,11 @@
 - added mjml validation: unknown mjml elements, attributes or attribute values
   will be detected. By default, mjml just reports errors (via stderr or `result.errors`)
   but renders them anyway.
-- a broken `mj-include` no longer raises for `soft` and `skip`; `soft` reports it in
-  `result.errors`, while `skip` continues to omit validation errors
+- `mj-include` follows the security model of MJML 5:
+  - disabled by default, enable it with `includes=IncludePolicy()` (CLI: `--allow-includes`)
+  - a disabled include is reported as a warning
+  - a broken include no longer raises for `soft` and `skip`; `soft` reports it in
+    `result.errors`, while `skip` continues to omit validation errors
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element

@@ -1,8 +1,46 @@
+from collections.abc import Generator
 from pathlib import Path
+from typing import BinaryIO
 
 import pytest
 
-from mjml import MJMLValidationErrors, ValidationLevel, ValidationRule, mjml_to_html, validate
+from mjml import (
+    Include,
+    IncludePolicy,
+    MJMLValidationErrors,
+    ValidationLevel,
+    ValidationRule,
+    mjml_to_html,
+    validate,
+)
+
+
+INCLUDES = IncludePolicy()
+
+
+@pytest.fixture(params=['mjml', 'html', 'css'])
+def template_with_invalid_utf8_include(
+    request: pytest.FixtureRequest,
+    tmp_path: Path,
+) -> Generator[tuple[BinaryIO, Path, Path], None, None]:
+    invalid = tmp_path / 'invalid.bin'
+    invalid.write_bytes(b'\xff')
+    include_type = '' if request.param == 'mjml' else f' type="{request.param}"'
+    wrapper = tmp_path / 'wrapper.mjml'
+    wrapper.write_text(
+        '<mjml>\n'
+          f'<mj-body><mj-include path="invalid.bin"{include_type} />'
+            '<mj-section /></mj-body>\n'
+        '</mjml>'
+    )
+    template = tmp_path / 'template.mjml'
+    template.write_text(
+        '<mjml>\n'
+          '<mj-body><mj-include path="wrapper.mjml" /></mj-body>\n'
+        '</mjml>'
+    )
+    with template.open('rb') as mjml_fp:
+        yield mjml_fp, wrapper, template
 
 
 def test_included_file_may_have_several_root_elements(tmp_path: Path):
@@ -56,7 +94,7 @@ def _render(tmp_path: Path, template, **parts) -> str:
     path = tmp_path / 'template.mjml'
     path.write_text(template)
     with path.open('rb') as mjml_fp:
-        return mjml_to_html(mjml_fp).html
+        return mjml_to_html(mjml_fp, includes=INCLUDES).html
 
 
 @pytest.mark.parametrize('include', ['<mj-include />', '<mj-include path="" />'])
@@ -64,7 +102,7 @@ def _render(tmp_path: Path, template, **parts) -> str:
 def test_renders_without_an_include_which_has_no_path(include: str, level: str):
     source = f'<mjml><mj-body>{include}<mj-section /></mj-body></mjml>'
 
-    result = mjml_to_html(source, validation_level=level)
+    result = mjml_to_html(source, validation_level=level, includes=INCLUDES)
 
     assert '<table' in result.html
     expected_rules = [ValidationRule.INCLUDE_ERROR] if level == 'soft' else []
@@ -75,10 +113,10 @@ def test_renders_without_an_include_which_has_no_path(include: str, level: str):
 def test_missing_include_paths_are_validation_errors(include: str):
     source = f'<mjml><mj-body>{include}<mj-section /></mj-body></mjml>'
 
-    (error,) = validate(source)
+    (error,) = validate(source, includes=INCLUDES)
     assert error.rule is ValidationRule.INCLUDE_ERROR
     with pytest.raises(MJMLValidationErrors):
-        mjml_to_html(source, validation_level='strict')
+        mjml_to_html(source, validation_level='strict', includes=INCLUDES)
 
 
 @pytest.mark.parametrize('level', ValidationLevel)
@@ -89,12 +127,62 @@ def test_reports_an_include_without_a_parseable_root(tmp_path: Path, level: Vali
         '<mj-section /></mj-body></mjml>'
     )
 
-    (error,) = validate(source, template_dir=tmp_path)
+    (error,) = validate(source, template_dir=tmp_path, includes=INCLUDES)
     assert error.rule is ValidationRule.INCLUDE_ERROR
     assert 'contains no mjml' in error.message
+    render = lambda: mjml_to_html(
+        source, template_dir=tmp_path, validation_level=level, includes=INCLUDES
+    )
     if level is ValidationLevel.STRICT:
         with pytest.raises(MJMLValidationErrors, match='contains no mjml'):
-            mjml_to_html(source, template_dir=tmp_path, validation_level=level)
+            render()
     else:
         # the rest of the template still renders
-        assert '<table' in mjml_to_html(source, template_dir=tmp_path, validation_level=level).html
+        assert '<table' in render().html
+
+
+def test_invalid_utf8_include_is_a_validation_error(template_with_invalid_utf8_include):
+    mjml_fp, wrapper, template = template_with_invalid_utf8_include
+
+    (error,) = validate(mjml_fp, includes=INCLUDES)
+
+    assert_invalid_utf8_error(error, wrapper, template)
+
+
+@pytest.mark.parametrize('level', [ValidationLevel.SKIP, ValidationLevel.SOFT])
+def test_invalid_utf8_include_does_not_abort_rendering(
+    template_with_invalid_utf8_include,
+    level: ValidationLevel,
+):
+    mjml_fp, wrapper, template = template_with_invalid_utf8_include
+
+    result = mjml_to_html(mjml_fp, validation_level=level, includes=INCLUDES)
+
+    assert '<table' in result.html
+    assert '<!-- mj-include fails to read file : invalid.bin' in result.html
+    if level is ValidationLevel.SKIP:
+        assert result.errors == []
+    else:
+        (error,) = result.errors
+        assert_invalid_utf8_error(error, wrapper, template)
+
+
+def test_invalid_utf8_include_raises_a_validation_error_in_strict_mode(
+    template_with_invalid_utf8_include,
+):
+    mjml_fp, wrapper, template = template_with_invalid_utf8_include
+
+    with pytest.raises(MJMLValidationErrors) as exc_info:
+        mjml_to_html(mjml_fp, validation_level='strict', includes=INCLUDES)
+
+    (error,) = exc_info.value.errors
+    assert_invalid_utf8_error(error, wrapper, template)
+
+
+def assert_invalid_utf8_error(error, wrapper: Path, template: Path) -> None:
+    assert error.rule is ValidationRule.INCLUDE_ERROR
+    assert 'could not decode' in error.message
+    assert 'as UTF-8' in error.message
+    assert error.file == str(wrapper)
+    assert error.line == 2
+    assert error.included_in == (Include(file=str(template), line=2),)

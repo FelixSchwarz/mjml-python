@@ -3,7 +3,7 @@ from io import StringIO
 
 import pytest
 
-from mjml import MJMLValidationErrors, ValidationRule, mjml_to_html, validate
+from mjml import IncludePolicy, MJMLValidationErrors, ValidationRule, mjml_to_html, validate
 
 
 INVALID_MJML = """
@@ -75,7 +75,7 @@ def test_unreadable_include_is_reported_and_leaves_a_comment(tmp_path):
     path.write_text('<mjml><mj-body><mj-include path="./missing.mjml" /></mj-body></mjml>')
 
     with path.open('rb') as mjml_fp:
-        result = mjml_to_html(mjml_fp, validation_level='soft')
+        result = mjml_to_html(mjml_fp, validation_level='soft', includes=IncludePolicy())
 
     (error,) = result.errors
     assert error.rule is ValidationRule.INCLUDE_ERROR

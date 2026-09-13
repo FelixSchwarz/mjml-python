@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Optional
 
@@ -9,6 +10,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     'CircularIncludeError',
+    'IncludePolicy',
     'guard_against_circular_include',
     'include_source',
     'read_include_file',
@@ -18,6 +20,16 @@ __all__ = [
 
 class CircularIncludeError(Exception):
     pass
+
+
+@dataclass(frozen=True)
+class IncludePolicy:
+    """
+    Enables "mj-include", which is off by default.
+
+    A template which may pull in files is only safe when every template is
+    trusted, so mjml js requires the same opt-in since version 5.
+    """
 
 
 def guard_against_circular_include(

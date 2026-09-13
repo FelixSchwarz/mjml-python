@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 
-from mjml import Include, ValidationRule
+from mjml import Include, IncludePolicy, ValidationRule
 from mjml.core.registry import core_components
 from mjml.node import Node, NodeKind
 from mjml.parser import parse_document
@@ -300,6 +300,7 @@ def _parse_file(path: Path, **kwargs) -> Node:
         core_components(),
         file=str(path),
         template_dir=path.parent,
+        includes=IncludePolicy(),
         **kwargs,
     )
     assert root is not None

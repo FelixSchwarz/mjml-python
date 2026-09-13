@@ -38,6 +38,7 @@ html: str = result.html
 
 The `mjml_to_html()` function accepts several optional parameters:
 
+- `includes` - enable `<mj-include>`, which is off by default, see [Includes](#includes)
 - `template_dir` - base directory for resolving `<mj-include>` paths
 - `keep_comments` - preserve HTML comments in output (default: `True`)
 - `custom_components` - list of custom component classes to register
@@ -58,6 +59,7 @@ $ cat my_email.mjml | mjml -
 
 CLI options:
 
+- `--allow-includes` - enable `<mj-include>`, see [Includes](#includes)
 - `--template-dir=<path>` - base directory for `<mj-include>` (default: directory of the input file)
 - `--config.keepComments=False` - strip HTML comments from output
 - `--validate` - report problems in the template, generate no HTML and exit
@@ -161,7 +163,7 @@ All standard MJML v5.4 components are implemented. The project comes with no gua
 
 **Head:** mj-head, mj-title, mj-preview, mj-style, mj-attributes, mj-breakpoint, mj-font, mj-html-attributes
 
-**Other:** mj-include (file includes with relative/absolute paths)
+**Other:** mj-include (disabled by default, see [Includes](#includes))
 
 ### Custom Components
 
@@ -197,6 +199,32 @@ result = mjml_to_html(mjml_input, custom_components=[MyComponent])
 which declares none is reported as misplaced wherever it is put, exactly as
 mjml js rejects a custom component which registered no dependencies. A subclass
 of a built-in component inherits the categories of the element it derives from.
+
+
+## Includes
+
+`mj-include` inserts other MJML, HTML or CSS files into a template. This is only
+safe when you control every template. If you just want to split your MJML into
+reusable parts, we recommend using a templating engine such as Jinja2 or the
+Django template language as a preprocessing step instead.
+
+We still support `mj-include` and have no plans to remove it. As in MJML since
+version 5, it is disabled by default: an `mj-include` in a template is dropped
+and reported as a warning (rule `include-disabled`), so a template which lost
+content does not go unnoticed. The warning is reported for every validation
+level, `strict` included, because the template itself is valid.
+
+To enable includes, pass an `IncludePolicy` to `mjml_to_html()` or
+`validate()`, or `--allow-includes` to the CLI. Paths are resolved relative to
+the including file; `template_dir` sets that directory for a template which was
+not read from a file.
+
+```py
+from mjml import IncludePolicy, mjml_to_html
+
+# mj-include is enabled because of the include policy here
+result = mjml_to_html(mjml_input, includes=IncludePolicy())
+```
 
 
 ## Limitations

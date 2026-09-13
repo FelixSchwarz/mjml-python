@@ -100,6 +100,42 @@ def test_strict_exits_nonzero_and_writes_no_html(
     assert not out_path.exists()
 
 
+def test_includes_are_disabled_by_default_with_a_hint(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    exit_code = _run_cli(monkeypatch, _template_with_include(tmp_path))
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert 'included' not in captured.out
+    assert 'mj-include is disabled' in captured.err
+    assert '--allow-includes' in captured.err
+
+
+def test_allow_includes_enables_includes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    exit_code = _run_cli(monkeypatch, '--allow-includes', _template_with_include(tmp_path))
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert 'included' in captured.out
+    assert captured.err == ''
+
+
+def _template_with_include(tmp_path: Path) -> str:
+    (tmp_path / 'part.mjml').write_text(
+        '<mj-section><mj-column><mj-text>included</mj-text></mj-column></mj-section>'
+    )
+    return _template(
+        tmp_path, '<mjml><mj-body><mj-include path="./part.mjml" /></mj-body></mjml>'
+    )
+
+
 def test_soft_validation_is_enabled_by_default(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

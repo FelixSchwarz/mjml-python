@@ -1,4 +1,4 @@
-from mjml import mjml_to_html
+from mjml import IncludePolicy, mjml_to_html
 
 
 def test_mj_include_with_type_html_is_not_parsed_as_mjml(tmp_path):
@@ -19,7 +19,7 @@ def test_mj_include_with_type_html_is_not_parsed_as_mjml(tmp_path):
     path_mjml.write_text(mjml, encoding='utf8')
 
     with path_mjml.open('rb') as mjml_fp:
-        html = mjml_to_html(mjml_fp).html
+        html = mjml_to_html(mjml_fp, includes=IncludePolicy()).html
 
     assert '<div class="raw"><p>a &amp; b</p></div>' in html
 
@@ -45,6 +45,6 @@ def test_mj_include_with_type_html_resolves_path_relative_to_including_file(tmp_
     path_mjml.write_text(mjml, encoding='utf8')
 
     with path_mjml.open('rb') as mjml_fp:
-        html = mjml_to_html(mjml_fp).html
+        html = mjml_to_html(mjml_fp, includes=IncludePolicy()).html
 
     assert '<span class="deep">deep</span>' in html

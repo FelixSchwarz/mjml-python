@@ -2,12 +2,13 @@
 mjml.
 
 Usage:
-  mjml --validate [--template-dir=<path>] <MJML-FILE>
-  mjml [--template-dir=<path>] [--config.keepComments=False]
+  mjml --validate [--template-dir=<path>] [--allow-includes] <MJML-FILE>
+  mjml [--template-dir=<path>] [--allow-includes] [--config.keepComments=False]
        [--validation-level=<level>] <MJML-FILE> [-o <OUTPUT-FILE>]
 
 Options:
   --template-dir=<path>    base dir for mj-include (default: path of mjml file)
+  --allow-includes         enable mj-include, which is disabled by default as in MJML
   --config.keepComments=False  whether comments in mjml should be present in the generated html (default: true)
   --validate               report problems in the template and generate no html, exits nonzero when something was found
   --validation-level=<level>  "skip" to disable validation, "soft" (default) to report problems and generate html anyway or "strict" to refuse rendering
@@ -23,7 +24,8 @@ from typing import BinaryIO, Optional, Union
 
 from docopt import DocoptExit, docopt
 
-from mjml.errors import MJMLValidationErrors, ValidationError, ValidationLevel
+from mjml.errors import MJMLValidationErrors, ValidationError, ValidationLevel, ValidationRule
+from mjml.helpers.includes import IncludePolicy
 from mjml.mjml2html import mjml_to_html, validate
 
 
@@ -48,6 +50,7 @@ def main(argv: Optional[list[str]] = None) -> None:
 class ValidateCommand:
     input_filename: str
     template_dir: Optional[str]
+    includes: Optional[IncludePolicy]
 
 
 @dataclass(frozen=True)
@@ -55,6 +58,7 @@ class RenderCommand:
     input_filename: str
     output_filename: Optional[str]
     template_dir: Optional[str]
+    includes: Optional[IncludePolicy]
     keep_comments: bool
     validation_level: ValidationLevel
 
@@ -68,11 +72,13 @@ class _ArgumentError(ValueError):
 
 def _parse_command(argv: Optional[list[str]]) -> Command:
     arguments = docopt(__doc__, argv=argv)
+    includes = IncludePolicy() if arguments['--allow-includes'] else None
 
     if arguments['--validate']:
         return ValidateCommand(
             input_filename=arguments['<MJML-FILE>'],
             template_dir=arguments['--template-dir'],
+            includes=includes,
         )
 
     keep_comments = _parse_bool(arguments['--config.keepComments'], default=True)
@@ -94,6 +100,7 @@ def _parse_command(argv: Optional[list[str]]) -> Command:
         input_filename=arguments['<MJML-FILE>'],
         output_filename=arguments['<OUTPUT-FILE>'],
         template_dir=arguments['--template-dir'],
+        includes=includes,
         keep_comments=keep_comments,
         validation_level=validation_level,
     )
@@ -101,7 +108,7 @@ def _parse_command(argv: Optional[list[str]]) -> Command:
 
 def _run_validation(command: ValidateCommand) -> int:
     with _open_input(command.input_filename) as mjml_fp:
-        errors = validate(mjml_fp, template_dir=command.template_dir)
+        errors = validate(mjml_fp, template_dir=command.template_dir, includes=command.includes)
 
     _report(errors)
     return 1 if errors else 0
@@ -113,6 +120,7 @@ def _run_render(command: RenderCommand) -> int:
             result = mjml_to_html(
                 mjml_fp,
                 template_dir=command.template_dir,
+                includes=command.includes,
                 keep_comments=command.keep_comments,
                 validation_level=command.validation_level,
             )
@@ -148,6 +156,8 @@ def _report(errors: Collection[ValidationError]) -> None:
     # write errors to stderr so they are separated from rendering output on stdout
     for error in errors:
         sys.stderr.write(error.formatted_message() + '\n')
+    if any(error.rule is ValidationRule.INCLUDE_DISABLED for error in errors):
+        sys.stderr.write('mj-include is disabled by default, pass --allow-includes to enable it\n')
 
 
 def _parse_bool(value: Union[str, None], *, default: bool) -> Union[bool, None]:

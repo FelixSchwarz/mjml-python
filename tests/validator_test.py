@@ -1,4 +1,4 @@
-from mjml import ValidationRule
+from mjml import IncludePolicy, ValidationRule
 from mjml.core.registry import core_components
 from mjml.parser import parse_document
 from mjml.validator import validate_tree
@@ -6,7 +6,9 @@ from mjml.validator import validate_tree
 
 def _validate(mjml_str, template_dir=None):
     components = core_components()
-    tree = parse_document(mjml_str, components, template_dir=template_dir)
+    tree = parse_document(
+        mjml_str, components, template_dir=template_dir, includes=IncludePolicy()
+    )
     assert tree is not None
     return validate_tree(tree, components)
 

@@ -14,9 +14,10 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from mjml.errors import Include, ValidationError, ValidationRule
+from mjml.errors import Include, Severity, ValidationError, ValidationRule
 from mjml.helpers import (
     CircularIncludeError,
+    IncludePolicy,
     convertBooleansOnAttrs,
     guard_against_circular_include,
     include_source,
@@ -49,6 +50,7 @@ def parse_document(
     *,
     file: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
+    includes: Optional[IncludePolicy] = None,
 ) -> Optional[Node]:
     """
     The <mjml> element of "source", or `None` when there is none.
@@ -57,6 +59,9 @@ def parse_document(
     taken by a node which carries the problem as a validation error, so a
     single tree serves both the validation and the rendering: the caller
     decides whether an error-carrying tree may be rendered.
+
+    Without "includes" every "mj-include" is such a node: the element is
+    dropped, as mjml js does, and reported with a warning.
     """
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
@@ -65,6 +70,7 @@ def parse_document(
         ending_tags=ending_tags,
         file=file,
         template_dir=template_dir,
+        includes=includes,
         included_in = (),
         include_chain = (),
         included_heads = [],
@@ -79,6 +85,7 @@ class _Origin:
     ending_tags: frozenset
     file: Optional[str]
     template_dir: Optional["StrPath"]
+    includes: Optional[IncludePolicy]
     included_in: Sequence[Include]
     include_chain: Sequence[Path]
     # <mj-head> of every included file, collected for the document's own head
@@ -274,6 +281,18 @@ def _attributes(raw: str, tag_name: str, attrs: _Attrs) -> dict:
 
 def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     """The nodes an "mj-include" stands for, or one node carrying the error."""
+    if origin.includes is None:
+        # nothing about the include is looked at, not even its path
+        msg = 'mj-include is disabled and the element was ignored, pass "includes=IncludePolicy()" to enable includes'  # noqa: E501
+        yield _failed_include(
+            element,
+            origin,
+            message=msg,
+            rule=ValidationRule.INCLUDE_DISABLED,
+            severity=Severity.WARNING,
+            tag_name='mj-include',
+        )
+        return
     path_value = element.attributes.get('path')
     if not path_value:
         yield _failed_include(element, origin, 'mj-include has no "path" attribute')
@@ -336,6 +355,7 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
         ending_tags=origin.ending_tags,
         file=str(resolved),
         template_dir=resolved.parent,
+        includes=origin.includes,
         included_in=(*origin.included_in, Include(file=origin.file, line=element.line)),
         include_chain=include_chain,
         included_heads=[],
@@ -371,11 +391,14 @@ def _failed_include(
     message: str,
     content: str = '',
     rule: ValidationRule = ValidationRule.INCLUDE_ERROR,
+    severity: Severity = Severity.ERROR,
+    tag_name: str = 'mj-raw',
 ) -> Node:
     error = ValidationError(
         message=message,
-        tag_name='mj-raw',
+        tag_name=tag_name,
         rule=rule,
+        severity=severity,
         line=element.line,
         column=element.column,
         file=origin.file,
