@@ -1,0 +1,46 @@
+name: workflow audit
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - '**'
+
+permissions: {}
+
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    # "zizmor-action" can not pass "--no-config" and zizmor picks up these paths
+    # on its own, so a pull request could otherwise carry ignore rules for the
+    # audit it is subject to.
+    - name: Reject a checked-in zizmor configuration
+      run: |
+        for config in .github/zizmor.yml .github/zizmor.yaml zizmor.yml zizmor.yaml; do
+          if [ -e "$config" ]; then
+            echo "::error::zizmor configuration files are not used in this repository: $config"
+            exit 1
+          fi
+        done
+
+    # "version" defaults to "latest" which the action resolves to a container
+    # image digest recorded at its own release, so the pin below fixes the
+    # zizmor version as well.
+    - name: Run zizmor
+      uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
+      with:
+        # We want zizmor checks also for PRs from forked repositories so can't
+        # use "GitHub Advanced Security" which requires "security-events: write".
+        advanced-security: false
+        annotations: true
+        min-severity: medium
