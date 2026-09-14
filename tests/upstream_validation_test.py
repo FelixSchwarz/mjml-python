@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from mjml import IncludePolicy
 from mjml.core.registry import core_components
 from mjml.errors import ValidationRule
 from mjml.parser import parse_document
@@ -25,7 +26,7 @@ def findings(test_id):
     template = TEMPLATE_DIR / f'{test_id}.mjml'
     tree = parse_document(
         template.read_text(encoding='utf8'), components,
-        file=str(template), template_dir=TEMPLATE_DIR,
+        file=str(template), template_dir=TEMPLATE_DIR, includes=IncludePolicy(roots=[TEMPLATE_DIR]),
     )
     assert tree is not None
 

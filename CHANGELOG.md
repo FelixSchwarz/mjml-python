@@ -8,8 +8,16 @@
 - added mjml validation: unknown mjml elements, attributes or attribute values
   will be detected. By default, mjml just reports errors (via stderr or `result.errors`)
   but renders them anyway.
-- a broken `mj-include` no longer raises for `soft` and `skip`; `soft` reports it in
-  `result.errors`, while `skip` continues to omit validation errors
+- `mj-include` follows the security model of mjml js 5:
+  - disabled by default, enable it with `includes=IncludePolicy(roots=[...])`
+  - reads only files below these roots; unlike mjml js, the template directory is
+    not allowed implicitly
+  - a relative include path is resolved against the file which contains it;
+    a template without a file needs `template_dir`
+  - a disabled or denied include is reported as an error, for every validation level
+  - a broken include no longer raises for `soft` and `skip`; both report it in
+    `result.errors`
+  - an include path is a literal file name, mjml js url-decodes it repeatedly
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element

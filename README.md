@@ -38,7 +38,8 @@ html: str = result.html
 
 The `mjml_to_html()` function accepts several optional parameters:
 
-- `template_dir` - base directory for resolving `<mj-include>` paths
+- `includes` - enable `<mj-include>`, which is off by default, see [Includes](#includes)
+- `template_dir` - where relative `<mj-include>` paths start when the template was not read from a file, see [Includes](#includes)
 - `keep_comments` - preserve HTML comments in output (default: `True`)
 - `custom_components` - list of custom component classes to register
 - `validation_level` - `'skip'`, `'soft'` (default), or `'strict'`, see [Validation](#validation)
@@ -58,7 +59,7 @@ $ cat my_email.mjml | mjml -
 
 CLI options:
 
-- `--template-dir=<path>` - base directory for `<mj-include>` (default: directory of the input file)
+- `--template-dir=<path>` - where relative `<mj-include>` paths start when reading from stdin
 - `--config.keepComments=False` - strip HTML comments from output
 - `--validate` - report problems in the template, generate no HTML and exit
   nonzero when something was found
@@ -80,6 +81,11 @@ port cannot reproduce correctly.
 | `skip`           | Generate HTML without validating the template.                                                        |
 | `soft` (default) | Validate and generate HTML. Problems are returned in `result.errors`.                                 |
 | `strict`         | Validate first. Generate HTML only when no errors were found; otherwise raise `MJMLValidationErrors`. |
+
+`mj-include` is the exception: whether an include may be read is a policy
+decision rather than a question of well-formed MJML, so a disabled or denied
+include is reported at every level, `skip` included, and `strict` refuses to
+render because of it. See [Includes](#includes).
 
 ### Command line
 
@@ -161,7 +167,7 @@ All standard MJML v5.4 components are implemented. The project comes with no gua
 
 **Head:** mj-head, mj-title, mj-preview, mj-style, mj-attributes, mj-breakpoint, mj-font, mj-html-attributes
 
-**Other:** mj-include (file includes with relative/absolute paths)
+**Other:** mj-include (disabled by default, see [Includes](#includes))
 
 ### Custom Components
 
@@ -197,6 +203,76 @@ result = mjml_to_html(mjml_input, custom_components=[MyComponent])
 which declares none is reported as misplaced wherever it is put, exactly as
 mjml js rejects a custom component which registered no dependencies. A subclass
 of a built-in component inherits the categories of the element it derives from.
+
+
+## Includes
+
+`mj-include` inserts other MJML, HTML or CSS files into a template. A template
+which reads files is only safe when every template is trusted. Therefore `mj-include`
+is disabled by default, as in mjml js since version 5. Please consider using a
+templating engine such as Jinja2 or the Django template language if you want to
+split your MJML into reusable parts.
+
+To enable includes, name the directories they may read:
+
+```py
+from mjml import IncludePolicy, mjml_to_html
+
+with open('templates/newsletter.mjml', 'rb') as fp:
+    result = mjml_to_html(fp, includes=IncludePolicy(roots=['templates']))
+```
+
+`validate()` accepts `includes` as well.
+
+### Include types
+
+- `type="mjml"` (the default) parses the included file as a template: its
+  `mj-head` joins the document's head, its body content takes the place of the
+  `mj-include`. A file without `<mjml>` is wrapped in `<mjml><mj-body>`.
+- `type="css"` becomes an `mj-style` at the end of the head, no matter where
+  the include appears; `css-inline="inline"` makes it an inlined one.
+- `type="html"` is inserted verbatim.
+
+### Where includes may read
+
+- only below the directories in `roots`, and at least one is required. Unlike
+  mjml js, the directory of the template is not allowed implicitly.
+- a relative include path is resolved against the file which contains it. The
+  directory it starts from is not readable by itself:
+  `path="../shared/head.mjml"` is denied unless the file it names lies below
+  `roots`. A template which was not read from a file has no such directory and
+  needs `template_dir`.
+
+```py
+policy = IncludePolicy(roots=['templates', '/app/code/shared-layouts'])
+result = mjml_to_html(mjml_input, template_dir='templates', includes=policy)
+```
+
+### Denied includes
+
+An include path must be relative and must not contain a NUL byte; a path which
+names a Windows drive or a UNC share is refused on every platform, not just on
+Windows. Symlinks are resolved before a target is compared with the allowed
+directories, and an include is denied when its path
+
+- leads outside the allowed directories, or
+- leads nowhere.
+
+**An include policy confines which files a template may name. It does not hold
+against an attacker who can write to the file system.** The path is resolved
+and checked before the file is opened, so a directory which is replaced by a
+symlink in between is not caught: the allowed directories and every directory
+above them must be writable only by the deployment itself.
+
+### When an include fails
+
+mjml will always report an error (at every validation level) when it failed to
+include a referenced file via `mj-include`.
+
+- `skip` and `soft` render anyway and report it in `result.errors`. The mail is
+  missing that part and a comment marks the spot - mjml js renders the same
+  comment, but stays silent about it.
+- `strict` raises `MJMLValidationErrors` and renders nothing.
 
 
 ## Limitations

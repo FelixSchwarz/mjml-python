@@ -14,14 +14,19 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from mjml.errors import Include, ValidationError, ValidationRule
+from mjml.errors import Include, Severity, ValidationError, ValidationRule
 from mjml.helpers import (
     CircularIncludeError,
+    IncludeAccess,
+    IncludeDenial,
+    IncludePolicy,
     convertBooleansOnAttrs,
     guard_against_circular_include,
+    include_access,
     include_source,
+    is_regular_file,
     read_include_file,
-    resolve_include_path,
+    resolve_include,
 )
 from mjml.node import Node, NodeKind
 
@@ -49,28 +54,58 @@ def parse_document(
     *,
     file: Optional[str] = None,
     template_dir: Optional["StrPath"] = None,
+    includes: Optional[IncludePolicy] = None,
+    include_policy_events: Optional[list[ValidationError]] = None,
 ) -> Optional[Node]:
     """
     The <mjml> element of "source", or `None` when there is none.
 
     An include which cannot be used does not stop the parsing. Its place is
     taken by a node which carries the problem as a validation error, so a
-    single tree serves both the validation and the rendering: the caller
-    decides whether an error-carrying tree may be rendered.
+    single tree serves both the validation and the rendering. Most problems
+    still let the caller decide whether the tree may be rendered; one which
+    dropped part of the mail does not, regardless of validation level.
+
+    Without "includes" every "mj-include" is such a node: the element is
+    dropped, as mjml js does, and reported. With a policy, the directories it
+    allows are fixed here for the whole tree: a nested include resolves its
+    path against the file which contains it, but may not reach further than the
+    top-level template could.
     """
     ending_tags = frozenset(
         name for name, component in components.items() if component.ending_tag
     )
+    if includes is None:
+        scope = None
+    elif not template_dir:
+        # mjml js falls back to the working directory, but for a server process
+        # that is an accident of the deployment rather than a decision of the caller
+        raise ValueError(
+            'a template which was not read from a file needs "template_dir" for includes'
+        )
+    else:
+        scope = _IncludeScope(access=include_access(includes), base_dir=template_dir)
+    if include_policy_events is None:
+        include_policy_events = []
     origin = _Origin(
         ending_tags=ending_tags,
         file=file,
-        template_dir=template_dir,
+        includes=scope,
         included_in = (),
         include_chain = (),
         included_heads = [],
         css_includes = [],
+        include_policy_events=include_policy_events,
     )
     return _parse(source, origin)
+
+
+@dataclass(frozen=True)
+class _IncludeScope:
+    """The directories an include may read from, and where its path starts."""
+    access: IncludeAccess
+    # where a relative include path starts
+    base_dir: "StrPath"
 
 
 @dataclass(frozen=True)
@@ -78,12 +113,14 @@ class _Origin:
     """The file being parsed and the includes which led to it."""
     ending_tags: frozenset
     file: Optional[str]
-    template_dir: Optional["StrPath"]
+    includes: Optional[_IncludeScope]
     included_in: Sequence[Include]
     include_chain: Sequence[Path]
     # <mj-head> of every included file, collected for the document's own head
     included_heads: list
     css_includes: list
+    # Unlike nodes, this collection survives include expansion and discarded markup.
+    include_policy_events: list[ValidationError]
 
 
 def _parse(source: str, origin: _Origin) -> Optional[Node]:
@@ -274,25 +311,54 @@ def _attributes(raw: str, tag_name: str, attrs: _Attrs) -> dict:
 
 def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     """The nodes an "mj-include" stands for, or one node carrying the error."""
+    scope = origin.includes
+    if scope is None:
+        # nothing about the include is looked at, not even its path
+        msg = 'mj-include is disabled and the element was ignored, pass "includes=IncludePolicy(roots=...)" to enable includes'  # noqa: E501
+        yield _failed_include(
+            element,
+            origin,
+            message=msg,
+            rule=ValidationRule.INCLUDE_DISABLED,
+            tag_name='mj-include',
+        )
+        return
     path_value = element.attributes.get('path')
     if not path_value:
         yield _failed_include(element, origin, 'mj-include has no "path" attribute')
         return
     include_type = element.attributes.get('type')
     if include_type and (include_type not in INCLUDE_TYPES):
-        # MJML js treats an unknown type silently as "mjml". We flag unknown include types.
+        # MJML js treats an unknown type silently as "mjml", and unlike every other
+        # failure here, the include still expands normally: nothing is dropped
         known_include_types = ', '.join(sorted(INCLUDE_TYPES))
         _msg = f'unknown mj-include type "{include_type}", use one of {known_include_types}'
-        yield _failed_include(element, origin, _msg)
+        yield _failed_include(element, origin, _msg, content_dropping=False)
         include_type = None
 
-    resolved = resolve_include_path(path_value, template_dir=origin.template_dir)
+    resolved = resolve_include(path_value, template_dir=scope.base_dir, access=scope.access)
+    if isinstance(resolved, IncludeDenial):
+        # js: this comment stands in for the include, nothing is reported
+        yield _failed_include(
+            element,
+            origin,
+            f'mj-include "{path_value}" was denied: {resolved.reason}',
+            content='<!-- mj-include denied -->',
+            rule=ValidationRule.INCLUDE_DENIED,
+            tag_name='mj-include',
+        )
+        return
+    if not is_regular_file(resolved):
+        message = f'the included file "{path_value}" ({resolved}) is not a regular file'
+        comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
+        yield _failed_include(element, origin, message, content=comment)
+        return
     try:
         if include_type in ('css', 'html'):
             # only an mjml include is wrapped when the file has no <mjml>
-            source = read_include_file(path_value, template_dir=origin.template_dir)
+            source = read_include_file(resolved)
         else:
-            source = include_source(path_value, template_dir=origin.template_dir)
+            source = include_source(resolved)
     except (OSError, UnicodeDecodeError) as error:
         # js: mjml renders this comment in place of the include
         comment = f'<!-- mj-include fails to read file : {path_value} at {resolved} -->'
@@ -335,11 +401,12 @@ def _included_nodes(element: _Element, origin: _Origin) -> Iterator[Node]:
     included_origin = _Origin(
         ending_tags=origin.ending_tags,
         file=str(resolved),
-        template_dir=resolved.parent,
+        includes=dataclasses.replace(scope, base_dir=resolved.parent),
         included_in=(*origin.included_in, Include(file=origin.file, line=element.line)),
         include_chain=include_chain,
         included_heads=[],
         css_includes=[],
+        include_policy_events=origin.include_policy_events,
     )
     included_root = _parse(source, included_origin)
     if included_root is None:
@@ -371,16 +438,24 @@ def _failed_include(
     message: str,
     content: str = '',
     rule: ValidationRule = ValidationRule.INCLUDE_ERROR,
+    severity: Severity = Severity.ERROR,
+    tag_name: str = 'mj-raw',
+    content_dropping: bool = True,
 ) -> Node:
     error = ValidationError(
         message=message,
-        tag_name='mj-raw',
+        tag_name=tag_name,
         rule=rule,
+        severity=severity,
         line=element.line,
         column=element.column,
         file=origin.file,
         included_in=tuple(origin.included_in),
     )
+    if content_dropping:
+        # collected regardless of validation level: a dropped part of the mail
+        # must never depend on whether the caller happened to validate
+        origin.include_policy_events.append(error)
     return _raw_node(element, origin, content, errors=(error,))
 
 

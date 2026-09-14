@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Union
 import pytest
 from htmlcompare import CompareOptions, assert_same_html
 
-from mjml import mjml_to_html
-from mjml.testing_helpers import get_mjml_fp, load_expected_html
+from mjml import IncludePolicy, mjml_to_html
+from mjml.testing_helpers import TESTDATA_DIR, get_mjml_fp, load_expected_html
 
 
 if TYPE_CHECKING:
@@ -150,8 +150,9 @@ def test_can_use_css_inlining(test_id):
 
 
 def _render_html(test_id: str, keep_comments: bool = True) -> ParseResult:
+    includes = IncludePolicy(roots=[TESTDATA_DIR])
     with get_mjml_fp(test_id) as mjml_fp:
-        return mjml_to_html(mjml_fp, keep_comments=keep_comments)
+        return mjml_to_html(mjml_fp, keep_comments=keep_comments, includes=includes)
 
 
 # `mj-raw position="file-start"` renders in front of the doctype, which is not

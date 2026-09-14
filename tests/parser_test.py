@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 
-from mjml import Include, ValidationRule
+from mjml import Include, IncludePolicy, ValidationRule
 from mjml.core.registry import core_components
 from mjml.node import Node, NodeKind
 from mjml.parser import parse_document
@@ -137,13 +137,15 @@ def test_include_path_is_not_converted_to_a_boolean(tmp_path: Path, path_value: 
     assert section.attributes['css-class'] == 'included'
 
 
-def test_reports_unreadable_include(tmp_path: Path):
-    path = _include_template(tmp_path, '<mj-include path="./missing.mjml" />')
+def test_reports_include_which_is_not_a_regular_file(tmp_path: Path):
+    # a directory passes the path check but cannot be read
+    (tmp_path / 'part').mkdir()
+    path = _include_template(tmp_path, '<mj-include path="./part" />')
     (raw,) = _find(_parse_file(path), 'mj-body').children
 
     (error,) = raw.errors
     assert error.rule is ValidationRule.INCLUDE_ERROR
-    assert 'could not read the included file' in error.message
+    assert 'is not a regular file' in error.message
 
 
 def test_reports_circular_include(tmp_path: Path):
@@ -300,6 +302,7 @@ def _parse_file(path: Path, **kwargs) -> Node:
         core_components(),
         file=str(path),
         template_dir=path.parent,
+        includes=IncludePolicy(roots=[path.parent]),
         **kwargs,
     )
     assert root is not None

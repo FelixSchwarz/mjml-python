@@ -33,6 +33,19 @@ def test_validate_exits_nonzero_and_writes_no_html(
     assert captured.out == ''
 
 
+def test_template_dir_is_rejected_for_a_template_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    exit_code = _run_cli(monkeypatch, '--template-dir=nowhere', _template(tmp_path, VALID_MJML))
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert '--template-dir applies only to a template read from stdin' in captured.err
+
+
 def _template(tmp_path: Path, content: str) -> str:
     path = tmp_path / 'template.mjml'
     path.write_text(content)

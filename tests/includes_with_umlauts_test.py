@@ -1,21 +1,7 @@
 
-import os
-from contextlib import contextmanager
 from io import StringIO
 
-from mjml import mjml_to_html
-
-
-# could use "contextlib.chdir" in Python 3.11+
-# https://github.com/python/cpython/commit/3592980f9122ab0d9ed93711347742d110b749c2
-@contextmanager
-def chdir(path):
-    old_chdir = os.getcwd()
-    try:
-        os.chdir(path)
-        yield
-    finally:
-        os.chdir(old_chdir)
+from mjml import IncludePolicy, mjml_to_html
 
 
 def test_can_properly_handle_include_umlauts(tmp_path):
@@ -37,8 +23,8 @@ def test_can_properly_handle_include_umlauts(tmp_path):
     path_footer = tmp_path / 'footer.mjml'
     path_footer.write_text(included_mjml, encoding='utf8')
 
-    with chdir(tmp_path):
-        result = mjml_to_html(StringIO(mjml))
+    includes = IncludePolicy(roots=[tmp_path])
+    result = mjml_to_html(StringIO(mjml), template_dir=tmp_path, includes=includes)
     html = result.html
 
     assert ('äöüß' in html)

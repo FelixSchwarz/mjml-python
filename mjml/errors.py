@@ -32,6 +32,10 @@ class ValidationRule(Enum):
     VALID_TYPES = 'valid-types'
     VALID_CHILDREN = 'valid-children'
     INCLUDE_ERROR = 'include-error'
+    # an mj-include met while includes are disabled
+    INCLUDE_DISABLED = 'include-disabled'
+    # an mj-include which names a file outside of the allowed directories
+    INCLUDE_DENIED = 'include-denied'
     # unsupported in our implementation but it is valid in mjml js
     NOT_IMPLEMENTED = 'not-implemented'
 

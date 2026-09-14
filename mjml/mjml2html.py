@@ -17,6 +17,7 @@ from mjml.errors import (
     ValidationLevel,
 )
 from mjml.helpers import (
+    IncludePolicy,
     json_to_xml,
     mergeOutlookConditionals,
     omit,
@@ -63,7 +64,12 @@ def parse_input(xml_fp_or_json: FpOrJson, template_dir: Optional["StrPath"]) -> 
         xml_fp = xml_fp_or_json
 
     template_path: Optional[str] = getattr(xml_fp, 'name', None)
-    if (template_dir is None) and isinstance(template_path, (str, PurePath)):
+    if isinstance(template_path, (str, PurePath)):
+        if template_dir is not None:
+            raise ValueError(
+                f'a template read from "{template_path}" starts its includes in its own '
+                'directory, "template_dir" is only for a template without a file'
+            )
         template_dir = Path(template_path).parent
 
     source = xml_fp.read()
@@ -77,20 +83,29 @@ def validate(
     *,
     template_dir: Optional["StrPath"] = None,
     custom_components: Optional[Sequence[type["Component"]]] = None,
+    includes: Optional[IncludePolicy] = None,
 ) -> Sequence[ValidationError]:
     components = components_for_invocation(custom_components)
     parsed = parse_input(xml_fp_or_json, template_dir)
-    node_tree = _node_tree(parsed, components)
-    return _validation_errors(parsed, components, node_tree)
+    include_policy_events: list[ValidationError] = []
+    node_tree = _node_tree(parsed, components, includes, include_policy_events)
+    return _validation_errors(parsed, components, node_tree, include_policy_events)
 
 
-def _node_tree(parsed: ParsedInput, components: Any) -> Node:
+def _node_tree(
+    parsed: ParsedInput,
+    components: Any,
+    includes: Optional[IncludePolicy],
+    include_policy_events: list[ValidationError],
+) -> Node:
     template_file = str(parsed.template_path) if parsed.template_path else None
     node_tree = parse_document(
         parsed.source,
         components,
         file=template_file,
         template_dir=parsed.template_dir,
+        includes=includes,
+        include_policy_events=include_policy_events,
     )
     if node_tree is None:
         if parsed.template_path:
@@ -103,8 +118,26 @@ def _validation_errors(
     parsed: ParsedInput,
     components: Any,
     node_tree: Node,
+    include_policy_events: Sequence[ValidationError] = (),
 ) -> list[ValidationError]:
     errors = validate_tree(node_tree, components)
+    retained_error_ids = {id(error) for error in errors}
+    errors.extend(
+        error for error in include_policy_events if id(error) not in retained_error_ids
+    )
+    return _located(parsed, errors)
+
+
+def _include_policy_errors(
+    parsed: ParsedInput,
+    include_policy_events: Sequence[ValidationError],
+) -> list[ValidationError]:
+    # Include policy applies to every element the parser encountered, including
+    # markup which does not survive expansion into the final node tree.
+    return _located(parsed, list(include_policy_events))
+
+
+def _located(parsed: ParsedInput, errors: list[ValidationError]) -> list[ValidationError]:
     if parsed.from_json:
         # mjml xml was generated dynamically from json so error positions are meaningless
         # to the user.
@@ -120,15 +153,20 @@ def mjml_to_html(
     keep_comments: bool = True,
     printer_support: bool = False,
     validation_level: Union[str, ValidationLevel] = ValidationLevel.SOFT,
+    includes: Optional[IncludePolicy] = None,
 ) -> ParseResult:
     components = components_for_invocation(custom_components)
     level = ValidationLevel(validation_level)
 
     parsed = parse_input(xml_fp_or_json, template_dir)
-    mjml_root = _node_tree(parsed, components)
-    validation_errors: list[ValidationError] = []
-    if level is not ValidationLevel.SKIP:
-        validation_errors = _validation_errors(parsed, components, mjml_root)
+    include_policy_events: list[ValidationError] = []
+    mjml_root = _node_tree(parsed, components, includes, include_policy_events)
+    if level is ValidationLevel.SKIP:
+        validation_errors = _include_policy_errors(parsed, include_policy_events)
+    else:
+        validation_errors = _validation_errors(
+            parsed, components, mjml_root, include_policy_events
+        )
         if level is ValidationLevel.STRICT:
             blocking = [e for e in validation_errors if e.severity is Severity.ERROR]
             if blocking:

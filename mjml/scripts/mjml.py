@@ -7,7 +7,7 @@ Usage:
        [--validation-level=<level>] <MJML-FILE> [-o <OUTPUT-FILE>]
 
 Options:
-  --template-dir=<path>    base dir for mj-include (default: path of mjml file)
+  --template-dir=<path>    where relative mj-include paths start when reading from stdin (a template file starts in its own directory)
   --config.keepComments=False  whether comments in mjml should be present in the generated html (default: true)
   --validate               report problems in the template and generate no html, exits nonzero when something was found
   --validation-level=<level>  "skip" to disable validation, "soft" (default) to report problems and generate html anyway or "strict" to refuse rendering
@@ -68,11 +68,12 @@ class _ArgumentError(ValueError):
 
 def _parse_command(argv: Optional[list[str]]) -> Command:
     arguments = docopt(__doc__, argv=argv)
+    template_dir = _parse_template_dir(arguments)
 
     if arguments['--validate']:
         return ValidateCommand(
             input_filename=arguments['<MJML-FILE>'],
-            template_dir=arguments['--template-dir'],
+            template_dir=template_dir,
         )
 
     keep_comments = _parse_bool(arguments['--config.keepComments'], default=True)
@@ -93,10 +94,23 @@ def _parse_command(argv: Optional[list[str]]) -> Command:
     return RenderCommand(
         input_filename=arguments['<MJML-FILE>'],
         output_filename=arguments['<OUTPUT-FILE>'],
-        template_dir=arguments['--template-dir'],
+        template_dir=template_dir,
         keep_comments=keep_comments,
         validation_level=validation_level,
     )
+
+
+def _parse_template_dir(arguments: dict) -> Optional[str]:
+    """Where a template read from stdin starts its relative include paths."""
+    template_dir = arguments['--template-dir']
+    if not template_dir:
+        return None
+    if arguments['<MJML-FILE>'] != '-':
+        raise _ArgumentError(
+            '--template-dir applies only to a template read from stdin, a template '
+            'file starts its includes in its own directory'
+        )
+    return template_dir
 
 
 def _run_validation(command: ValidateCommand) -> int:
