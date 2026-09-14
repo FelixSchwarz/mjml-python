@@ -59,7 +59,8 @@ $ cat my_email.mjml | mjml -
 
 CLI options:
 
-- `--template-dir=<path>` - where relative `<mj-include>` paths start when reading from stdin
+- `--include-path=<dir>` - enable `<mj-include>` for files below this directory, repeatable, see [Includes](#includes)
+- `--template-dir=<path>` - where relative `<mj-include>` paths start; required when `-` is used with `--include-path`, rejected otherwise
 - `--config.keepComments=False` - strip HTML comments from output
 - `--validate` - report problems in the template, generate no HTML and exit
   nonzero when something was found
@@ -222,6 +223,10 @@ with open('templates/newsletter.mjml', 'rb') as fp:
     result = mjml_to_html(fp, includes=IncludePolicy(roots=['templates']))
 ```
 
+```sh
+$ mjml --include-path=templates templates/newsletter.mjml
+```
+
 `validate()` accepts `includes` as well.
 
 ### Include types
@@ -240,12 +245,19 @@ with open('templates/newsletter.mjml', 'rb') as fp:
 - a relative include path is resolved against the file which contains it. The
   directory it starts from is not readable by itself:
   `path="../shared/head.mjml"` is denied unless the file it names lies below
-  `roots`. A template which was not read from a file has no such directory and
-  needs `template_dir`.
+  `roots`.
+- a template which was not read from a file has no such directory and needs
+  `template_dir`, on the command line `--template-dir` with `-`.
 
 ```py
 policy = IncludePolicy(roots=['templates', '/app/code/shared-layouts'])
 result = mjml_to_html(mjml_input, template_dir='templates', includes=policy)
+```
+
+A template read from stdin has no file of its own, so it needs `--template-dir`:
+
+```sh
+$ mjml --include-path=templates --template-dir=templates - < templates/newsletter.mjml
 ```
 
 ### Denied includes

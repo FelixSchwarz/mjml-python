@@ -10,10 +10,11 @@
   but renders them anyway.
 - `mj-include` follows the security model of mjml js 5:
   - disabled by default, enable it with `includes=IncludePolicy(roots=[...])`
+    (CLI: `--include-path`)
   - reads only files below these roots; unlike mjml js, the template directory is
     not allowed implicitly
   - a relative include path is resolved against the file which contains it;
-    a template without a file needs `template_dir`
+    a template without a file needs `template_dir` (CLI: `--template-dir`, stdin only)
   - a disabled or denied include is reported as an error, for every validation level
   - a broken include no longer raises for `soft` and `skip`; both report it in
     `result.errors`
