@@ -21,6 +21,8 @@
   - an include path is a literal file name, mjml js url-decodes it repeatedly
 - add `MJMLError`, the common base class of the exceptions `mjml` raises itself;
   `MJMLValidationErrors` now derives from it
+- the `mjml` command reports a missing input file, an output file which cannot be written
+  and unusable input in one line instead of a traceback
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element

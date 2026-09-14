@@ -360,6 +360,62 @@ def test_stdin_template_includes_relative_to_the_template_dir(
     assert captured.err == ''
 
 
+@pytest.mark.parametrize('args', [(), ('--validate',)])
+def test_missing_input_file_is_reported_in_one_line(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    args: tuple,
+):
+    missing = tmp_path / 'missing.mjml'
+
+    exit_code = _run_cli(monkeypatch, *args, str(missing))
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert captured.err.startswith(f'could not read "{missing}": ')
+    assert captured.err.count('\n') == 1
+
+
+def test_unwritable_output_file_is_reported_in_one_line(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    out_path = tmp_path / 'nowhere' / 'out.html'
+
+    exit_code = _run_cli(monkeypatch, _template(tmp_path, VALID_MJML), '-o', str(out_path))
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.err.startswith(f'could not write "{out_path}": ')
+    assert captured.err.count('\n') == 1
+
+
+@pytest.mark.parametrize(('content', 'message'), [
+    (b'<p>no mjml</p>', 'Could not parse'),
+    (b'<mjml><mj-body>\xe4</mj-body></mjml>', 'as UTF-8'),
+])
+def test_unusable_input_is_reported_in_one_line(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    content: bytes,
+    message: str,
+):
+    path = tmp_path / 'template.mjml'
+    path.write_bytes(content)
+
+    exit_code = _run_cli(monkeypatch, str(path))
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert message in captured.err
+    assert captured.err.count('\n') == 1
+
+
 def _template_with_include(tmp_path: Path, include_path: str = './part.mjml') -> str:
     """The template in "templates/", a part next to it and one outside of it."""
     included_mjml = '<mj-section><mj-column><mj-text>included</mj-text></mj-column></mj-section>'

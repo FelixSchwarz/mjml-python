@@ -17,7 +17,8 @@ Options:
 # ruff: noqa: E501
 
 import sys
-from collections.abc import Collection
+from collections.abc import Collection, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -44,10 +45,14 @@ def main(argv: Optional[list[str]] = None) -> None:
         sys.exit(1)
 
     validate_only = isinstance(command, ValidateCommand)
-    if validate_only:
-        exit_code = _run_validation(command)
-    else:
-        exit_code = _run_render(command)
+    try:
+        if validate_only:
+            exit_code = _run_validation(command)
+        else:
+            exit_code = _run_render(command)
+    except _CommandError as error:
+        sys.stderr.write(f'{error}\n')
+        exit_code = 1
 
     if exit_code:
         sys.exit(exit_code)
@@ -75,6 +80,10 @@ Command = Union[ValidateCommand, RenderCommand]
 
 class _ArgumentError(ValueError):
     pass
+
+
+class _CommandError(Exception):
+    """A mistake of the caller, reported without a traceback."""
 
 
 def _parse_command(argv: Optional[list[str]]) -> Command:
@@ -145,7 +154,7 @@ def _parse_include_policy(arguments: dict) -> Optional[IncludePolicy]:
 
 
 def _run_validation(command: ValidateCommand) -> int:
-    with _open_input(command.input_filename) as mjml_fp:
+    with _open_input(command.input_filename) as mjml_fp, _template_problems(command.input_filename):
         errors = validate(mjml_fp, template_dir=command.template_dir, includes=command.includes)
 
     _report(errors)
@@ -154,7 +163,7 @@ def _run_validation(command: ValidateCommand) -> int:
 
 def _run_render(command: RenderCommand) -> int:
     try:
-        with _open_input(command.input_filename) as mjml_fp:
+        with _open_input(command.input_filename) as mjml_fp, _template_problems(command.input_filename):
             result = mjml_to_html(
                 mjml_fp,
                 template_dir=command.template_dir,
@@ -175,17 +184,34 @@ def _run_render(command: RenderCommand) -> int:
 
 
 def _open_input(mjml_filename: str) -> BinaryIO:
-    if mjml_filename == '-':
-        return BytesIO(sys.stdin.buffer.read())
+    try:
+        if mjml_filename == '-':
+            return BytesIO(sys.stdin.buffer.read())
 
-    # the file name is used for "mj-include" and in the reported problems
-    return Path(mjml_filename).open('rb')
+        # the file name is used for "mj-include" and in the reported problems
+        return Path(mjml_filename).open('rb')
+    except OSError as error:
+        raise _CommandError(f'could not read "{mjml_filename}": {error.strerror}') from None
+
+
+@contextmanager
+def _template_problems(mjml_filename: str) -> Iterator[None]:
+    try:
+        yield
+    except UnicodeDecodeError:
+        raise _CommandError(f'could not decode "{mjml_filename}" as UTF-8') from None
+    except ValueError as error:
+        # a template without <mjml>, or an include directory which disappeared
+        raise _CommandError(str(error)) from None
 
 
 def _write_html(html: str, output_filename: Optional[str]) -> None:
     if output_filename:
-        with Path(output_filename).open('w') as html_fp:
-            html_fp.write(html)
+        try:
+            with Path(output_filename).open('w') as html_fp:
+                html_fp.write(html)
+        except OSError as error:
+            raise _CommandError(f'could not write "{output_filename}": {error.strerror}') from None
         return
 
     # Always return binary data encoded as UTF-8 to avoid encoding problems on

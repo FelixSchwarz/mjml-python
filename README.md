@@ -66,6 +66,10 @@ CLI options:
   nonzero when something was found
 - `--validation-level=<level>` - `skip`, `soft` (default), or `strict`
 
+A missing input file, an output file which cannot be written and input which
+is not UTF-8 or contains no `<mjml>` are reported in one line on stderr, with
+exit status 1.
+
 ## Validation
 
 Validation checks an MJML template either on its own or before generating HTML.
