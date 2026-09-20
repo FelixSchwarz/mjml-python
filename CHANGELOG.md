@@ -19,6 +19,8 @@
   - a broken include no longer raises for `soft` and `skip`; both report it in
     `result.errors`
   - an include path is a literal file name, mjml js url-decodes it repeatedly
+- add `MJMLError`, the common base class of the exceptions `mjml` raises itself;
+  `MJMLValidationErrors` now derives from it
 - add py.typed marker (contributed by @sh-at-cs)
 - various fixes to support additional attributes
   - `owa` attribute in `<mjml>` root element

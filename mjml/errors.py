@@ -6,6 +6,7 @@ from typing import Optional
 
 __all__ = [
     'Include',
+    'MJMLError',
     'MJMLValidationErrors',
     'Severity',
     'ValidationError',
@@ -84,7 +85,11 @@ class ValidationError:
         return f'{prefix}({self.tag_name}) - {self.message}'
 
 
-class MJMLValidationErrors(Exception):
+class MJMLError(Exception):
+    """Common base class of the exceptions `mjml` itself raises."""
+
+
+class MJMLValidationErrors(MJMLError):
     """Raised for "strict" validation, carrying every error which was found."""
 
     def __init__(self, errors: Sequence[ValidationError]) -> None:

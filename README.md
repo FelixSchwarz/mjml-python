@@ -136,6 +136,9 @@ except MJMLValidationErrors as error:
         print(validation_error.formatted_message())
 ```
 
+`MJMLValidationErrors` derives from `MJMLError`, the common base class of the
+exceptions `mjml` raises itself.
+
 #### Validation without rendering
 
 Use `validate()` when only the validation result is needed:

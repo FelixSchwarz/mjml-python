@@ -1,6 +1,10 @@
 from io import StringIO
 
-from mjml import ValidationError, ValidationRule, mjml_to_html
+from mjml import MJMLError, MJMLValidationErrors, ValidationError, ValidationRule, mjml_to_html
+
+
+def test_mjml_validation_errors_is_an_mjml_error():
+    assert issubclass(MJMLValidationErrors, MJMLError)
 
 
 def test_valid_template_reports_no_errors():
