@@ -102,10 +102,7 @@ class MjAccordionTitle(BodyComponent):
 
         return conditionalTag(
             f'''
-            <td {td_attrs}>
-                <img {img_more_attrs} />
-                <img {img_less_attrs} />
-            </td>
+            <td {td_attrs}><img {img_more_attrs} /><img {img_less_attrs} /></td>
             ''',
             True
         )
