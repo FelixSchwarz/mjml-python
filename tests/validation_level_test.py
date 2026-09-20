@@ -3,7 +3,14 @@ from io import StringIO
 
 import pytest
 
-from mjml import IncludePolicy, MJMLValidationErrors, ValidationRule, mjml_to_html, validate
+from mjml import (
+    IncludePolicy,
+    MJMLIncludeError,
+    MJMLValidationErrors,
+    ValidationRule,
+    mjml_to_html,
+    validate,
+)
 
 
 INVALID_MJML = """
@@ -70,7 +77,7 @@ def test_empty_default_declaration_does_not_collide_with_following_declaration()
     assert 'color:red' in result.html
 
 
-def test_unreadable_include_is_reported_and_leaves_a_comment(tmp_path):
+def test_unreadable_include_is_fatal(tmp_path):
     # a directory passes the path check but cannot be read
     (tmp_path / 'part').mkdir()
     path = tmp_path / 'template.mjml'
@@ -78,12 +85,12 @@ def test_unreadable_include_is_reported_and_leaves_a_comment(tmp_path):
     includes = IncludePolicy(roots=[tmp_path])
 
     with path.open('rb') as mjml_fp:
-        result = mjml_to_html(mjml_fp, validation_level='soft', includes=includes)
+        with pytest.raises(MJMLIncludeError) as exc_info:
+            mjml_to_html(mjml_fp, validation_level='soft', includes=includes)
 
-    (error,) = result.errors
+    (error,) = exc_info.value.errors
     assert error.rule is ValidationRule.INCLUDE_ERROR
-    # js: the comment stands where the include was
-    assert '<!-- mj-include fails to read file : ./part' in result.html
+    assert 'not a regular file' in error.message
 
 
 def test_strict_raises_before_rendering():

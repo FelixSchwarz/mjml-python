@@ -7,7 +7,7 @@ import pytest
 from mjml import (
     Include,
     IncludePolicy,
-    MJMLValidationErrors,
+    MJMLIncludeError,
     ValidationLevel,
     ValidationRule,
     mjml_to_html,
@@ -95,15 +95,16 @@ def _render(tmp_path: Path, template, **parts) -> str:
 
 
 @pytest.mark.parametrize('include', ['<mj-include />', '<mj-include path="" />'])
-@pytest.mark.parametrize('level', ['skip', 'soft'])
-def test_renders_without_an_include_which_has_no_path(tmp_path: Path, include: str, level: str):
+@pytest.mark.parametrize('level', ['skip', 'soft', 'strict'])
+def test_missing_include_path_is_fatal_under_every_level(tmp_path: Path, include: str, level: str):
     source = f'<mjml><mj-body>{include}<mj-section /></mj-body></mjml>'
     includes = IncludePolicy(roots=[tmp_path])
 
-    result = mjml_to_html(source, template_dir=tmp_path, validation_level=level, includes=includes)
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        mjml_to_html(source, template_dir=tmp_path, validation_level=level, includes=includes)
 
-    assert '<table' in result.html
-    assert [error.rule for error in result.errors] == [ValidationRule.INCLUDE_ERROR]
+    (error,) = exc_info.value.errors
+    assert error.rule is ValidationRule.INCLUDE_ERROR
 
 
 @pytest.mark.parametrize('include', ['<mj-include />', '<mj-include path="" />'])
@@ -113,8 +114,6 @@ def test_missing_include_paths_are_validation_errors(tmp_path: Path, include: st
 
     (error,) = validate(source, template_dir=tmp_path, includes=includes)
     assert error.rule is ValidationRule.INCLUDE_ERROR
-    with pytest.raises(MJMLValidationErrors):
-        mjml_to_html(source, template_dir=tmp_path, validation_level='strict', includes=includes)
 
 
 @pytest.mark.parametrize('level', ValidationLevel)
@@ -129,15 +128,9 @@ def test_reports_an_include_without_a_parseable_root(tmp_path: Path, level: Vali
     (error,) = validate(source, template_dir=tmp_path, includes=includes)
     assert error.rule is ValidationRule.INCLUDE_ERROR
     assert 'contains no mjml' in error.message
-    render = lambda: mjml_to_html(
-        source, template_dir=tmp_path, validation_level=level, includes=includes
-    )
-    if level is ValidationLevel.STRICT:
-        with pytest.raises(MJMLValidationErrors, match='contains no mjml'):
-            render()
-    else:
-        # the rest of the template still renders
-        assert '<table' in render().html
+
+    with pytest.raises(MJMLIncludeError, match='contains no mjml'):
+        mjml_to_html(source, template_dir=tmp_path, validation_level=level, includes=includes)
 
 
 def test_invalid_utf8_include_is_a_validation_error(template_with_invalid_utf8_include):
@@ -149,30 +142,16 @@ def test_invalid_utf8_include_is_a_validation_error(template_with_invalid_utf8_i
     assert_invalid_utf8_error(error, wrapper, template)
 
 
-@pytest.mark.parametrize('level', [ValidationLevel.SKIP, ValidationLevel.SOFT])
-def test_invalid_utf8_include_does_not_abort_rendering(
+@pytest.mark.parametrize('level', list(ValidationLevel))
+def test_invalid_utf8_include_is_fatal_under_every_level(
     template_with_invalid_utf8_include,
     level: ValidationLevel,
 ):
     mjml_fp, wrapper, template = template_with_invalid_utf8_include
     includes = IncludePolicy(roots=[template.parent])
 
-    result = mjml_to_html(mjml_fp, validation_level=level, includes=includes)
-
-    assert '<table' in result.html
-    assert '<!-- mj-include fails to read file : invalid.bin' in result.html
-    (error,) = result.errors
-    assert_invalid_utf8_error(error, wrapper, template)
-
-
-def test_invalid_utf8_include_raises_a_validation_error_in_strict_mode(
-    template_with_invalid_utf8_include,
-):
-    mjml_fp, wrapper, template = template_with_invalid_utf8_include
-    includes = IncludePolicy(roots=[template.parent])
-
-    with pytest.raises(MJMLValidationErrors) as exc_info:
-        mjml_to_html(mjml_fp, validation_level='strict', includes=includes)
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        mjml_to_html(mjml_fp, validation_level=level, includes=includes)
 
     (error,) = exc_info.value.errors
     assert_invalid_utf8_error(error, wrapper, template)

@@ -15,9 +15,9 @@
     not allowed implicitly
   - a relative include path is resolved against the file which contains it;
     a template without a file needs `template_dir` (CLI: `--template-dir`, stdin only)
-  - a disabled or denied include is reported as an error, for every validation level
-  - a broken include no longer raises for `soft` and `skip`; both report it in
-    `result.errors`
+  - an include which dropped part of the mail (disabled, denied, unreadable,
+    circular, ...) is reported as an error and raises `MJMLIncludeError` before
+    rendering, for every validation level; `validate()` still only reports it
   - an include path is a literal file name, mjml js url-decodes it repeatedly
 - add `MJMLError`, the common base class of the exceptions `mjml` raises itself;
   `MJMLValidationErrors` now derives from it

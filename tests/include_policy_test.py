@@ -6,7 +6,7 @@ import pytest
 
 from mjml import (
     IncludePolicy,
-    MJMLValidationErrors,
+    MJMLIncludeError,
     Severity,
     ValidationRule,
     mjml_to_html,
@@ -34,32 +34,19 @@ def template_with_include_inside(tmp_path: Path) -> Generator[BinaryIO, None, No
         yield mjml_fp
 
 
-@pytest.mark.parametrize('level', ['skip', 'soft'])
-def test_include_is_dropped_and_reported_by_default(
+@pytest.mark.parametrize('level', ['skip', 'soft', 'strict'])
+def test_disabled_include_is_fatal_under_every_level(
     template_with_include_inside: BinaryIO,
     level: str
 ):
-    mjml_fp = template_with_include_inside
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        mjml_to_html(template_with_include_inside, validation_level=level)
 
-    result = mjml_to_html(mjml_fp, validation_level=level)
-
-    assert 'own' in result.html
-    assert 'included' not in result.html
-    (error,) = result.errors
+    (error,) = exc_info.value.errors
     assert error.rule is ValidationRule.INCLUDE_DISABLED
     assert error.severity is Severity.ERROR
     assert error.tag_name == 'mj-include'
     assert error.line == 1
-
-
-def test_include_disabled_is_fatal_under_strict_validation(
-    template_with_include_inside: BinaryIO,
-):
-    with pytest.raises(MJMLValidationErrors) as exc_info:
-        mjml_to_html(template_with_include_inside, validation_level='strict')
-
-    (error,) = exc_info.value.errors
-    assert error.rule is ValidationRule.INCLUDE_DISABLED
 
 
 def test_validate_reports_a_disabled_include(template_with_include_inside: BinaryIO):
@@ -84,9 +71,9 @@ def test_disabled_include_is_not_looked_at(monkeypatch: pytest.MonkeyPatch):
         '<mj-section /></mj-body></mjml>'
     )
 
-    result = mjml_to_html(source)
+    errors = validate(source)
 
-    assert [error.rule for error in result.errors] == [ValidationRule.INCLUDE_DISABLED] * 6
+    assert [error.rule for error in errors] == [ValidationRule.INCLUDE_DISABLED] * 6
 
 
 def test_include_policy_enables_includes(template_with_include_inside: BinaryIO, tmp_path: Path):

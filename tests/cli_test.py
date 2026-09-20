@@ -22,6 +22,23 @@ INVALID_MJML = (
 VALID_MJML = re.sub(r'\s*nonexistent="1"', '', INVALID_MJML)
 
 
+@pytest.fixture
+def template_with_discarded_denial(tmp_path: Path) -> str:
+    templates = tmp_path / 'templates'
+    templates.mkdir()
+    (templates / 'part.mjml').write_text('<mj-section />')
+    main_mjml = (
+        '<mjml>'
+          '<mj-body>'
+            '<mj-include path="part.mjml">'
+              '<mj-include path="/denied" />'
+            '</mj-include>'
+          '</mj-body>'
+        '</mjml>'
+    )
+    return _template(templates, main_mjml)
+
+
 def test_validate_exits_nonzero_and_writes_no_html(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -122,9 +139,9 @@ def test_includes_are_disabled_by_default_with_a_hint(
 ):
     exit_code = _run_cli(monkeypatch, _template_with_include(tmp_path))
 
-    assert exit_code == 0
+    assert exit_code == 1
     captured = capsys.readouterr()
-    assert 'included' not in captured.out
+    assert captured.out == ''
     assert 'mj-include is disabled' in captured.err
     assert '--include-path' in captured.err
 
@@ -145,21 +162,49 @@ def test_include_path_enables_includes(
     assert captured.err == ''
 
 
-def test_denied_include_renders_a_comment_and_warns_by_default(
+def test_denied_include_refuses_to_render(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ):
     template = _template_with_include(tmp_path, '../part.mjml')
     templates = tmp_path / 'templates'
+    out_path = tmp_path / 'out.html'
+    out_path.write_text('previous output')
 
-    exit_code = _run_cli(monkeypatch, f'--include-path={templates}', template)
+    exit_code = _run_cli(
+        monkeypatch, f'--include-path={templates}', template, '-o', str(out_path),
+    )
 
-    assert exit_code == 0
+    assert exit_code == 1
     captured = capsys.readouterr()
-    assert '<!-- mj-include denied -->' in captured.out
-    assert 'included' not in captured.out
+    assert captured.out == ''
     assert 'was denied' in captured.err
+    assert 'Traceback' not in captured.err
+    # a refused rendering must not touch the requested output
+    assert out_path.read_text() == 'previous output'
+
+
+def test_discarded_fatal_denial_does_not_truncate_existing_output(
+    tmp_path: Path,
+    template_with_discarded_denial: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    template = template_with_discarded_denial
+    templates = tmp_path / 'templates'
+    out_path = tmp_path / 'out.html'
+    out_path.write_text('previous output')
+
+    exit_code = _run_cli(
+        monkeypatch, f'--include-path={templates}', template, '-o', str(out_path),
+    )
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'was denied' in captured.err
+    assert out_path.read_text() == 'previous output'
 
 
 def test_include_path_allows_files_outside_the_template_directory(
@@ -203,8 +248,10 @@ def test_include_path_does_not_allow_the_template_directory_implicitly(
 
     exit_code = _run_cli(monkeypatch, f'--include-path={other}', template)
 
-    assert exit_code == 0
-    assert '<!-- mj-include denied -->' in capsys.readouterr().out
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'was denied' in captured.err
 
 
 @pytest.mark.parametrize(('args', 'message'), [

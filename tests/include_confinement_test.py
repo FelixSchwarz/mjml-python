@@ -9,15 +9,16 @@ import pytest
 from mjml import (
     Include,
     IncludePolicy,
-    MJMLValidationErrors,
+    MJMLError,
+    MJMLIncludeError,
     Severity,
+    ValidationError,
     ValidationRule,
     mjml_to_html,
     validate,
 )
 
 
-DENIED = '<!-- mj-include denied -->'
 PART = '<mj-section><mj-column><mj-text>PART</mj-text></mj-column></mj-section>'
 SECRET = '<mj-section><mj-column><mj-text>SECRET</mj-text></mj-column></mj-section>'
 
@@ -83,6 +84,20 @@ def discarded_denial_templates(tmp_path: Path):
     ]
 
 
+@pytest.fixture
+def template_with_three_disabled_includes(tmp_path: Path) -> Path:
+    path = tmp_path / 'template.mjml'
+    path.write_text(
+        '<mj-include path="before.mjml" />\n'
+        '<mjml><mj-body>\n'
+          '<mj-include path="outer.mjml">\n'
+            '<mj-include path="inner.mjml" />\n'
+          '</mj-include>\n'
+        '</mj-body></mjml>'
+    )
+    return path
+
+
 # --- allowed ---
 
 def test_sibling_file_may_be_included(tree: Path):
@@ -136,8 +151,11 @@ def test_in_memory_template_needs_a_template_dir_for_includes(
         mjml_to_html(source, includes=includes)
     with pytest.raises(ValueError, match='needs "template_dir"'):
         validate(source, includes=includes)
-    # without includes there is nothing to resolve
-    assert 'PART' not in mjml_to_html(source).html
+    # without includes the include is disabled, which is also fatal
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        mjml_to_html(source)
+    (error,) = exc_info.value.errors
+    assert error.rule is ValidationRule.INCLUDE_DISABLED
 
 
 def test_template_file_refuses_another_template_dir(tree: Path, tmp_path: Path):
@@ -186,9 +204,9 @@ def test_boolean_like_include_paths_name_literal_files(
 # --- denied ---
 
 def test_parent_reference_leaving_the_root_is_denied(tree: Path):
-    result = _render(_template(tree, '<mj-include path="../secret.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(
+        _template(tree, '<mj-include path="../secret.mjml" />'), 'below the allowed directories'
+    )
 
 
 @pytest.mark.parametrize('path', [
@@ -202,9 +220,7 @@ def test_parent_reference_leaving_the_root_is_denied(tree: Path):
 def test_absolute_and_windows_paths_are_denied(tree: Path, path: str, tmp_path: Path):
     if path == 'ABSOLUTE':
         path = str(tmp_path / 'secret.mjml')
-    result = _render(_template(tree, f'<mj-include path="{path}" />'))
-
-    assert_denied(result, 'absolute')
+    assert_denied(_template(tree, f'<mj-include path="{path}" />'), 'absolute')
 
 
 @pytest.mark.parametrize('path_value', ['part%20', 'part%2e', 'part%25', 'part%00'])
@@ -286,15 +302,18 @@ def test_nested_percent_escapes_are_literal(
 def test_raw_nul_byte_is_denied(tmp_path: Path):
     source = '<mjml><mj-body><mj-include path="part\x00.mjml" /></mj-body></mjml>'
 
-    result = mjml_to_html(source, template_dir=tmp_path, includes=IncludePolicy(roots=[tmp_path]))
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        mjml_to_html(source, template_dir=tmp_path, includes=IncludePolicy(roots=[tmp_path]))
 
-    assert_denied(result, 'NUL')
+    (error,) = exc_info.value.errors
+    assert error.rule is ValidationRule.INCLUDE_DENIED
+    assert 'NUL' in error.message
 
 
 def test_percent_encoded_traversal_is_a_missing_literal_target(tree: Path):
-    result = _render(_template(tree, '<mj-include path="%2e%2e/secret.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(
+        _template(tree, '<mj-include path="%2e%2e/secret.mjml" />'), 'below the allowed directories'
+    )
 
 
 def test_percent_encoded_traversal_may_name_a_literal_directory(tree: Path):
@@ -314,53 +333,51 @@ def test_literal_percent_encoded_traversal_symlink_outside_is_denied(
 ):
     (tree / '%2e%2e').symlink_to(tmp_path)
 
-    result = _render(_template(tree, '<mj-include path="%2e%2e/secret.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(
+        _template(tree, '<mj-include path="%2e%2e/secret.mjml" />'), 'below the allowed directories'
+    )
 
 
 def test_symlink_pointing_out_of_the_root_is_denied(tree: Path, tmp_path: Path):
     (tree / 'link.mjml').symlink_to(tmp_path / 'secret.mjml')
 
-    result = _render(_template(tree, '<mj-include path="link.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
+    error = assert_denied(
+        _template(tree, '<mj-include path="link.mjml" />'), 'below the allowed directories'
+    )
 
     # the message would otherwise tell where the link points
-    assert str(tmp_path / 'secret.mjml') not in result.errors[0].message
+    assert str(tmp_path / 'secret.mjml') not in error.message
 
 
 def test_missing_and_existing_targets_outside_the_root_are_denied_alike(tree: Path):
-    existing = _render(_template(tree, '<mj-include path="../secret.mjml" />'))
-    missing = _render(_template(tree, '<mj-include path="../nowhere.mjml" />'))
+    existing_error = assert_denied(_template(tree, '<mj-include path="../secret.mjml" />'))
+    missing_error = assert_denied(_template(tree, '<mj-include path="../nowhere.mjml" />'))
 
-    (existing_error,) = existing.errors
-    (missing_error,) = missing.errors
     assert existing_error.message.replace('secret', 'nowhere') == missing_error.message
 
 
 def test_broken_symlink_is_denied(tree: Path):
     (tree / 'link.mjml').symlink_to(tree / 'nowhere.mjml')
 
-    result = _render(_template(tree, '<mj-include path="link.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(
+        _template(tree, '<mj-include path="link.mjml" />'), 'below the allowed directories'
+    )
 
 
 def test_symlink_loop_is_denied_without_an_exception(tree: Path):
     (tree / 'loop.mjml').symlink_to(tree / 'loop.mjml')
     path = _template(tree, '<mj-include path="loop.mjml" />')
 
-    assert_denied(_render(path), 'below the allowed directories')
+    assert_denied(path, 'below the allowed directories')
     with path.open('rb') as mjml_fp:
         (error,) = validate(mjml_fp, includes=IncludePolicy(roots=[tree]))
     assert error.rule is ValidationRule.INCLUDE_DENIED
 
 
 def test_missing_target_is_denied_as_in_mjml_js(tree: Path):
-    result = _render(_template(tree, '<mj-include path="missing.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(
+        _template(tree, '<mj-include path="missing.mjml" />'), 'below the allowed directories'
+    )
 
 
 @pytest.mark.parametrize('path_value', ['true', 'false'])
@@ -375,20 +392,18 @@ def test_missing_boolean_like_include_path_is_an_ordinary_denial(
 
     with path.open('rb') as mjml_fp:
         (validation_error,) = validate(mjml_fp, includes=IncludePolicy(roots=[tree]))
-    result = _render(path)
 
     assert validation_error.rule is ValidationRule.INCLUDE_DENIED
     assert f'"{path_value}"' in validation_error.message
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(path, 'below the allowed directories')
 
 
 def test_nested_include_may_not_leave_the_root(tree: Path):
     (tree / 'sub' / 'deep.mjml').write_text('<mj-include path="../../secret.mjml" />')
 
-    result = _render(_template(tree, '<mj-include path="sub/deep.mjml" />'))
-
-    assert_denied(result, 'below the allowed directories')
-    (error,) = result.errors
+    error = assert_denied(
+        _template(tree, '<mj-include path="sub/deep.mjml" />'), 'below the allowed directories'
+    )
     assert error.file == str(tree / 'sub' / 'deep.mjml')
 
 
@@ -397,12 +412,7 @@ def test_nested_include_may_not_leave_the_root(tree: Path):
     '<mj-include path="../secret.css" type="css" />',
 ])
 def test_html_and_css_includes_obey_the_policy(tree: Path, include: str):
-    result = _render(_template(tree, include))
-
-    assert 'SECRET' not in result.html
-    assert 'secret' not in result.html
-    (error,) = result.errors
-    assert error.rule is ValidationRule.INCLUDE_DENIED
+    assert_denied(_template(tree, include))
 
 
 # --- roots ---
@@ -478,9 +488,9 @@ def test_template_directory_is_not_allowed_implicitly(tree: Path, tmp_path: Path
     shared.mkdir()
     policy = IncludePolicy(roots=[shared])
 
-    result = _render(_template(tree, '<mj-include path="part.mjml" />'), policy)
-
-    assert_denied(result, 'below the allowed directories')
+    assert_denied(
+        _template(tree, '<mj-include path="part.mjml" />'), 'below the allowed directories', policy,
+    )
 
 
 def test_policy_needs_a_root():
@@ -514,73 +524,92 @@ def test_missing_root_is_rejected_before_anything_is_read(tree: Path, tmp_path: 
         _render(path, IncludePolicy(roots=[tmp_path / 'secret.mjml']))
 
 
-# --- response to a denial ---
+# --- response to a broken include ---
 
-@pytest.mark.parametrize('level', ['skip', 'soft'])
-def test_denial_renders_the_comment_and_is_reported(tree: Path, level: str):
-    result = _render(
-        _template(tree, '<mj-include path="../secret.mjml" />'), validation_level=level
+@pytest.mark.parametrize('level', ['skip', 'soft', 'strict'])
+def test_denial_is_fatal_under_every_level(tree: Path, level: str):
+    assert_denied(
+        _template(tree, '<mj-include path="../secret.mjml" />'),
+        'below the allowed directories',
+        validation_level=level,
     )
 
-    assert_denied(result)
+
+def test_mjml_include_error_is_an_mjml_error():
+    assert issubclass(MJMLIncludeError, MJMLError)
 
 
-def test_denial_is_fatal_under_strict_validation(tree: Path):
-    with pytest.raises(MJMLValidationErrors) as exc_info:
-        _render(_template(tree, '<mj-include path="../secret.mjml" />'), validation_level='strict')
+def test_validate_reports_a_denial_and_never_raises(tree: Path):
+    path = _template(tree, '<mj-include path="../secret.mjml" />')
 
-    (error,) = exc_info.value.errors
+    with path.open('rb') as mjml_fp:
+        (error,) = validate(mjml_fp, includes=IncludePolicy(roots=[tree]))
     assert error.rule is ValidationRule.INCLUDE_DENIED
+    assert error.severity is Severity.ERROR
 
 
-def test_discarded_denials_are_reported_once_under_skip_and_validation(
-    discarded_denial_templates, tmp_path: Path,
+@pytest.mark.parametrize('level', ['skip', 'soft', 'strict'])
+def test_discarded_denials_remain_fatal_under_every_level(
+    discarded_denial_templates, tmp_path: Path, level: str,
 ):
+    policy = IncludePolicy(roots=[tmp_path])
+
     for case, path, expected_file, expected_line, expected_include in discarded_denial_templates:
-        result = _render(path, validation_level='skip')
+        with pytest.raises(MJMLIncludeError) as exc_info:
+            _render(path, policy, validation_level=level)
+
+        assert len(exc_info.value.errors) == 1, case
+        (error,) = exc_info.value.errors
+        assert error.rule is ValidationRule.INCLUDE_DENIED
+        assert error.file == str(expected_file)
+        assert error.line == expected_line
+        assert error.included_in == expected_include
+
+
+def test_discarded_denials_are_reported_by_validate(discarded_denial_templates, tmp_path: Path):
+    for case, path, expected_file, expected_line, expected_include in discarded_denial_templates:
         with path.open('rb') as mjml_fp:
             validation_errors = validate(mjml_fp, includes=IncludePolicy(roots=[tmp_path]))
 
-        for errors in (result.errors, validation_errors):
-            denials = [error for error in errors if error.rule is ValidationRule.INCLUDE_DENIED]
-            assert len(denials) == 1, case
-            (error,) = denials
-            assert error.severity is Severity.ERROR
-            assert error.file == str(expected_file)
-            assert error.line == expected_line
-            assert error.included_in == expected_include
+        denials = [
+            error for error in validation_errors if error.rule is ValidationRule.INCLUDE_DENIED
+        ]
+        assert len(denials) == 1, case
+        (error,) = denials
+        assert error.severity is Severity.ERROR
+        assert error.file == str(expected_file)
+        assert error.line == expected_line
+        assert error.included_in == expected_include
 
 
-def test_discarded_disabled_includes_are_reported_once_under_skip_and_validation(
-    tmp_path: Path,
+def test_discarded_disabled_includes_are_fatal_under_skip(
+    template_with_three_disabled_includes: Path,
 ):
-    path = tmp_path / 'template.mjml'
-    path.write_text(
-        '<mj-include path="before.mjml" />\n'
-        '<mjml><mj-body>\n'
-          '<mj-include path="outer.mjml">\n'
-            '<mj-include path="inner.mjml" />\n'
-          '</mj-include>\n'
-        '</mj-body></mjml>'
-    )
+    with template_with_three_disabled_includes.open('rb') as mjml_fp:
+        with pytest.raises(MJMLIncludeError) as exc_info:
+            mjml_to_html(mjml_fp, validation_level='skip')
 
-    with path.open('rb') as mjml_fp:
-        result = mjml_to_html(mjml_fp, validation_level='skip')
-    with path.open('rb') as mjml_fp:
+    assert [error.rule for error in exc_info.value.errors] == [ValidationRule.INCLUDE_DISABLED] * 3
+    assert {error.line for error in exc_info.value.errors} == {1, 3, 4}
+
+
+def test_discarded_disabled_includes_are_reported_by_validate(
+    template_with_three_disabled_includes: Path,
+):
+    with template_with_three_disabled_includes.open('rb') as mjml_fp:
         validation_errors = validate(mjml_fp)
 
-    for errors in (result.errors, validation_errors):
-        assert [error.rule for error in errors] == [ValidationRule.INCLUDE_DISABLED] * 3
-        assert {error.line for error in errors} == {1, 3, 4}
+    assert [error.rule for error in validation_errors] == [ValidationRule.INCLUDE_DISABLED] * 3
+    assert {error.line for error in validation_errors} == {1, 3, 4}
 
 
 def test_directory_inside_the_root_is_an_include_error_not_a_denial(tree: Path):
-    result = _render(_template(tree, '<mj-include path="sub" />'))
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        _render(_template(tree, '<mj-include path="sub" />'))
 
-    (error,) = result.errors
+    (error,) = exc_info.value.errors
     assert error.rule is ValidationRule.INCLUDE_ERROR
     assert 'not a regular file' in error.message
-    assert 'mj-include fails to read file' in result.html
 
 
 def test_fifo_inside_the_root_is_not_read(tree: Path):
@@ -621,11 +650,15 @@ def _render(path: Path, policy: Optional[IncludePolicy] = None, **kwargs):
         return mjml_to_html(mjml_fp, includes=policy, **kwargs)
 
 
-def assert_denied(result, reason: str = '') -> None:
-    assert DENIED in result.html
-    assert 'SECRET' not in result.html
-    (error,) = result.errors
+def assert_denied(
+    path: Path, reason: str = '', policy: Optional[IncludePolicy] = None, **kwargs
+) -> ValidationError:
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        _render(path, policy, **kwargs)
+    (error,) = exc_info.value.errors
     assert error.rule is ValidationRule.INCLUDE_DENIED
     assert error.severity is Severity.ERROR
     assert error.tag_name == 'mj-include'
-    assert reason in error.message
+    if reason:
+        assert reason in error.message
+    return error

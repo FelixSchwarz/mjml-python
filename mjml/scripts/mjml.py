@@ -3,7 +3,8 @@ mjml.
 
 Usage:
   mjml --validate [--template-dir=<path>] [--include-path=<dir>...] <MJML-FILE>
-  mjml [--template-dir=<path>] [--include-path=<dir>...] [--config.keepComments=False]
+  mjml [--template-dir=<path>] [--include-path=<dir>...]
+       [--config.keepComments=False]
        [--validation-level=<level>] <MJML-FILE> [-o <OUTPUT-FILE>]
 
 Options:
@@ -24,7 +25,13 @@ from typing import BinaryIO, Optional, Union
 
 from docopt import DocoptExit, docopt
 
-from mjml.errors import MJMLValidationErrors, ValidationError, ValidationLevel, ValidationRule
+from mjml.errors import (
+    MJMLIncludeError,
+    MJMLValidationErrors,
+    ValidationError,
+    ValidationLevel,
+    ValidationRule,
+)
 from mjml.helpers.includes import IncludePolicy
 from mjml.mjml2html import mjml_to_html, validate
 
@@ -157,6 +164,9 @@ def _run_render(command: RenderCommand) -> int:
             )
     except MJMLValidationErrors as validation_error:
         _report(validation_error.errors)
+        return 1
+    except MJMLIncludeError as error:
+        _report(error.errors)
         return 1
 
     _report(result.errors)

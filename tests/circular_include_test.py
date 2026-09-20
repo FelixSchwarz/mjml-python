@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from mjml import IncludePolicy, MJMLValidationErrors, ParseResult, ValidationRule, mjml_to_html
+from mjml import IncludePolicy, MJMLIncludeError, ParseResult, ValidationRule, mjml_to_html
 
 
 def test_reports_file_including_itself(tmp_path: Path):
@@ -10,8 +10,10 @@ def test_reports_file_including_itself(tmp_path: Path):
     mjml_str = '<mjml><mj-body><mj-include path="./self.mjml" /></mj-body></mjml>'
     template.write_text(mjml_str)
 
-    (error,) = _render(template).errors
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        _render(template)
 
+    (error,) = exc_info.value.errors
     assert error.rule is ValidationRule.INCLUDE_ERROR
     assert 'Circular inclusion' in error.message
     assert str(template) in error.message
@@ -24,10 +26,11 @@ def test_reports_cycle_through_another_file(tmp_path: Path):
     mjml_str = '<mjml><mj-body><mj-include path="./a.mjml" /></mj-body></mjml>'
     template.write_text(mjml_str)
 
-    (error,) = _render(template).errors
+    with pytest.raises(MJMLIncludeError) as exc_info:
+        _render(template)
+
+    (error,) = exc_info.value.errors
     assert 'Circular inclusion' in error.message
-    with template.open('rb') as mjml_fp, pytest.raises(MJMLValidationErrors):
-        mjml_to_html(mjml_fp, validation_level='strict', includes=IncludePolicy(roots=[tmp_path]))
 
 
 def test_reports_same_file_may_be_included_twice_side_by_side(tmp_path: Path):

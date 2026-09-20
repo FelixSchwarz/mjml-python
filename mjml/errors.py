@@ -7,6 +7,7 @@ from typing import Optional
 __all__ = [
     'Include',
     'MJMLError',
+    'MJMLIncludeError',
     'MJMLValidationErrors',
     'Severity',
     'ValidationError',
@@ -97,3 +98,13 @@ class MJMLValidationErrors(MJMLError):
         messages = '\n'.join(error.formatted_message() for error in self.errors)
         plural = '' if len(self.errors) == 1 else 's'
         super().__init__(f'{len(self.errors)} validation error{plural}:\n{messages}')
+
+
+class MJMLIncludeError(MJMLError):
+    """Raised instead of rendering when an `mj-include` dropped part of the mail."""
+
+    def __init__(self, errors: Sequence[ValidationError]) -> None:
+        self.errors = tuple(errors)
+        messages = '\n'.join(error.formatted_message() for error in self.errors)
+        plural = '' if len(self.errors) == 1 else 's'
+        super().__init__(f'{len(self.errors)} broken include{plural}:\n{messages}')

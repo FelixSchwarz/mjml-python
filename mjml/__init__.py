@@ -1,6 +1,7 @@
 from mjml.errors import (
     Include,
     MJMLError,
+    MJMLIncludeError,
     MJMLValidationErrors,
     Severity,
     ValidationError,
@@ -15,6 +16,7 @@ __all__ = [
     'Include',
     'IncludePolicy',
     'MJMLError',
+    'MJMLIncludeError',
     'MJMLValidationErrors',
     'mjml_to_html',
     'ParseResult',

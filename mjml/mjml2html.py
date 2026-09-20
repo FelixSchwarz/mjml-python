@@ -11,6 +11,7 @@ from mjml.core import initComponent
 from mjml.core.registry import components_for_invocation
 from mjml.elements.head._head_base import HeadComponent
 from mjml.errors import (
+    MJMLIncludeError,
     MJMLValidationErrors,
     Severity,
     ValidationError,
@@ -161,8 +162,14 @@ def mjml_to_html(
     parsed = parse_input(xml_fp_or_json, template_dir)
     include_policy_events: list[ValidationError] = []
     mjml_root = _node_tree(parsed, components, includes, include_policy_events)
+    policy_errors = _include_policy_errors(parsed, include_policy_events)
+    if policy_errors:
+        # an include which dropped part of the mail is fatal regardless of
+        # validation level: the level controls ordinary MJML validation, not
+        # whether the renderer may silently omit a part of the template
+        raise MJMLIncludeError(policy_errors)
     if level is ValidationLevel.SKIP:
-        validation_errors = _include_policy_errors(parsed, include_policy_events)
+        validation_errors = policy_errors
     else:
         validation_errors = _validation_errors(
             parsed, components, mjml_root, include_policy_events

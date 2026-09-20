@@ -83,10 +83,9 @@ port cannot reproduce correctly.
 | `soft` (default) | Validate and generate HTML. Problems are returned in `result.errors`.                                 |
 | `strict`         | Validate first. Generate HTML only when no errors were found; otherwise raise `MJMLValidationErrors`. |
 
-`mj-include` is the exception: whether an include may be read is a policy
-decision rather than a question of well-formed MJML, so a disabled or denied
-include is reported at every level, `skip` included, and `strict` refuses to
-render because of it. See [Includes](#includes).
+`mj-include` is the exception: an include which was not expanded leaves the mail
+without the file it names, which no validation level makes acceptable. It raises
+`MJMLIncludeError` before rendering, `skip` included. See [Includes](#includes).
 
 ### Command line
 
@@ -213,7 +212,7 @@ of a built-in component inherits the categories of the element it derives from.
 
 `mj-include` inserts other MJML, HTML or CSS files into a template. A template
 which reads files is only safe when every template is trusted. Therefore `mj-include`
-is disabled by default, as in mjml js since version 5. Please consider using a
+is disabled by default, as in MJML JS since version 5. Please consider using a
 templating engine such as Jinja2 or the Django template language if you want to
 split your MJML into reusable parts.
 
@@ -244,7 +243,7 @@ $ mjml --include-path=templates templates/newsletter.mjml
 ### Where includes may read
 
 - only below the directories in `roots`, and at least one is required. Unlike
-  mjml js, the directory of the template is not allowed implicitly.
+  MJML JS, the directory of the template is not allowed implicitly.
 - a relative include path is resolved against the file which contains it. The
   directory it starts from is not readable by itself:
   `path="../shared/head.mjml"` is denied unless the file it names lies below
@@ -281,13 +280,13 @@ above them must be writable only by the deployment itself.
 
 ### When an include fails
 
-mjml will always report an error (at every validation level) when it failed to
-include a referenced file via `mj-include`.
+A disabled, denied or unusable `mj-include` leaves the mail without the file it
+names, so `mjml_to_html()` refuses to render it at all: it raises
+`MJMLIncludeError` at every validation level, `skip` included. The `mjml`
+command prints the problem, writes no output file and exits 1.
 
-- `skip` and `soft` render anyway and report it in `result.errors`. The mail is
-  missing that part and a comment marks the spot - mjml js renders the same
-  comment, but stays silent about it.
-- `strict` raises `MJMLValidationErrors` and renders nothing.
+`validate()` never raises. It reports the problem as an error, like any other
+validation error.
 
 
 ## Limitations
