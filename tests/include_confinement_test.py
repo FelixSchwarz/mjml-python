@@ -158,6 +158,30 @@ def test_in_memory_template_needs_a_template_dir_for_includes(
     assert error.rule is ValidationRule.INCLUDE_DISABLED
 
 
+def test_included_file_prefers_a_neighbour_over_the_same_name_above_it(tree: Path):
+    # both directories are allowed, so only the base directory decides
+    assert (tree / 'part.mjml').is_file()
+    part_mjml_sub = '<mj-section><mj-column><mj-text>NEIGHBOUR</mj-text></mj-column></mj-section>'
+    (tree / 'sub' / 'part.mjml').write_text(part_mjml_sub)
+    (tree / 'sub' / 'deep.mjml').write_text('<mj-include path="part.mjml" />')
+
+    result = _render(_template(tree, '<mj-include path="sub/deep.mjml" />'))
+
+    assert 'NEIGHBOUR' in result.html
+    assert 'PART' not in result.html
+    assert result.errors == []
+
+
+def test_included_file_does_not_fall_back_to_the_same_name_above_it(tree: Path):
+    # ensure test setup did create the second `part.mjml` file
+    assert (tree / 'part.mjml').is_file()
+    (tree / 'sub' / 'deep.mjml').write_text('<mj-include path="part.mjml" />')
+
+    template_path = _template(tree, '<mj-include path="sub/deep.mjml" />')
+    error = assert_denied(template_path, 'below the allowed directories')
+    assert error.file == str(tree / 'sub' / 'deep.mjml')
+
+
 def test_template_file_refuses_another_template_dir(tree: Path, tmp_path: Path):
     # the base directory would apply to this template alone: "part.mjml" would come
     # from tmp_path while an include inside it still starts in the directory it lies in
@@ -169,8 +193,6 @@ def test_template_file_refuses_another_template_dir(tree: Path, tmp_path: Path):
         _render(path, policy, template_dir=tmp_path)
     with path.open('rb') as mjml_fp, pytest.raises(ValueError, match=message):
         validate(mjml_fp, template_dir=tmp_path, includes=policy)
-
-
 
 
 @pytest.mark.parametrize('path_value', ['true', 'false'])
