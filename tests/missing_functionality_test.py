@@ -27,7 +27,6 @@ TEST_IDS = (
     'mj-hero-mode',
     'mj-hero-vertical-align',
     'mj-hero-width',
-    'mj-raw',
     'mj-section-background-url-full',
     'mj-section-border-radius',
     'mj-section-full-width-background-url',

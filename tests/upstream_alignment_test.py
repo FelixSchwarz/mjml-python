@@ -78,6 +78,7 @@ TEST_IDS = (
     'mj-preview',
     'mj-raw',
     'mj-raw-file-start',
+    'mj-raw-mixed-content',
     'mj-raw-with-tags',
     'mj-raw-head',
     'mj-raw-head-with-tags',

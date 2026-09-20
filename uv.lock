@@ -531,7 +531,7 @@ requires-dist = [
     { name = "css-inline", marker = "extra == 'css-inlining'", specifier = ">=0.11" },
     { name = "docopt-ng" },
     { name = "dotmap" },
-    { name = "htmlcompare", marker = "extra == 'testing'", specifier = ">=0.5.0b1" },
+    { name = "htmlcompare", marker = "extra == 'testing'", specifier = ">=0.5.1" },
     { name = "jinja2" },
     { name = "lxml", marker = "extra == 'testing'" },
     { name = "pytest", marker = "extra == 'testing'" },
